@@ -5903,12 +5903,33 @@
       canvas: null,
       ctx: null,
       particles: [],
+      running: false,
+      rafId: null,
       init() {
         this.canvas = document.getElementById("effectsCanvas");
         this.ctx = this.canvas.getContext("2d");
         window.addEventListener("resize", () => this.resize());
         this.resize();
-        requestAnimationFrame(() => this.frame());
+      },
+      start() {
+        if (this.running || !this.ctx || !this.isBattleActive()) return;
+        this.running = true;
+        this.frame();
+      },
+      stop() {
+        this.running = false;
+        if (this.rafId !== null) {
+          cancelAnimationFrame(this.rafId);
+          this.rafId = null;
+        }
+        this.particles = [];
+        this.clearCanvas();
+      },
+      clearCanvas() {
+        if (!this.ctx || !this.canvas) return;
+        const rect = this.canvas.getBoundingClientRect();
+        this.ctx.clearRect(0, 0, rect.width, rect.height);
+        this.ctx.globalAlpha = 1;
       },
       resize() {
         const rect = this.canvas.getBoundingClientRect();
@@ -5921,6 +5942,8 @@
       },
       play(card, result) {
         resetBattleViewTransform();
+        if (!this.isBattleActive()) return;
+        this.start();
         const drama = dramaTimingForCard(card);
         const field = document.getElementById("battlefield");
         const banner = document.getElementById("skillBanner");
@@ -6156,11 +6179,9 @@
       },
       frame() {
         if (!this.ctx) return;
-        if (!this.isBattleActive()) {
-          this.particles = [];
-          const rect = this.canvas.getBoundingClientRect();
-          this.ctx.clearRect(0, 0, rect.width, rect.height);
-          setTimeout(() => requestAnimationFrame(() => this.frame()), 250);
+        this.rafId = null;
+        if (!this.running || !this.isBattleActive()) {
+          this.stop();
           return;
         }
         const rect = this.canvas.getBoundingClientRect();
@@ -6190,7 +6211,7 @@
           }
         });
         this.ctx.globalAlpha = 1;
-        requestAnimationFrame(() => this.frame());
+        this.rafId = requestAnimationFrame(() => this.frame());
       },
       drawAmbient(rect) {
         const time = Date.now() / 1000;
@@ -6527,8 +6548,13 @@
         document.body.classList.toggle("home-mode", name === "home");
         if (name === "battle") {
           window.scrollTo(0, 0);
-          setTimeout(() => effectsRenderer.resize(), 0);
+          setTimeout(() => {
+            effectsRenderer.resize();
+            effectsRenderer.start();
+          }, 0);
           setTimeout(() => this.applySettings(), 0);
+        } else {
+          effectsRenderer.stop();
         }
         if (name === "home") this.renderHomePreview();
         if (name === "deck") this.renderDeckManager();
