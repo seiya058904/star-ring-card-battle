@@ -21,6 +21,8 @@ The runtime entry is `index.html`. Open it directly, or serve the folder as stat
 
 The browser is the app boundary. Core runtime objects live inside `index.html`, including `ASSETS`, `cardGenerator`, `deckBuilder`, `storageManager`, `gameEngine`, `effectsRenderer`, `uiRenderer`, and `aiController`. CSS has later overrides and frequent `!important`; inspect the latest matching selectors before visual edits.
 
+If a future battle entry bypasses `uiRenderer.nav("battle")`, it must call `effectsRenderer.start()` manually so the effects loop starts only in battle mode.
+
 ## Build, Test & Development Commands
 
 No configured project scripts were found. Useful local action from `README.md`:
