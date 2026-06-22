@@ -4343,6 +4343,11 @@
       box-sizing: border-box !important;
     }
 
+
+    body.battle-mode .played-card-stage .card {
+      filter: drop-shadow(0 0 22px var(--elm-glow, transparent)) !important;
+    }
+
     body.battle-mode .hand-dock-v3 .card-top,
     body.battle-mode .played-card-stage .card-top {
       display: grid !important;
@@ -7843,16 +7848,17 @@
     body.battle-mode .played-card-stage .card-art {
       height: 118px !important;
       min-height: 118px !important;
-      background-size: cover !important;
-      background-position: center !important;
+      background-size: var(--atlas-art-size, cover) !important;
+      background-position: var(--atlas-art-position, center) !important;
+      background-repeat: no-repeat !important;
       border: 0 !important;
       outline: 0 !important;
       display: grid !important;
       place-items: center !important;
-      background:
-        radial-gradient(circle at 50% 48%, rgba(255,226,143,.09), rgba(0,0,0,0) 56%),
-        linear-gradient(180deg, rgba(12,13,12,.72), rgba(3,4,4,.86)) !important;
-      box-shadow: inset 0 0 28px rgba(0,0,0,.46), inset 0 0 0 1px rgba(229,170,70,.16) !important;
+      position: relative !important;
+      background-image: var(--atlas-art-image, none) !important;
+      background-color: transparent !important;
+      box-shadow: inset 0 0 0 1px rgba(229,170,70,.16) !important;
     }
 
     body.battle-mode .hand-dock-v3 .card-art::before,
@@ -7892,6 +7898,95 @@
       outline: 0 !important;
       box-shadow: none !important;
       filter: none !important;
+    }
+
+
+
+    @keyframes elmParticleFloat {
+      0%, 100% { transform: translate(0, 0) scale(1); opacity: .25; }
+      20% { transform: translate(4px, -5px) scale(1.1); opacity: .45; }
+      40% { transform: translate(-3px, -10px) scale(0.9); opacity: .3; }
+      60% { transform: translate(5px, -4px) scale(1.15); opacity: .5; }
+      80% { transform: translate(-2px, -7px) scale(1.05); opacity: .35; }
+    }
+
+    @keyframes elmParticleFloatSlow {
+      0%, 100% { transform: translate(0, 0); opacity: .15; }
+      25% { transform: translate(-4px, 4px); opacity: .35; }
+      50% { transform: translate(3px, -3px); opacity: .25; }
+      75% { transform: translate(-2px, 5px); opacity: .3; }
+    }
+
+    @keyframes elmCardPlayed {
+      0% { transform: scale(1.5); opacity: 0; }
+      12% { transform: scale(1); opacity: .95; }
+      25% { transform: scale(1.08); opacity: .85; }
+      45% { transform: scale(1); opacity: .7; }
+      70% { transform: scale(1.02); opacity: .55; }
+      100% { transform: scale(1); opacity: .35; }
+    }
+
+
+    body.battle-mode .hand-dock-v3 .card[data-element="火"],
+    body.battle-mode .played-card-stage .card[data-element="火"] { --elm-p1: #ff6a33; --elm-p2: #e8451a; --elm-glow: rgba(255,106,51,.35); }
+    body.battle-mode .hand-dock-v3 .card[data-element="冰"],
+    body.battle-mode .played-card-stage .card[data-element="冰"] { --elm-p1: #4fc3f7; --elm-p2: #29b6f6; --elm-glow: rgba(79,195,247,.3); }
+    body.battle-mode .hand-dock-v3 .card[data-element="风"],
+    body.battle-mode .played-card-stage .card[data-element="风"] { --elm-p1: #4db6ac; --elm-p2: #26a69a; --elm-glow: rgba(77,182,172,.3); }
+    body.battle-mode .hand-dock-v3 .card[data-element="土"],
+    body.battle-mode .played-card-stage .card[data-element="土"] { --elm-p1: #d4a017; --elm-p2: #b8860b; --elm-glow: rgba(212,160,23,.3); }
+    body.battle-mode .hand-dock-v3 .card[data-element="雷"],
+    body.battle-mode .played-card-stage .card[data-element="雷"] { --elm-p1: #b388ff; --elm-p2: #7c4dff; --elm-glow: rgba(179,136,255,.3); }
+    body.battle-mode .hand-dock-v3 .card[data-element="光"],
+    body.battle-mode .played-card-stage .card[data-element="光"] { --elm-p1: #ffd54f; --elm-p2: #ffca28; --elm-glow: rgba(255,213,79,.35); }
+    body.battle-mode .hand-dock-v3 .card[data-element="暗"],
+    body.battle-mode .played-card-stage .card[data-element="暗"] { --elm-p1: #ce93d8; --elm-p2: #ab47bc; --elm-glow: rgba(206,147,216,.25); }
+
+    body.battle-mode .hand-dock-v3 .card-art::after {
+      content: "" !important;
+      position: absolute !important;
+      inset: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      pointer-events: none !important;
+      z-index: 0 !important;
+      border-radius: 0 !important;
+      background:
+        radial-gradient(circle at 22% 28%, var(--elm-glow, rgba(255,226,143,.12)) 0, transparent 5px),
+        radial-gradient(circle at 68% 18%, var(--elm-p1, rgba(255,226,143,.2)) 0, transparent 4px),
+        radial-gradient(circle at 38% 72%, var(--elm-glow, rgba(255,226,143,.1)) 0, transparent 4px),
+        radial-gradient(circle at 78% 58%, var(--elm-p2, rgba(255,226,143,.15)) 0, transparent 3px),
+        radial-gradient(circle at 12% 82%, var(--elm-p1, rgba(255,226,143,.12)) 0, transparent 3px),
+        radial-gradient(circle at 55% 42%, var(--elm-glow, rgba(255,226,143,.08)) 0, transparent 6px),
+        radial-gradient(circle at 88% 32%, var(--elm-p2, rgba(255,226,143,.1)) 0, transparent 3px),
+        radial-gradient(circle at 48% 88%, var(--elm-p1, rgba(255,226,143,.1)) 0, transparent 3px),
+        radial-gradient(circle at 8% 48%, var(--elm-glow, rgba(255,226,143,.08)) 0, transparent 3px) !important;
+      background-repeat: no-repeat !important;
+      animation: elmParticleFloat 7s ease-in-out infinite !important;
+      opacity: .65 !important;
+      mix-blend-mode: screen !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card:hover .card-art::after,
+    body.battle-mode .hand-dock-v3 .card.selected .card-art::after {
+      opacity: .95 !important;
+      animation-duration: 4s !important;
+    }
+
+    body.battle-mode .played-card-stage .card-art::after {
+      opacity: .9 !important;
+      animation: elmCardPlayed 2.5s ease-out forwards !important;
+      background:
+        radial-gradient(circle at 22% 28%, var(--elm-glow, rgba(255,226,143,.15)) 0, transparent 7px),
+        radial-gradient(circle at 68% 18%, var(--elm-p1, rgba(255,226,143,.25)) 0, transparent 5px),
+        radial-gradient(circle at 38% 72%, var(--elm-glow, rgba(255,226,143,.12)) 0, transparent 5px),
+        radial-gradient(circle at 78% 58%, var(--elm-p2, rgba(255,226,143,.2)) 0, transparent 5px),
+        radial-gradient(circle at 12% 82%, var(--elm-p1, rgba(255,226,143,.15)) 0, transparent 4px),
+        radial-gradient(circle at 55% 42%, var(--elm-glow, rgba(255,226,143,.12)) 0, transparent 8px),
+        radial-gradient(circle at 88% 32%, var(--elm-p2, rgba(255,226,143,.15)) 0, transparent 4px),
+        radial-gradient(circle at 48% 88%, var(--elm-p1, rgba(255,226,143,.12)) 0, transparent 4px),
+        radial-gradient(circle at 8% 48%, var(--elm-glow, rgba(255,226,143,.1)) 0, transparent 4px),
+        radial-gradient(circle at 50% 50%, var(--elm-glow, rgba(255,226,143,.08)) 0, transparent 40%) !important;
     }
 
     body.battle-mode .hand-dock-v3 .card-meta,
@@ -7986,7 +8081,7 @@
       display: grid !important;
       place-items: center !important;
       border: 1px solid rgba(230,170,70,.48) !important;
-      box-shadow: inset 0 0 38px rgba(0,0,0,.45) !important;
+      box-shadow: inset 0 0 0 1px rgba(229,170,70,.16) !important;
     }
 
     body.battle-mode .preview-art-box .card-icon {
