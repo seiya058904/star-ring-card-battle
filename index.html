@@ -7695,8 +7695,13 @@
       const costSprite = card.cost >= 1 && card.cost <= 10 ? `cost${card.cost}` : "";
       const costStyle = costSprite ? `--cost-sprite-img:url('assets/ui/sprites/${costSprite}.png')` : "";
       const artStyle = atlasBackgroundVars("atlas-art", cardArtSprite(card), 120, 82);
+      const orbitHtml = card.cost >= 8 ? `
+        <div class="card-orbit-system" aria-hidden="true">
+          <span class="orbit orbit-1"></span>${card.cost >= 9 ? '<span class="orbit orbit-2"></span>' : ''}${card.cost >= 10 ? '<span class="orbit orbit-3"></span>' : ''}
+        </div>` : '';
       return `
         <div class="card ${unplayable ? "unplayable" : ""}" data-instance-id="${card.instanceId || ""}" data-tier="${tier}" data-drama-tier="${dramaTierNameFor(card)}" data-cost="${card.cost}" data-element="${card.element}" data-effect="${card.effectType}" data-symbol="${card.mark || "✦"}" style="--c1:${c1};--c2:${c2};${frameStyle}">
+          ${orbitHtml}
           <div class="card-top">
             <div class="card-name">${card.name}</div>
             ${costSprite ? `<div class="card-cost" style="${costStyle}" aria-label="${card.cost} 能量"></div>` : ""}
@@ -8372,31 +8377,6 @@
       overflow: visible !important;
     }
 
-    /* ── 8-cost: single orbital arc ring ── */
-    body.battle-mode .hand-dock-v3 .card[data-cost="8"]::before {
-      content: "" !important;
-      position: absolute !important;
-      inset: -5px !important;
-      border-radius: 10px !important;
-      border: 2px solid transparent !important;
-      background: conic-gradient(from 0deg,
-        transparent 0deg 55deg,
-        var(--elm-p1, #ffe18a) 55deg 85deg,
-        transparent 85deg 215deg,
-        var(--elm-p2, #ff9f43) 215deg 245deg,
-        transparent 245deg 360deg) border-box !important;
-      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0) border-box !important;
-      -webkit-mask-composite: xor !important;
-      mask-composite: exclude !important;
-      pointer-events: none !important;
-      z-index: 1 !important;
-      animation: starRing8 5s linear infinite !important;
-    }
-
-    @keyframes starRing8 {
-      to { transform: rotate(360deg); }
-    }
-
     body.battle-mode .hand-dock-v3 .card[data-cost="8"] .card-cost {
       filter: drop-shadow(0 0 6px rgba(255,225,140,.6)) drop-shadow(0 0 12px var(--elm-glow, rgba(255,220,126,.35))) brightness(1.15) saturate(1.12) !important;
     }
@@ -8417,50 +8397,6 @@
     @keyframes starRing9CardPulse {
       0%, 100% { filter: brightness(1.14) saturate(1.22); }
       50% { filter: brightness(1.26) saturate(1.38); }
-    }
-
-    body.battle-mode .hand-dock-v3 .card[data-cost="9"]::after {
-      inset: -4px !important;
-      border-radius: 9px !important;
-      border: 1px solid rgba(255,241,180,.6) !important;
-      background:
-        linear-gradient(105deg, transparent 0 18%, rgba(255,244,200,.58) 40%, transparent 62% 100%),
-        conic-gradient(from 0deg, transparent, var(--elm-glow, rgba(255,218,112,.34)), transparent, var(--elm-p1, #ffe18a), transparent) !important;
-      opacity: .9 !important;
-      animation: starRing9Sweep 2.8s linear infinite !important;
-    }
-
-    @keyframes starRing9Sweep {
-      0% { background-position: 0 0; }
-      100% { background-position: 360deg 0; }
-    }
-
-    body.battle-mode .hand-dock-v3 .card[data-cost="9"]::before {
-      content: "" !important;
-      position: absolute !important;
-      inset: -8px !important;
-      border-radius: 11px !important;
-      border: 2px solid transparent !important;
-      background: conic-gradient(from 0deg,
-        transparent 0deg 25deg,
-        var(--elm-p1, #ffe18a) 25deg 50deg,
-        transparent 50deg 140deg,
-        var(--elm-p1, #ffe18a) 140deg 165deg,
-        transparent 165deg 205deg,
-        var(--elm-p2, #ff9f43) 205deg 230deg,
-        transparent 230deg 320deg,
-        var(--elm-p2, #ff9f43) 320deg 345deg,
-        transparent 345deg 360deg) border-box !important;
-      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0) border-box !important;
-      -webkit-mask-composite: xor !important;
-      mask-composite: exclude !important;
-      pointer-events: none !important;
-      z-index: 1 !important;
-      animation: starRing9Outer 4s linear infinite !important;
-    }
-
-    @keyframes starRing9Outer {
-      to { transform: rotate(-360deg); }
     }
 
     body.battle-mode .hand-dock-v3 .card[data-cost="9"] .card-cost {
@@ -8486,57 +8422,6 @@
       50% { filter: brightness(1.42) saturate(1.52); }
     }
 
-    body.battle-mode .hand-dock-v3 .card[data-cost="10"]::after {
-      inset: -8px !important;
-      border-radius: 11px !important;
-      border: 2px solid rgba(255, 245, 190, .8) !important;
-      background:
-        radial-gradient(circle at 50% 50%, rgba(255,248,210,.22) 0, transparent 54%),
-        conic-gradient(from 0deg, transparent 0deg, rgba(255,245,180,.34) 45deg, transparent 90deg, rgba(255,235,160,.22) 180deg, transparent 270deg, rgba(255,245,180,.34) 315deg, transparent 360deg) !important;
-      box-shadow:
-        0 0 36px rgba(255,245,180,.75),
-        0 0 64px var(--elm-glow, rgba(255,226,132,.55)),
-        inset 0 0 34px rgba(255,245,190,.2) !important;
-      opacity: 1 !important;
-      animation: starRing10AfterGlow 2.2s ease-in-out infinite !important;
-    }
-
-    @keyframes starRing10AfterGlow {
-      0%, 100% { transform: scale(1); opacity: .86; }
-      50% { transform: scale(1.03); opacity: 1; }
-    }
-
-    body.battle-mode .hand-dock-v3 .card[data-cost="10"]::before {
-      content: "" !important;
-      position: absolute !important;
-      inset: -11px !important;
-      border-radius: 13px !important;
-      border: 3px solid transparent !important;
-      background: conic-gradient(from 0deg,
-        rgba(255,215,0,.65) 0deg 12deg,
-        transparent 12deg 40deg,
-        var(--elm-p1, #ffe18a) 40deg 58deg,
-        transparent 58deg 130deg,
-        rgba(255,215,0,.55) 130deg 142deg,
-        transparent 142deg 210deg,
-        var(--elm-p2, #ff9f43) 210deg 228deg,
-        transparent 228deg 300deg,
-        rgba(255,215,0,.45) 300deg 312deg,
-        transparent 312deg 340deg,
-        rgba(255,215,0,.6) 340deg 360deg) border-box !important;
-      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0) border-box !important;
-      -webkit-mask-composite: xor !important;
-      mask-composite: exclude !important;
-      pointer-events: none !important;
-      z-index: 1 !important;
-      animation: starRing10Outer 3.5s linear infinite !important;
-      filter: drop-shadow(0 0 6px rgba(255,215,0,.5)) !important;
-    }
-
-    @keyframes starRing10Outer {
-      to { transform: rotate(360deg); }
-    }
-
     body.battle-mode .hand-dock-v3 .card[data-cost="10"] .card-cost {
       filter: drop-shadow(0 0 16px rgba(255,248,200,1)) drop-shadow(0 0 30px rgba(255,220,100,.82)) brightness(1.42) saturate(1.32) !important;
       animation: starRing10Cost 1.8s ease-in-out infinite !important;
@@ -8551,6 +8436,148 @@
     body.battle-mode .hand-dock-v3 .card[data-cost="10"] .card-desc,
     body.battle-mode .hand-dock-v3 .card[data-cost="10"] .card-power {
       text-shadow: 0 2px 5px rgba(0,0,0,.95), 0 0 12px rgba(255,235,160,.42), 0 0 26px rgba(255,200,60,.2) !important;
+    }
+
+    /* ════════════════════════════════════════════════ */
+    /* True orbital star rings for high-cost hand cards */
+    /* ════════════════════════════════════════════════ */
+
+    /* Orbit system container — sits behind card content */
+    body.battle-mode .hand-dock-v3 .card[data-cost="8"] .card-orbit-system,
+    body.battle-mode .hand-dock-v3 .card[data-cost="9"] .card-orbit-system,
+    body.battle-mode .hand-dock-v3 .card[data-cost="10"] .card-orbit-system {
+      position: absolute !important;
+      inset: 0 !important;
+      pointer-events: none !important;
+      z-index: 0 !important;
+      overflow: visible !important;
+    }
+
+    /* Common orbit span styling */
+    body.battle-mode .hand-dock-v3 .card .orbit {
+      position: absolute !important;
+      top: 50% !important;
+      left: 50% !important;
+      pointer-events: none !important;
+      border-radius: 50% !important;
+      border-style: solid !important;
+      box-sizing: border-box !important;
+    }
+
+    /* ── 8-cost: single elliptical orbit ring ── */
+    body.battle-mode .hand-dock-v3 .card[data-cost="8"] .orbit-1 {
+      width: 300px !important;
+      height: 80px !important;
+      margin-left: -150px !important;
+      margin-top: -40px !important;
+      border-width: 2px !important;
+      border-color: var(--elm-p1, #ffe18a) !important;
+      opacity: .5 !important;
+      box-shadow: 0 0 8px var(--elm-p1, #ffe18a), 0 0 24px var(--elm-glow, rgba(255,225,138,.3)) !important;
+      transform: rotate(-10deg) !important;
+      animation: orbitSpin8 10s linear infinite !important;
+    }
+
+    @keyframes orbitSpin8 {
+      to { transform: rotate(350deg); }
+    }
+
+    /* ── 9-cost: dual elliptical orbit rings ── */
+    body.battle-mode .hand-dock-v3 .card[data-cost="9"] .orbit-1 {
+      width: 310px !important;
+      height: 85px !important;
+      margin-left: -155px !important;
+      margin-top: -42px !important;
+      border-width: 2px !important;
+      border-color: var(--elm-p1, #ffe18a) !important;
+      opacity: .6 !important;
+      box-shadow: 0 0 10px var(--elm-p1, #ffe18a), 0 0 30px var(--elm-glow, rgba(255,225,138,.4)) !important;
+      transform: rotate(-8deg) !important;
+      animation: orbitSpin9Inner 8s linear infinite !important;
+    }
+
+    @keyframes orbitSpin9Inner {
+      to { transform: rotate(352deg); }
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-cost="9"] .orbit-2 {
+      width: 330px !important;
+      height: 100px !important;
+      margin-left: -165px !important;
+      margin-top: -50px !important;
+      border-width: 2px !important;
+      border-color: var(--elm-p2, #ff9f43) !important;
+      opacity: .4 !important;
+      box-shadow: 0 0 6px var(--elm-p2, #ff9f43), 0 0 20px var(--elm-glow, rgba(255,225,138,.25)) !important;
+      transform: rotate(6deg) !important;
+      animation: orbitSpin9Outer 12s linear infinite !important;
+    }
+
+    @keyframes orbitSpin9Outer {
+      to { transform: rotate(366deg); }
+    }
+
+    /* ── 10-cost: triple-layer ultimate orbital system ── */
+    /* Inner sacred glow ring */
+    body.battle-mode .hand-dock-v3 .card[data-cost="10"] .orbit-1 {
+      width: 280px !important;
+      height: 70px !important;
+      margin-left: -140px !important;
+      margin-top: -35px !important;
+      border-width: 1px !important;
+      border-color: rgba(255,248,200,.7) !important;
+      opacity: .7 !important;
+      box-shadow:
+        0 0 12px rgba(255,248,200,.6),
+        0 0 30px rgba(255,215,0,.3),
+        inset 0 0 16px rgba(255,248,200,.15) !important;
+      transform: rotate(-5deg) !important;
+      animation: orbitSpin10Inner 6s linear infinite !important;
+    }
+
+    @keyframes orbitSpin10Inner {
+      to { transform: rotate(355deg); }
+    }
+
+    /* Mid element-colour primary ring */
+    body.battle-mode .hand-dock-v3 .card[data-cost="10"] .orbit-2 {
+      width: 320px !important;
+      height: 95px !important;
+      margin-left: -160px !important;
+      margin-top: -47px !important;
+      border-width: 3px !important;
+      border-color: var(--elm-p1, #ffe18a) !important;
+      opacity: .65 !important;
+      box-shadow:
+        0 0 14px var(--elm-p1, #ffe18a),
+        0 0 36px var(--elm-glow, rgba(255,225,138,.5)) !important;
+      transform: rotate(-12deg) !important;
+      animation: orbitSpin10Mid 9s linear infinite !important;
+    }
+
+    @keyframes orbitSpin10Mid {
+      to { transform: rotate(348deg); }
+    }
+
+    /* Outer gold ultimate ring */
+    body.battle-mode .hand-dock-v3 .card[data-cost="10"] .orbit-3 {
+      width: 360px !important;
+      height: 120px !important;
+      margin-left: -180px !important;
+      margin-top: -60px !important;
+      border-width: 2px !important;
+      border-color: rgba(255,215,0,.6) !important;
+      opacity: .5 !important;
+      box-shadow:
+        0 0 18px rgba(255,215,0,.5),
+        0 0 40px rgba(255,200,50,.25),
+        0 0 80px rgba(255,180,0,.12) !important;
+      transform: rotate(8deg) !important;
+      animation: orbitSpin10Outer 14s linear infinite reverse !important;
+    }
+
+    @keyframes orbitSpin10Outer {
+      to { transform: rotate(368deg); }
     }
 
     body.battle-mode .played-card-stage .card-art::after {
@@ -9393,17 +9420,11 @@
       opacity: .34 !important;
     }
 
-    body[data-anim="low"] .hand-dock-v3 .card[data-cost="8"]::before,
-    body[data-anim="low"] .hand-dock-v3 .card[data-cost="9"]::before,
-    body[data-anim="low"] .hand-dock-v3 .card[data-cost="10"]::before {
+    body[data-anim="low"] .hand-dock-v3 .card[data-cost="8"] .orbit,
+    body[data-anim="low"] .hand-dock-v3 .card[data-cost="9"] .orbit,
+    body[data-anim="low"] .hand-dock-v3 .card[data-cost="10"] .orbit {
       animation: none !important;
-      opacity: .35 !important;
-      filter: none !important;
-    }
-
-    body[data-anim="low"] .hand-dock-v3 .card[data-cost="9"]::after,
-    body[data-anim="low"] .hand-dock-v3 .card[data-cost="10"]::after {
-      animation: none !important;
+      opacity: .2 !important;
     }
 
     body[data-anim="low"] .hand-dock-v3 .card[data-cost="9"],
