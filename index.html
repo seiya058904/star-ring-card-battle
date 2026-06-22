@@ -6560,6 +6560,7 @@
       },
       renderFighter(id, fighter, isPlayer) {
         const hpPct = clamp((fighter.hp / fighter.maxHp) * 100, 0, 100);
+        const visibleStatuses = (fighter.statuses || []).filter(s => s.type !== "召唤");
         document.getElementById(id).innerHTML = `
           <div class="fighter-card" data-symbol="${RACE_PROFILES[fighter.race]?.symbols || "✦"}">
             <div class="fighter-name"><span>${fighter.name}</span><span>${fighter.level}级</span></div>
@@ -6568,7 +6569,7 @@
             <div class="energy-row">${Array.from({ length: fighter.maxEnergy }, (_, i) => `<span class="energy-dot ${i < fighter.energy ? "full" : ""}"></span>`).join("")}</div>
             <div class="status-line">
               <span class="status">${iconImg(ASSETS.status["护盾"])}护盾 ${formatNumber(fighter.shield)}</span>
-              ${fighter.statuses.map(s => `<span class="status">${iconImg(ASSETS.status[s.type])}${s.type} ${s.turns}</span>`).join("")}
+              ${visibleStatuses.map(s => `<span class="status">${iconImg(ASSETS.status[s.type])}${s.type} ${s.turns}</span>`).join("")}
             </div>
           </div>
         `;
@@ -6603,13 +6604,13 @@
           { side: "player", fighter: state.player },
           { side: "enemy", fighter: state.enemy }
         ].forEach(({ side, fighter }) => {
-          (fighter.summons || []).filter(summon => summon.hp > 0 && summon.turns > 0).forEach((summon, index) => {
+          (fighter.summons || []).filter(summon => summon.hp > 0).forEach((summon, index) => {
             const hpPct = clamp((summon.hp / summon.maxHp) * 100, 0, 100);
             const el = document.createElement("div");
             el.className = `summon-unit ${side}-summon`;
             el.style.setProperty("--summon-x", `${index * 42}px`);
             el.style.setProperty("--summon-y", `${index * 12}px`);
-            el.title = `召唤单位：${summon.name}\n生命值 ${formatNumber(summon.hp)} / ${formatNumber(summon.maxHp)}\n拥有者回合结束时协助攻击，造成 ${formatNumber(summon.power)} 伤害\n来源：${summon.source}`;
+            el.title = `召唤单位：${summon.name}\n当前生命值 ${formatNumber(summon.hp)} / ${formatNumber(summon.maxHp)}\n协助攻击伤害：${formatNumber(summon.power)}\n拥有者回合结束时协助攻击。\n拥有者受到真正伤害时，召唤物会分摊约一半伤害。\n生命值归零后消失。\n来源：${summon.source}`;
             el.innerHTML = `
               <div class="summon-name">${summon.name}</div>
               <img class="summon-sprite" src="${summon.sprite}" alt="${summon.name}">
@@ -6751,12 +6752,38 @@
         name: `${card.name}召唤物`,
         ownerId: owner.id,
         source: card.name,
-        turns: 3,
         power: summonPower,
         maxHp,
         hp: maxHp,
         sprite: summonSpriteFor(card)
       };
+    }
+
+    function removeDefeatedSummons(fighter) {
+      if (!fighter?.summons?.length) return [];
+      const defeated = [];
+      fighter.summons = fighter.summons.filter(summon => {
+        if (summon.hp > 0) return true;
+        defeated.push(summon);
+        return false;
+      });
+      defeated.forEach(summon => gameEngine.log(`[召唤] ${summon.name} 被击破。`));
+      return defeated;
+    }
+
+    function shareOwnerDamageWithSummon(owner, finalDamage) {
+      const guard = owner?.summons?.find(summon => summon.hp > 0);
+      if (!guard || finalDamage <= 0) return { ownerDamage: finalDamage, summonDamage: 0, guard: null };
+      const plannedSummonDamage = Math.floor(finalDamage * 0.5);
+      const actualSummonDamage = Math.min(guard.hp, plannedSummonDamage);
+      const overflow = plannedSummonDamage - actualSummonDamage;
+      guard.hp = Math.max(0, guard.hp - actualSummonDamage);
+      const ownerDamage = finalDamage - plannedSummonDamage + overflow;
+      if (actualSummonDamage > 0) {
+        gameEngine.log(`[召唤护卫] ${guard.name}替${owner.name}承受 ${formatNumber(actualSummonDamage)} 伤害。`);
+      }
+      removeDefeatedSummons(owner);
+      return { ownerDamage, summonDamage: actualSummonDamage, guard };
     }
 
     function skillIconFor(card) {
@@ -6924,7 +6951,7 @@
       if (card.mechanics?.includes("pierce")) parts.push("部分无视护盾");
       if (card.mechanics?.includes("execute")) parts.push("目标生命低于 30% 时伤害提高 55%");
       if (card.mechanics?.includes("control")) parts.push("禁锢目标，下回合无法行动");
-      if (card.mechanics?.includes("summon")) parts.push("召唤单位持续 3 回合，每回合协助攻击或防御");
+      if (card.mechanics?.includes("summon")) parts.push("召唤一个单位协助作战，拥有独立生命值，会在拥有者回合结束时攻击并分摊部分伤害");
       if (card.mechanics?.includes("damageReduction")) parts.push("自身获得减伤，受到伤害降低");
       if (card.mechanics?.includes("fortify")) parts.push("若自己已有护盾，额外获得减伤");
       if (card.mechanics?.includes("drawOrEvade")) parts.push("获得轻灵状态，下一次受击减伤并抽牌");
@@ -7063,7 +7090,7 @@
       if (type === "燃烧") return { type, name: "燃烧", turns: 2, power: Math.max(1, Math.round(power * 0.18)), source: card.name, element: card.element };
       if (type === "诅咒") return { type, name: "诅咒", turns: 3, power: Math.max(1, Math.round(power * 0.12)), source: card.name, element: card.element };
       if (type === "冻结") return { type, name: "冻结", turns: 1, source: card.name };
-      if (type === "召唤") return { type, name: "召唤", turns: 3, power: Math.max(1, Math.round(power * 0.18)), source: card.name };
+      if (type === "召唤") return { type, name: "召唤", power: Math.max(1, Math.round(power * 0.18)), source: card.name };
       return null;
     }
 
@@ -7082,14 +7109,14 @@
         "燃烧": { label:"持续伤害", desc: p => `每回合开始受到 ${formatNumber(p||0)} 点火属性持续伤害` },
         "诅咒": { label:"持续伤害", desc: p => `每回合开始受到 ${formatNumber(p||0)} 点暗属性持续伤害` },
         "中毒": { label:"持续伤害", desc: p => `每回合开始受到 ${formatNumber(p||0)} 点持续伤害` },
-        "召唤": { label:"特殊", desc: p => `召唤一个拥有独立生命值的单位，在拥有者回合结束时协助攻击，造成 ${formatNumber(p||0)} 点伤害` },
+        "召唤": { label:"特殊", desc: p => `召唤一个单位协助作战。召唤物会在拥有者回合结束时攻击，造成 ${formatNumber(p||0)} 点伤害；会替拥有者分摊部分伤害；生命值归零后消失` },
         "护盾": { label:"增益", desc: () => "优先抵扣受到的伤害" }
       };
       const entry = map[type];
       if (!entry) return type + (turns != null ? "（剩余 " + turns + " 回合）" : "");
       let text = "[" + entry.label + "] " + entry.desc(power);
       if (type === "召唤" && maxHp) text += `；召唤物生命值 ${formatNumber(maxHp)}`;
-      if (turns != null) text += "（剩余 " + turns + " 回合）";
+      if (turns != null && type !== "召唤") text += "（剩余 " + turns + " 回合）";
       if (source) text += "\n来源：" + source;
       return text;
     }
@@ -7236,8 +7263,11 @@
         const blocked = Math.min(target.shield, damage);
         target.shield = Math.max(0, target.shield - blocked);
         damage = Math.max(0, damage - blocked);
-        target.hp = Math.max(0, target.hp - damage);
-        result.amount = damage;
+        const shared = shareOwnerDamageWithSummon(target, damage);
+        target.hp = Math.max(0, target.hp - shared.ownerDamage);
+        result.amount = shared.ownerDamage;
+        result.totalDamage = damage;
+        result.summonGuard = shared.guard ? { id: shared.guard.id, name: shared.guard.name, amount: shared.summonDamage, ownerId: target.id } : null;
         result.text = `${actor.name}使用「${card.name}」。\n[伤害] 造成 ${formatNumber(damage)} 点${card.element}属性伤害。${elem.text ? "\n" + elem.text : ""}`;
         if (card.mechanics?.includes("lifesteal")) {
           const heal = Math.round(Math.max(1, damage) * .28);
@@ -7255,13 +7285,9 @@
           const summon = createSummonEntity(card, power, actor);
           const st = createStatusFromMechanic("summon", card, power);
           if (st) {
-            st.summonId = summon.id;
-            st.summonName = summon.name;
-            st.maxHp = summon.maxHp;
             actor.summons.push(summon);
-            actor.statuses.push(st);
-            result.popups.push({ type:"status", text:"召唤 3 回合", side: actor.id });
-            result.text += `\n[召唤] ${summon.name}加入战场，生命值 ${formatNumber(summon.maxHp)}，将在${actor.name}回合结束时协助攻击。`;
+            result.popups.push({ type:"status", text:"召唤单位", side: actor.id });
+            result.text += `\n[召唤] ${summon.name}加入战场，生命值 ${formatNumber(summon.maxHp)}。召唤物会在${actor.name}回合结束时协助攻击，并替拥有者分摊部分伤害。`;
           }
         }
       } else if (["defense","shield"].includes(card.effectType)) {
@@ -7316,10 +7342,9 @@
       } else if (card.effectType === "summon") {
         const summon = createSummonEntity(card, power, actor);
         actor.summons.push(summon);
-        actor.statuses.push({ type:"召唤", turns:3, power:summon.power, source:card.name, summonId:summon.id, summonName:summon.name, maxHp:summon.maxHp });
         result.targetId = actor.id;
-        result.popups.push({ type:"status", text:"召唤 3 回合", side: actor.id });
-        result.text = `${actor.name}使用「${card.name}」。\n[召唤] ${summon.name}加入战场，生命值 ${formatNumber(summon.maxHp)}，将在${actor.name}回合结束时协助攻击。`;
+        result.popups.push({ type:"status", text:"召唤单位", side: actor.id });
+        result.text = `${actor.name}使用「${card.name}」。\n[召唤] ${summon.name}加入战场，生命值 ${formatNumber(summon.maxHp)}。召唤物会在${actor.name}回合结束时协助攻击，并替拥有者分摊部分伤害。`;
       }
 
       if (actor.id === "enemy" && ["advanced","special"].includes(card.skillTier)) setTimeout(() => uiRenderer.showAiDialogue(card.skillTier === "special" ? "playSpecial" : "playAdvanced"), 120);
@@ -7383,10 +7408,7 @@
       });
       fighter.statuses.forEach(s => { if (s.turns <= 1 && s.type !== '禁锢') this.log(`${fighter.name}的「${s.type}」状态已解除。`); });
       fighter.statuses = fighter.statuses.map(status => ({ ...status, turns: status.turns - 1 })).filter(status => status.turns > 0);
-      const activeSummons = new Map(fighter.statuses.filter(s => s.type === "召唤" && s.summonId).map(s => [s.summonId, s.turns]));
-      fighter.summons = (fighter.summons || [])
-        .filter(summon => summon.hp > 0 && activeSummons.has(summon.id))
-        .map(summon => ({ ...summon, turns: activeSummons.get(summon.id) }));
+      removeDefeatedSummons(fighter);
     };
 
     const originalEndTurnStandard = gameEngine.endTurn.bind(gameEngine);
@@ -7619,6 +7641,7 @@
     const originalRenderFighterStandard = uiRenderer.renderFighter;
     uiRenderer.renderFighter = function(id, fighter) {
       const hpPct = clamp((fighter.hp / fighter.maxHp) * 100, 0, 100);
+      const visibleStatuses = (fighter.statuses || []).filter(s => s.type !== "召唤");
       const raceIcon = ASSETS.races[fighter.normalizedRace || normalizeRace(fighter.race)] || ASSETS.races[fighter.race];
       const classIcon = ASSETS.classes[normalizeProfession(fighter.profession)] || ASSETS.classes[fighter.profession];
       document.getElementById(id).innerHTML = `
@@ -7630,7 +7653,7 @@
           <div class="energy-row">${Array.from({ length: fighter.maxEnergy }, (_, i) => `<span class="energy-dot ${i < fighter.energy ? "full" : ""}"></span>`).join("")}</div>
           <div class="status-line">
             <span class="status">${iconImg(ASSETS.status["护盾"])}护盾 ${formatNumber(fighter.shield)}</span>
-            ${fighter.statuses.map(s => `<span class="status">${iconImg(ASSETS.status[s.type])}${s.type} ${s.turns}</span>`).join("")}
+            ${visibleStatuses.map(s => `<span class="status">${iconImg(ASSETS.status[s.type])}${s.type} ${s.turns}</span>`).join("")}
           </div>
         </div>`;
     };
@@ -7776,6 +7799,7 @@
     /* Battle layout v4 behavior: reference-style HUD + preview + no-overlap */
     uiRenderer.renderFighter = function(id, fighter, isPlayer) {
       const hpPct = clamp((fighter.hp / fighter.maxHp) * 100, 0, 100);
+      const visibleStatuses = (fighter.statuses || []).filter(s => s.type !== "召唤");
       const raceKey = fighter.normalizedRace || normalizeRace(fighter.race);
       const raceIcon = ASSETS.races[raceKey] || ASSETS.races[fighter.race];
       const classIcon = ASSETS.classes[normalizeProfession(fighter.profession)] || ASSETS.classes[fighter.profession];
@@ -7794,7 +7818,7 @@
           <div class="energy-row">${Array.from({ length: fighter.maxEnergy }, (_, i) => `<span class="energy-dot ${i < fighter.energy ? "full" : ""}"></span>`).join("")}<span class="status">${fighter.energy}/${fighter.maxEnergy}</span></div>
           <div class="status-line">
             <span class="status">${iconImg(ASSETS.status["护盾"])}护盾 ${formatNumber(fighter.shield)}</span>
-            ${fighter.statuses.map(s => `<span class="status">${iconImg(ASSETS.status[s.type])}${s.type} ${s.turns}</span>`).join("")}
+            ${visibleStatuses.map(s => `<span class="status">${iconImg(ASSETS.status[s.type])}${s.type} ${s.turns}</span>`).join("")}
           </div>
           ${enemyHandHtml}
         </div>`;
@@ -7896,6 +7920,7 @@
     /* Battle UI atlas v8: card frames, cost badges, art blocks, and HUD status icons. */
     uiRenderer.renderFighter = function(id, fighter, isPlayer) {
       const hpPct = clamp((fighter.hp / fighter.maxHp) * 100, 0, 100);
+      const visibleStatuses = (fighter.statuses || []).filter(s => s.type !== "召唤");
       const raceKey = fighter.normalizedRace || normalizeRace(fighter.race);
       const raceIcon = ASSETS.races[raceKey] || ASSETS.races[fighter.race];
       const classIcon = ASSETS.classes[normalizeProfession(fighter.profession)] || ASSETS.classes[fighter.profession];
@@ -7915,7 +7940,7 @@
           <div class="energy-row">${Array.from({ length: fighter.maxEnergy }, (_, i) => `<span class="energy-dot ${i < fighter.energy ? "full" : ""}"></span>`).join("")}<span class="status">${fighter.energy}/${fighter.maxEnergy}</span></div>
           <div class="status-line">
             <span class="status" title="优先抵扣受到的伤害">${atlasStatusIcon("shield")}护盾 ${formatNumber(fighter.shield)}</span>
-            ${fighter.statuses.map(s => `<span class="status" title="${describeStatus(s.type, s.turns, s.power, s.source, s.maxHp)}">${atlasStatusIcon(s.type)}${s.type} ${s.turns}</span>`).join("")}
+            ${visibleStatuses.map(s => `<span class="status" title="${describeStatus(s.type, s.turns, s.power, s.source, s.maxHp)}">${atlasStatusIcon(s.type)}${s.type} ${s.turns}</span>`).join("")}
           </div>
           ${enemyHandHtml}
         </div>`;
