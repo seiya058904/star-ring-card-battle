@@ -8442,10 +8442,16 @@
     /* True orbital star rings for high-cost hand cards */
     /* ════════════════════════════════════════════════ */
 
-    /* Orbit system container — sits behind card content */
+    /* Hide orbit system outside hand context — it breaks grid layout in played cards */
+    body.battle-mode .card-orbit-system {
+      display: none !important;
+    }
+
+    /* Orbit system container — only visible inside hand dock */
     body.battle-mode .hand-dock-v3 .card[data-cost="8"] .card-orbit-system,
     body.battle-mode .hand-dock-v3 .card[data-cost="9"] .card-orbit-system,
     body.battle-mode .hand-dock-v3 .card[data-cost="10"] .card-orbit-system {
+      display: block !important;
       position: absolute !important;
       inset: 0 !important;
       pointer-events: none !important;
