@@ -5989,6 +5989,8 @@
             text.style.setProperty("--fx-y", targetY);
             text.style.setProperty("--fx-color", this.textColor(card.effectType, card.element));
             text.textContent = this.valuePrefix(card.effectType) + formatNumber(result.amount);
+            // Remove any stale float-text before appending new one
+            field.querySelectorAll(".float-text").forEach(el => el.remove());
             field.appendChild(text);
             setTimeout(() => text.remove(), drama.numbers);
           }
