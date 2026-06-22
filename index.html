@@ -6984,6 +6984,31 @@
       "黑暗精灵": { name:"诅咒遗脉", desc:"暗属性与诅咒效果更强，但受击时更脆弱。" }
     };
 
+    /* 状态类型统一映射：卡牌机制 → 内部状态中文名 */
+    const STATUS_TYPE_MAP = {
+      control: "禁锢", bind: "禁锢", stun: "禁锢", timeStop: "禁锢", 时间暂停: "禁锢", 眩晕: "禁锢",
+      burn: "燃烧", 灼烧: "燃烧",
+      curse: "诅咒",
+      poison: "中毒",
+      freeze: "冻结", 冰冻: "冻结"
+    };
+
+    function normalizeStatusType(type) {
+      const t = String(type || "").trim();
+      return STATUS_TYPE_MAP[t] || STATUS_TYPE_MAP[t.toLowerCase()] || t;
+    }
+
+    /* 从卡牌机制创建标准状态对象，供 applyCard 统一使用 */
+    function createStatusFromMechanic(mechanic, card, power) {
+      const type = normalizeStatusType(mechanic);
+      if (type === "禁锢") return { type, name: "禁锢", turns: 1, skipAction: true, source: card.name };
+      if (type === "燃烧") return { type, name: "燃烧", turns: 2, tickDamage: Math.max(1, Math.round(power * 0.18)), source: card.name, element: card.element };
+      if (type === "诅咒") return { type, name: "诅咒", turns: 3, tickDamage: Math.max(1, Math.round(power * 0.12)), source: card.name, element: card.element };
+      if (type === "冻结") return { type, name: "冻结", turns: 1, source: card.name };
+      if (type === "召唤") return { type, name: "召唤", turns: 3, tickDamage: Math.max(1, Math.round(power * 0.18)), source: card.name };
+      return null;
+    }
+
     function elementMultiplier(attackElement, defender) {
       const defendElement = defender.element || primaryElement(defender);
       if (!attackElement || attackElement === "无" || !defendElement || defendElement === "无") return { multiplier: 1, text: "" };
