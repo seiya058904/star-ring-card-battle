@@ -5530,6 +5530,12 @@
       ultimate: { enter: 950, focus: 1200, charge: 1400, cast: 900, impact: 850, numbers: 2100, outro: 900, totalMin: 6200 }
     };
 
+    const VICTORY_TIMING = {
+      finalNumberHold: 1800,
+      enemyDefeatLine: 2200,
+      victoryDelay: 3000
+    };
+
     function cardDramaTier(card) {
       const cost = Number(card?.cost || 0);
       if (cost >= 10) return "ultimate";
@@ -5760,11 +5766,15 @@
         this.state.log.unshift({ round: this.state.round, text, time: new Date().toLocaleTimeString() });
       },
       checkGameOver() {
+        if (this.state.resultPending || this.state.gameOver) return;
         if (this.state.player.hp <= 0 || this.state.enemy.hp <= 0) {
           this.state.gameOver = true;
+          this.state.resultPending = true;
+          this.state.actionLocked = true;
           this.state.winner = this.state.player.hp > 0 ? "player" : "enemy";
           this.log(this.state.winner === "player" ? "玩家获胜！" : "电脑获胜。");
-          setTimeout(() => uiRenderer.showResult(), 900);
+          setTimeout(() => uiRenderer.showAiDialogue(this.state.winner === "player" ? "lose" : "win"), Math.max(0, VICTORY_TIMING.victoryDelay - VICTORY_TIMING.enemyDefeatLine));
+          setTimeout(() => uiRenderer.showResult(), VICTORY_TIMING.victoryDelay);
         }
       }
     };
