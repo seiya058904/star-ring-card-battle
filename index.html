@@ -5851,22 +5851,29 @@
         const field = document.getElementById("battlefield");
         const banner = document.getElementById("skillBanner");
         const stage = document.getElementById("playedCardStage");
-        banner.textContent = drama.tier === "ultimate" ? `终极技能 · ${card.name}` : drama.tier === "advanced" ? `高级技能 · ${card.name}` : card.name;
+        const bannerText = drama.tier === "ultimate" ? "终极技能" : drama.tier === "advanced" ? "高级技能" : card.name;
+        const subtitleText = drama.tier === "ultimate" ? card.name : drama.tier === "advanced" ? `${card.element}元素释放` : "";
+        banner.textContent = "";
         banner.className = "skill-banner";
         stage.className = "played-card-stage";
         const sourceCardEl = card?.instanceId ? document.querySelector(`#playerHand .card[data-instance-id="${card.instanceId}"]`) : null;
+        stage.innerHTML = `
+          <div class="cast-banner">${bannerText}</div>
+          <div class="played-card-wrap"></div>
+          <div class="cast-subtitle">${subtitleText}</div>
+        `;
+        const wrap = stage.querySelector(".played-card-wrap");
         if (sourceCardEl) {
           const clone = sourceCardEl.cloneNode(true);
           clone.classList.remove("playing", "selected", "unplayable");
           clone.removeAttribute("tabindex");
-          stage.innerHTML = "";
-          stage.appendChild(clone);
+          wrap.appendChild(clone);
         } else {
-          stage.innerHTML = renderCard(card, false);
+          wrap.innerHTML = renderCard(card, false);
         }
         void banner.offsetWidth;
         void stage.offsetWidth;
-        banner.className = `skill-banner show ${card.skillTier === "special" ? "special" : ""}`;
+        banner.className = "skill-banner";
         stage.className = `played-card-stage show ${drama.tier}`;
         document.body.classList.add(`${drama.tier}-drama`);
         setTimeout(() => {
@@ -8165,6 +8172,7 @@
     body.battle-mode .played-card-stage {
       width: auto !important;
       height: auto !important;
+      min-width: min(520px, 72vw) !important;
       padding: 0 !important;
       border: 0 !important;
       outline: 0 !important;
@@ -8173,6 +8181,51 @@
       backdrop-filter: none !important;
       pointer-events: none !important;
       overflow: visible !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 18px !important;
+    }
+
+    body.battle-mode .played-card-stage .cast-banner {
+      align-self: center !important;
+      width: min(520px, 70vw) !important;
+      min-height: 46px !important;
+      display: grid !important;
+      place-items: center !important;
+      padding: 8px 18px !important;
+      border: 1px solid rgba(255, 230, 154, .62) !important;
+      background: linear-gradient(90deg, rgba(20,14,6,.12), rgba(72,45,12,.86), rgba(20,14,6,.12)) !important;
+      color: #fff0b0 !important;
+      font-size: 24px !important;
+      font-weight: 900 !important;
+      letter-spacing: 2px !important;
+      text-align: center !important;
+      text-shadow: 0 0 14px rgba(255, 221, 126, .44), 0 2px 8px rgba(0,0,0,.95) !important;
+      box-shadow: 0 0 22px rgba(255, 210, 110, .2) !important;
+    }
+
+    body.battle-mode .played-card-stage.show.ultimate .cast-banner {
+      min-height: 58px !important;
+      font-size: 30px !important;
+      border-color: rgba(255, 242, 190, .82) !important;
+      box-shadow: 0 0 28px rgba(255, 230, 142, .35), inset 0 0 18px rgba(255, 230, 142, .14) !important;
+    }
+
+    body.battle-mode .played-card-stage .played-card-wrap {
+      display: grid !important;
+      place-items: center !important;
+      position: relative !important;
+    }
+
+    body.battle-mode .played-card-stage .cast-subtitle {
+      min-height: 24px !important;
+      color: rgba(255, 232, 177, .92) !important;
+      font-size: 15px !important;
+      font-weight: 800 !important;
+      text-align: center !important;
+      text-shadow: 0 2px 6px rgba(0,0,0,.9) !important;
     }
 
     body.battle-mode .played-card-stage::before,
@@ -8354,6 +8407,20 @@
       body.battle-mode .hand-dock-v3 .card {
         width: 184px !important;
         flex-basis: 184px !important;
+      }
+    }
+
+    @media (max-width: 520px) {
+      body.battle-mode .played-card-stage {
+        min-width: min(360px, 88vw) !important;
+        gap: 12px !important;
+      }
+
+      body.battle-mode .played-card-stage .cast-banner {
+        width: min(350px, 86vw) !important;
+        min-height: 40px !important;
+        font-size: 18px !important;
+        padding: 7px 12px !important;
       }
     }
   </style>
