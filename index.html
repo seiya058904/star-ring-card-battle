@@ -5522,6 +5522,37 @@
       sound: false
     };
 
+    const COMBAT_DRAMA_TIMING = {
+      normal: { enter: 360, focus: 520, charge: 300, cast: 360, impact: 300, numbers: 1200, outro: 360, totalMin: 2200 },
+      enhanced: { enter: 520, focus: 700, charge: 520, cast: 480, impact: 420, numbers: 1350, outro: 460, totalMin: 3000 },
+      strong: { enter: 620, focus: 780, charge: 700, cast: 560, impact: 520, numbers: 1450, outro: 520, totalMin: 3600 },
+      advanced: { enter: 720, focus: 900, charge: 900, cast: 700, impact: 650, numbers: 1600, outro: 620, totalMin: 4300 },
+      ultimate: { enter: 950, focus: 1200, charge: 1400, cast: 900, impact: 850, numbers: 2100, outro: 900, totalMin: 6200 }
+    };
+
+    function cardDramaTier(card) {
+      const cost = Number(card?.cost || 0);
+      if (cost >= 10) return "ultimate";
+      if (cost >= 8) return "advanced";
+      if (cost >= 6) return "strong";
+      if (cost >= 4) return "enhanced";
+      return "normal";
+    }
+
+    function dramaTimingForCard(card) {
+      const tier = cardDramaTier(card);
+      const settings = storageManager?.getSettings?.() || DEFAULT_GAME_SETTINGS;
+      const base = COMBAT_DRAMA_TIMING[tier] || COMBAT_DRAMA_TIMING.normal;
+      if (settings.animation !== "low") return { ...base, tier };
+      const lowTotal = tier === "ultimate" ? 3600 : tier === "advanced" ? 3000 : Math.max(1600, Math.round(base.totalMin * .72));
+      return {
+        ...base,
+        tier,
+        numbers: Math.max(1100, Math.round(base.numbers * .82)),
+        totalMin: lowTotal
+      };
+    }
+
     const storageManager = {
       customKey: "star-ring-custom-cards-v1",
       deckKey: "star-ring-current-deck-v1",
@@ -5623,11 +5654,13 @@
       },
       resolveAction(action) {
         if (!this.state || this.state.gameOver) return;
+        if (this.state.actionLocked && action.type === "playCard") return false;
         this.state.actions.push(action);
         if (action.type === "playCard") return this.playCard(action.side, action.cardInstanceId);
         if (action.type === "endTurn") return this.endTurn(action.side);
       },
       playCard(side, cardInstanceId) {
+        if (this.state.actionLocked) return false;
         const actor = this.state[side];
         const target = this.state[side === "player" ? "enemy" : "player"];
         const index = actor.hand.findIndex(card => card.instanceId === cardInstanceId);
@@ -5641,6 +5674,10 @@
         actor.hand.splice(index, 1);
         actor.discardPile.push(card);
         this.applyCard(actor, target, card);
+        this.state.actionLocked = true;
+        setTimeout(() => {
+          if (this.state) this.state.actionLocked = false;
+        }, dramaTimingForCard(card).totalMin);
         this.checkGameOver();
         return true;
       },
@@ -5810,10 +5847,11 @@
       },
       play(card, result) {
         resetBattleViewTransform();
+        const drama = dramaTimingForCard(card);
         const field = document.getElementById("battlefield");
         const banner = document.getElementById("skillBanner");
         const stage = document.getElementById("playedCardStage");
-        banner.textContent = card.name;
+        banner.textContent = drama.tier === "ultimate" ? `终极技能 · ${card.name}` : drama.tier === "advanced" ? `高级技能 · ${card.name}` : card.name;
         banner.className = "skill-banner";
         stage.className = "played-card-stage";
         const sourceCardEl = card?.instanceId ? document.querySelector(`#playerHand .card[data-instance-id="${card.instanceId}"]`) : null;
@@ -5829,17 +5867,19 @@
         void banner.offsetWidth;
         void stage.offsetWidth;
         banner.className = `skill-banner show ${card.skillTier === "special" ? "special" : ""}`;
-        stage.className = `played-card-stage show ${card.skillTier}`;
+        stage.className = `played-card-stage show ${drama.tier}`;
+        document.body.classList.add(`${drama.tier}-drama`);
         setTimeout(() => {
           banner.classList.remove("show", "special");
           stage.className = "played-card-stage";
           stage.innerHTML = "";
           const flash = document.getElementById("screenFlash");
           flash?.classList.remove("on", "special");
+          document.body.classList.remove(`${drama.tier}-drama`);
           resetBattleViewTransform();
-        }, card.skillTier === "special" ? 1350 : 1120);
+        }, drama.totalMin);
         const text = document.createElement("div");
-        text.className = "float-text";
+        text.className = `float-text ${drama.tier}`;
         const targetX = result.targetId === "player" ? "28%" : "72%";
         const targetY = result.targetId === "player" ? "58%" : "50%";
         text.style.setProperty("--fx-x", targetX);
@@ -5847,7 +5887,7 @@
         text.style.setProperty("--fx-color", this.textColor(card.effectType, card.element));
         text.textContent = result.amount ? this.valuePrefix(card.effectType) + formatNumber(result.amount) : card.name;
         field.appendChild(text);
-        setTimeout(() => text.remove(), 1100);
+        setTimeout(() => text.remove(), drama.numbers);
         const settings = uiRenderer?.settings || DEFAULT_GAME_SETTINGS;
         if (card.skillTier === "advanced" || card.skillTier === "special") {
           document.getElementById("screenFlash").classList.remove("on");
@@ -5860,7 +5900,7 @@
           targetUnit?.classList.remove("hit");
           void targetUnit?.offsetWidth;
           targetUnit?.classList.add("hit");
-        }, 40);
+        }, drama.enter + drama.focus + drama.charge + drama.cast);
         if (settings.shake) {
           field.classList.remove("shake");
           void field.offsetWidth;
@@ -5872,8 +5912,9 @@
           }, 320);
         }
         const rect = this.canvas.getBoundingClientRect();
-        const animMul = settings.animation === "low" ? .45 : settings.animation === "high" ? 1.25 : 1;
-        const count = Math.round((card.skillTier === "special" ? 120 : card.skillTier === "advanced" ? 78 : 38) * animMul);
+        const animMul = settings.animation === "low" ? .35 : settings.animation === "high" ? 1.25 : 1;
+        const baseCount = drama.tier === "ultimate" ? 180 : drama.tier === "advanced" ? 120 : drama.tier === "strong" ? 86 : drama.tier === "enhanced" ? 58 : 38;
+        const count = Math.round(baseCount * animMul);
         const color = this.color(card.element);
         for (let i = 0; i < count; i++) {
           const angle = (result.targetId === "player" ? Math.PI : 0) + (rng() - .5) * 1.15;
@@ -5883,9 +5924,9 @@
             y: rect.height * (.48 + (rng() - .5) * .18),
             vx: Math.cos(angle) * speed + (rng() - .5) * 1.2,
             vy: Math.sin(angle) * speed - rng() * 2.8,
-            life: 42 + rng() * 28,
+            life: 54 + rng() * (drama.tier === "ultimate" ? 70 : drama.tier === "advanced" ? 52 : 32),
             color,
-            size: 2 + rng() * (card.skillTier === "special" ? 6 : 4),
+            size: 2 + rng() * (drama.tier === "ultimate" ? 7 : drama.tier === "advanced" ? 5 : 4),
             shape: this.shape(card.element)
           });
         }
@@ -6997,7 +7038,7 @@
         setTimeout(() => {
           gameEngine.resolveAction({ type:"playCard", side:"enemy", cardInstanceId: card.instanceId });
           uiRenderer.render();
-          const pause = card.skillTier === "special" ? 2400 : card.skillTier === "advanced" ? 1700 : 900;
+          const pause = dramaTimingForCard(card).totalMin + 280;
           setTimeout(loop, pause);
         }, 650 + Math.floor(rng() * 450));
       };
@@ -8155,7 +8196,49 @@
     }
 
     body.battle-mode .played-card-stage.show {
-      animation: playedCardFloat 700ms ease forwards !important;
+      animation: playedCardFloat 2200ms ease forwards !important;
+    }
+
+    body.battle-mode .played-card-stage.show.enhanced {
+      animation-duration: 3000ms !important;
+    }
+
+    body.battle-mode .played-card-stage.show.strong {
+      animation-duration: 3600ms !important;
+    }
+
+    body.battle-mode .played-card-stage.show.advanced {
+      animation-duration: 4300ms !important;
+    }
+
+    body.battle-mode .played-card-stage.show.ultimate {
+      animation-duration: 6200ms !important;
+    }
+
+    body.battle-mode.advanced-drama #battlefield::before,
+    body.battle-mode.ultimate-drama #battlefield::before {
+      content: "" !important;
+      position: absolute !important;
+      inset: 0 !important;
+      z-index: 4 !important;
+      pointer-events: none !important;
+      background: radial-gradient(circle at 50% 43%, transparent 0 24%, rgba(0,0,0,.32) 62%, rgba(0,0,0,.52) 100%) !important;
+    }
+
+    body.battle-mode.ultimate-drama #battlefield::before {
+      background: radial-gradient(circle at 50% 43%, transparent 0 20%, rgba(0,0,0,.44) 58%, rgba(0,0,0,.68) 100%) !important;
+    }
+
+    body.battle-mode .float-text.advanced {
+      font-size: 40px !important;
+      text-shadow: 0 0 16px var(--fx-color, #ffe18a), 0 4px 12px rgba(0,0,0,.95) !important;
+    }
+
+    body.battle-mode .float-text.ultimate {
+      font-size: 52px !important;
+      color: #fff5bd !important;
+      text-shadow: 0 0 14px #fff0a8, 0 0 30px var(--fx-color, #ffe18a), 0 5px 16px rgba(0,0,0,.96) !important;
+    }
     }
 
     body.battle-mode .played-card-stage.show .card {
@@ -8257,6 +8340,11 @@
     body[data-anim="low"] .played-card-stage .card-art::after {
       animation: none !important;
       opacity: .12 !important;
+    }
+
+    body[data-anim="low"].battle-mode.advanced-drama #battlefield::before,
+    body[data-anim="low"].battle-mode.ultimate-drama #battlefield::before {
+      opacity: .34 !important;
     }
 
     @media (max-width: 1280px) {
