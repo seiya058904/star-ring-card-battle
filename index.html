@@ -5559,6 +5559,30 @@
       };
     }
 
+    function getCardActionIntent(card) {
+      const type = String(card?.effectType || card?.type || "").toLowerCase();
+      if (["attack", "damage", "strike", "burn", "freeze", "curse", "execute", "lifesteal", "pierce"].includes(type)) return "hostile-damage";
+      if (["heal", "recover", "revive"].includes(type)) return "friendly-heal";
+      if (["defense", "shield", "guard", "block", "armor"].includes(type)) return "friendly-shield";
+      if (["buff", "attackup", "defenseup", "cleanse", "energy", "charge", "draw"].includes(type)) return "friendly-buff";
+      if (["debuff", "weak", "curse-status", "freeze-status", "stun", "bind", "silence", "control"].includes(type)) return "hostile-status";
+      if (type === "summon") return "friendly-summon";
+      return "hostile-damage";
+    }
+
+    function getVisualTargets(actorSide, card) {
+      const intent = getCardActionIntent(card);
+      const selfSide = actorSide;
+      const enemySide = actorSide === "player" ? "enemy" : "player";
+      if (intent.startsWith("friendly")) {
+        return { primary: selfSide, impact: selfSide, number: selfSide, shake: false };
+      }
+      if (intent === "hostile-status") {
+        return { primary: enemySide, impact: enemySide, number: enemySide, shake: false };
+      }
+      return { primary: enemySide, impact: enemySide, number: enemySide, shake: true };
+    }
+
     const storageManager = {
       customKey: "star-ring-custom-cards-v1",
       deckKey: "star-ring-current-deck-v1",
@@ -6942,20 +6966,22 @@
     };
 
     gameEngine.applyCard = function(actor, target, card) {
-      const result = { text:"", amount:0, kind:card.effectType, element:card.element, tier:card.skillTier, actorId:actor.id, targetId:target.id, popups:[] };
+      const actorSide = actor.id === "enemy" ? "enemy" : "player";
+      const intent = getCardActionIntent(card);
+      const visualTargets = getVisualTargets(actorSide, card);
+      const result = { text:"", amount:0, kind:card.effectType, intent, element:card.element, tier:card.skillTier, actorId:actor.id, targetId:visualTargets.primary, visualTargets, popups:[] };
       const NEGATIVE_STATUS_TYPES = new Set(["燃烧","冻结","诅咒","破甲","虚弱","禁锢","中毒"]);
       let power = Math.round(card.power * this.statusMultiplier(actor, target, card));
       const elem = elementMultiplier(card.element, target);
-      if (["attack","burn","freeze","curse","execute","control","lifesteal","pierce","summon"].includes(card.effectType)) power = Math.round(power * elem.multiplier);
-      if (elem.text) result.popups.push({ type:"element", text: elem.multiplier > 1 ? "元素克制" : "元素抵抗" });
+      if (intent === "hostile-damage") power = Math.round(power * elem.multiplier);
+      if (intent === "hostile-damage" && elem.text) result.popups.push({ type:"element", text: elem.multiplier > 1 ? "元素克制" : "元素抵抗", side: target.id });
       if (actor.race === "兽人族" && actor.hp / actor.maxHp < .5 && ["attack","burn","pierce","execute"].includes(card.effectType)) power = Math.round(power * 1.12);
       if (actor.race === "恶魔" && ["attack","burn","curse","lifesteal"].includes(card.effectType)) card.mechanics = Array.from(new Set([...(card.mechanics || []), "lifesteal"]));
       if (target.race === "龙族" && card.element !== "无") power = Math.round(power * .92);
       if (target.race === "精灵族" && target.turnFlags?.firstHit && ["attack","burn","freeze","curse","execute","control","lifesteal","pierce"].includes(card.effectType)) { power = Math.round(power * .88); target.turnFlags.firstHit = false; }
       if (target.race === "黑暗精灵") power = Math.round(power * 1.05);
 
-      const damageEffects = ["attack","burn","freeze","curse","execute","control","lifesteal","pierce","summon"];
-      if (damageEffects.includes(card.effectType)) {
+      if (intent === "hostile-damage") {
         let damage = power;
         if (card.mechanics?.includes("execute") && target.hp / target.maxHp < .3) damage = Math.round(damage * 1.55);
         if (card.mechanics?.includes("chain") && target.shield <= 0) damage += Math.round(power * .3);
@@ -6972,21 +6998,22 @@
         if (card.mechanics?.includes("lifesteal")) {
           const heal = Math.round(Math.max(1, damage) * .28);
           actor.hp = Math.min(actor.maxHp, actor.hp + heal);
-          result.popups.push({ type:"status", text:`吸血 +${formatNumber(heal)}` });
+          result.popups.push({ type:"status heal", text:`吸血 +${formatNumber(heal)}`, side: actor.id });
           result.text += ` 吸取 ${formatNumber(heal)} 生命。`;
         }
-        if (card.mechanics?.includes("burn")) { target.statuses.push({ type:"燃烧", turns:2, power:Math.round(power * .18) }); result.popups.push({ type:"status debuff", text:"燃烧 2 回合" }); result.text += " 目标被燃烧。"; }
-        if (card.mechanics?.includes("freeze")) { target.statuses.push({ type:"冻结", turns:1, power:0 }); result.popups.push({ type:"status control", text:"冻结 1 回合" }); result.text += " 目标被冻结。"; }
-        if (card.mechanics?.includes("curse")) { target.statuses.push({ type:"诅咒", turns:3, power:Math.round(power * .12) }); result.popups.push({ type:"status debuff", text:"诅咒 3 回合" }); result.text += " 目标受到诅咒。"; }
-        if (card.mechanics?.includes("control")) { target.statuses.push({ type:"禁锢", turns:1, power:0 }); result.popups.push({ type:"status control", text:"禁锢 1 回合" }); result.text += " 目标行动受限。"; }
-        if (card.mechanics?.includes("summon")) { actor.statuses.push({ type:"召唤", turns:3, power:Math.round(power*.18) }); result.popups.push({ type:"status", text:"召唤 3 回合" }); result.text += " 召唤物加入战场。"; }
+        if (card.mechanics?.includes("burn")) { target.statuses.push({ type:"燃烧", turns:2, power:Math.round(power * .18) }); result.popups.push({ type:"status debuff", text:"燃烧 2 回合", side: target.id }); result.text += " 目标被燃烧。"; }
+        if (card.mechanics?.includes("freeze")) { target.statuses.push({ type:"冻结", turns:1, power:0 }); result.popups.push({ type:"status control", text:"冻结 1 回合", side: target.id }); result.text += " 目标被冻结。"; }
+        if (card.mechanics?.includes("curse")) { target.statuses.push({ type:"诅咒", turns:3, power:Math.round(power * .12) }); result.popups.push({ type:"status debuff", text:"诅咒 3 回合", side: target.id }); result.text += " 目标受到诅咒。"; }
+        if (card.mechanics?.includes("control")) { target.statuses.push({ type:"禁锢", turns:1, power:0 }); result.popups.push({ type:"status control", text:"禁锢 1 回合", side: target.id }); result.text += " 目标行动受限。"; }
+        if (card.mechanics?.includes("summon")) { actor.statuses.push({ type:"召唤", turns:3, power:Math.round(power*.18) }); result.popups.push({ type:"status", text:"召唤 3 回合", side: actor.id }); result.text += " 召唤物加入战场。"; }
       } else if (["defense","shield"].includes(card.effectType)) {
         const shield = Math.round(power * actor.profile.defense);
         actor.shield += shield;
-        result.popups.push({ type:"status", text:`护盾 +${formatNumber(shield)}` });
+        result.popups.push({ type:"status shield", text:`护盾 +${formatNumber(shield)}`, side: actor.id });
         if (card.mechanics?.includes("damageReduction")) actor.statuses.push({ type:"减伤", turns:2, power:.18 });
         if (card.mechanics?.includes("fortify") && actor.shield > shield) actor.statuses.push({ type:"减伤", turns:1, power:.12 });
         result.amount = shield;
+        result.targetId = actor.id;
         result.text = `${actor.name}使用「${card.name}」，获得 ${formatNumber(shield)} 护盾。`;
       } else if (["heal","revive"].includes(card.effectType)) {
         let heal = Math.round(power * actor.profile.heal * (card.effectType === "revive" && actor.hp / actor.maxHp < .25 ? 1.45 : 1));
@@ -7000,20 +7027,37 @@
           }
         }
         result.amount = heal;
+        result.targetId = actor.id;
+        result.popups.push({ type:"status heal", text:`恢复 +${formatNumber(heal)}`, side: actor.id });
         result.text = `${actor.name}使用「${card.name}」，恢复 ${formatNumber(heal)} 生命${cleansed ? "，并净化负面状态" : ""}。`;
+      } else if (intent === "hostile-status") {
+        const statusName = card.effectType === "control" ? "禁锢" : "虚弱";
+        target.statuses.push({ type:statusName, turns:2, power: card.effectType === "control" ? 0 : .2 });
+        result.targetId = target.id;
+        result.popups.push({ type: card.effectType === "control" ? "status control" : "status debuff", text:`${statusName} 2 回合`, side: target.id });
+        result.text = `${actor.name}使用「${card.name}」，使${target.name}陷入${statusName}。`;
       } else if (card.effectType === "draw") {
         this.draw(actor, actor.race === "精灵族" ? 3 : 2);
         actor.energy = clamp(actor.energy + 1, 0, actor.maxEnergy);
         if (card.mechanics?.includes("drawOrEvade")) actor.statuses.push({ type:"闪避", turns:1, power:.35 });
+        result.targetId = actor.id;
+        result.popups.push({ type:"status", text:"抽牌 + 能量", side: actor.id });
         result.text = `${actor.name}使用「${card.name}」，抽牌并获得 1 点能量。`;
       } else if (card.effectType === "charge") {
         actor.energy = clamp(actor.energy + 2, 0, actor.maxEnergy);
         actor.statuses.push({ type:"蓄力", turns:1, power:.25 });
+        result.targetId = actor.id;
+        result.popups.push({ type:"status", text:"蓄力 +2", side: actor.id });
         result.text = `${actor.name}使用「${card.name}」，获得 2 点能量，并蓄力。`;
       } else if (["buff","debuff"].includes(card.effectType)) {
-        if (card.effectType === "buff") { actor.statuses.push({ type:"增幅", turns:2, power:.25 }); result.popups.push({ type:"status", text:"增幅 2 回合" }); }
-        else { target.statuses.push({ type:"虚弱", turns:2, power:.2 }); result.popups.push({ type:"status debuff", text:"虚弱 2 回合" }); }
+        if (card.effectType === "buff") { actor.statuses.push({ type:"增幅", turns:2, power:.25 }); result.targetId = actor.id; result.popups.push({ type:"status", text:"增幅 2 回合", side: actor.id }); }
+        else { target.statuses.push({ type:"虚弱", turns:2, power:.2 }); result.targetId = target.id; result.popups.push({ type:"status debuff", text:"虚弱 2 回合", side: target.id }); }
         result.text = `${actor.name}使用「${card.name}」，改变了战斗节奏。`;
+      } else if (card.effectType === "summon") {
+        actor.statuses.push({ type:"召唤", turns:3, power:Math.round(power*.18) });
+        result.targetId = actor.id;
+        result.popups.push({ type:"status", text:"召唤 3 回合", side: actor.id });
+        result.text = `${actor.name}使用「${card.name}」，召唤物加入战场。`;
       }
 
       if (actor.id === "enemy" && ["advanced","special"].includes(card.skillTier)) setTimeout(() => uiRenderer.showAiDialogue(card.skillTier === "special" ? "playSpecial" : "playAdvanced"), 120);
