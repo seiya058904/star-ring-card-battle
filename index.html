@@ -5395,12 +5395,12 @@
       costFor(category, tier, effectType, level) {
         if (category === "base") {
           if (["charge", "draw"].includes(effectType)) return rng() < .35 ? 0 : 1;
-          if (["defense", "heal"].includes(effectType)) return 1;
-          return rng() < .4 ? 1 : 2;
+          if (["defense", "heal"].includes(effectType)) return rng() < .75 ? 1 : 2;
+          return rng() < .65 ? 2 : 3;
         }
-        if (tier === "normal") return clamp(3 + Math.floor(rng() * 3), 3, 5);
-        if (tier === "advanced") return clamp(6 + Math.floor(rng() * 3), 6, 8);
-        return clamp(8 + Math.floor(rng() * 3), 8, 10);
+        if (tier === "normal") return rng() < .72 ? 4 + Math.floor(rng() * 2) : 3;
+        if (tier === "advanced") return rng() < .68 ? 6 + Math.floor(rng() * 2) : 8 + Math.floor(rng() * 2);
+        return rng() < .42 ? 9 : 10;
       },
       rarityFor(category, tier, level) {
         if (category === "base") return level > 50 ? pick(["uncommon", "rare"]) : pick(["common", "uncommon"]);
@@ -5457,9 +5457,9 @@
         const baseNames = DEFAULT_BASE_CARD_NAMES.common.concat(DEFAULT_BASE_CARD_NAMES[race] || []);
         const deckName = archetype ? pick(archetype.recommendedNames) : this.deckNameFor(race, profession);
         const cards = [];
-        const targetBase = level < 30 ? 18 : level > 70 ? 14 : 16;
-        const normalSkills = level > 70 ? 8 : 7;
-        const advancedSkills = level < 50 ? 2 : level < 75 ? 4 : 6;
+        const targetBase = level < 30 ? 16 : level > 70 ? 12 : 14;
+        const normalSkills = level > 70 ? 9 : 8;
+        const advancedSkills = level < 50 ? 3 : level < 75 ? 5 : 7;
         const specialSkills = level < 70 ? 0 : level < 90 ? 1 : 2;
         for (let i = 0; i < targetBase; i++) {
           const bias = archetype?.baseBias || profile.tags;
@@ -6898,7 +6898,7 @@
     gameEngine.beginTurn = function(side) {
       const fighter = this.state[side];
       fighter.turnFlags = { firstHit: true };
-      fighter.energy = clamp(3 + this.state.round - 1, 0, fighter.maxEnergy);
+      fighter.energy = clamp(3 + (this.state.round - 1) * 2, 0, fighter.maxEnergy);
       fighter.shield = Math.max(0, Math.round(fighter.shield * .35));
       this.tickStatuses(fighter);
       this.draw(fighter, 5 - fighter.hand.length);
