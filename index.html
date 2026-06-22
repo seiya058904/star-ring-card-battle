@@ -5247,6 +5247,12 @@
         demonWarrior: "assets/units/unit_demon_warrior.png",
         youngDragon: "assets/units/unit_young_dragon.png"
       },
+      summons: {
+        holyGuard: "assets/summons/summon_holy_guard.png",
+        windHunter: "assets/summons/summon_wind_hunter.png",
+        fireLord: "assets/summons/summon_fire_lord.png",
+        darkLord: "assets/summons/summon_dark_lord.png"
+      },
       cards: {
         baseBack: "assets/cards/card_back_base.png",
         skillBack: "assets/cards/card_back_skill.png"
@@ -5676,6 +5682,7 @@
           drawPile,
           discardPile: [],
           statuses: [],
+          summons: [],
           shield: 0,
           profile,
           deckName: deck.name
@@ -6524,6 +6531,7 @@
         this.renderFighter("playerArea", gameEngine.state.player, true);
         this.renderDuelUnit("enemyUnit", gameEngine.state.enemy, false);
         this.renderDuelUnit("playerUnit", gameEngine.state.player, true);
+        this.renderSummons();
         this.renderOpponentHand();
         document.getElementById("playerHand").innerHTML = gameEngine.state.player.hand.map(card => renderCard(card, card.cost > gameEngine.state.player.energy)).join("");
         const playerEnergy = gameEngine.state.player.energy;
@@ -6585,6 +6593,31 @@
           <div class="unit-label">${fighter.name} · ${fighter.race}</div>
           <div class="unit-hp"><div class="unit-hp-fill" style="width:${hpPct}%"></div><span>${formatNumber(fighter.hp)}</span></div>
         `;
+      },
+      renderSummons() {
+        const field = document.getElementById("battlefield");
+        const state = gameEngine.state;
+        if (!field || !state) return;
+        field.querySelectorAll(".summon-unit").forEach(el => el.remove());
+        [
+          { side: "player", fighter: state.player },
+          { side: "enemy", fighter: state.enemy }
+        ].forEach(({ side, fighter }) => {
+          (fighter.summons || []).filter(summon => summon.hp > 0 && summon.turns > 0).forEach((summon, index) => {
+            const hpPct = clamp((summon.hp / summon.maxHp) * 100, 0, 100);
+            const el = document.createElement("div");
+            el.className = `summon-unit ${side}-summon`;
+            el.style.setProperty("--summon-x", `${index * 42}px`);
+            el.style.setProperty("--summon-y", `${index * 12}px`);
+            el.title = `召唤单位：${summon.name}\n生命值 ${formatNumber(summon.hp)} / ${formatNumber(summon.maxHp)}\n拥有者回合结束时协助攻击，造成 ${formatNumber(summon.power)} 伤害\n来源：${summon.source}`;
+            el.innerHTML = `
+              <div class="summon-name">${summon.name}</div>
+              <img class="summon-sprite" src="${summon.sprite}" alt="${summon.name}">
+              <div class="summon-hp"><div class="summon-hp-fill" style="width:${hpPct}%"></div><span>${formatNumber(summon.hp)}</span></div>
+            `;
+            field.appendChild(el);
+          });
+        });
       },
       renderOpponentHand() {
         const enemy = gameEngine.state.enemy;
@@ -6700,6 +6733,30 @@
       if (fighter.profession === "弓箭手" && /精灵|黑暗精灵/.test(fighter.race)) return ASSETS.units.elfArcher;
       if (fighter.profession === "魔法师" || /法|魔/.test(fighter.profession)) return ASSETS.units.humanMage;
       return ASSETS.units.humanKnight;
+    }
+
+    function summonSpriteFor(card) {
+      const element = card?.element || "无";
+      if (element === "火") return ASSETS.summons.fireLord;
+      if (element === "暗") return ASSETS.summons.darkLord;
+      if (element === "风" || element === "雷") return ASSETS.summons.windHunter;
+      return ASSETS.summons.holyGuard;
+    }
+
+    function createSummonEntity(card, power, owner) {
+      const summonPower = Math.max(1, Math.round(power * 0.18));
+      const maxHp = Math.max(1, Math.round(power * 0.45));
+      return {
+        id: deterministicId("summon"),
+        name: `${card.name}召唤物`,
+        ownerId: owner.id,
+        source: card.name,
+        turns: 3,
+        power: summonPower,
+        maxHp,
+        hp: maxHp,
+        sprite: summonSpriteFor(card)
+      };
     }
 
     function skillIconFor(card) {
@@ -7011,7 +7068,7 @@
     }
 
     /* 状态 tooltip 说明生成器 */
-    function describeStatus(type, turns, power, source) {
+    function describeStatus(type, turns, power, source, maxHp) {
       const map = {
         "增幅": { label:"增益", desc: p => `造成伤害提高 ${Math.round((p||0.25)*100)}%` },
         "虚弱": { label:"减益", desc: p => `造成伤害降低 ${Math.round((p||0.2)*100)}%` },
@@ -7025,12 +7082,13 @@
         "燃烧": { label:"持续伤害", desc: p => `每回合开始受到 ${formatNumber(p||0)} 点火属性持续伤害` },
         "诅咒": { label:"持续伤害", desc: p => `每回合开始受到 ${formatNumber(p||0)} 点暗属性持续伤害` },
         "中毒": { label:"持续伤害", desc: p => `每回合开始受到 ${formatNumber(p||0)} 点持续伤害` },
-        "召唤": { label:"特殊", desc: () => "召唤物每回合协助攻击或防御" },
+        "召唤": { label:"特殊", desc: p => `召唤一个拥有独立生命值的单位，在拥有者回合结束时协助攻击，造成 ${formatNumber(p||0)} 点伤害` },
         "护盾": { label:"增益", desc: () => "优先抵扣受到的伤害" }
       };
       const entry = map[type];
       if (!entry) return type + (turns != null ? "（剩余 " + turns + " 回合）" : "");
       let text = "[" + entry.label + "] " + entry.desc(power);
+      if (type === "召唤" && maxHp) text += `；召唤物生命值 ${formatNumber(maxHp)}`;
       if (turns != null) text += "（剩余 " + turns + " 回合）";
       if (source) text += "\n来源：" + source;
       return text;
@@ -7085,6 +7143,7 @@
       fighter.talent = RACE_TALENTS[fighter.race] || RACE_TALENTS[fighter.normalizedRace] || RACE_TALENTS["人族"];
       fighter.talentUsed = false;
       fighter.turnFlags = {};
+      fighter.summons = fighter.summons || [];
       return fighter;
     };
 
@@ -7127,6 +7186,8 @@
       // 确保 mechanics 存在——与 mechanicDescription 共用同一来源
       if (!Array.isArray(card.mechanics)) card.mechanics = mechanicsForCard(card.name || "", card.effectType || "attack", card.element || "无", card.skillTier);
       const NEGATIVE_STATUS_TYPES = new Set(["燃烧","冻结","诅咒","破甲","虚弱","禁锢","中毒"]);
+      const skillHasLifesteal = card.effectType === "lifesteal" || card.mechanics?.includes("lifesteal");
+      let lifestealFromTalent = false;
       const statusMult = this.statusMultiplier(actor, target, card);
       let power = Math.round(card.power * statusMult);
       if (statusMult > 1.05) result.popups.push({ type:"status", text:`威力提升 ${Math.round((statusMult-1)*100)}%`, side: actor.id });
@@ -7140,9 +7201,12 @@
         result.text += `\n[狂战血性] 兽人族天赋：生命低于50%，本次伤害提高12%。`;
       }
       if (actor.race === "恶魔" && ["attack","burn","curse","lifesteal"].includes(card.effectType)) {
-        card.mechanics = Array.from(new Set([...(card.mechanics || []), "lifesteal"]));
-        result.popups.push({ type:"talent", text:`[血契] 附加吸血`, side: actor.id });
-        result.text += "\n[血契] 恶魔天赋：为本次攻击附加吸血效果。"
+        if (!skillHasLifesteal) {
+          card.mechanics = Array.from(new Set([...(card.mechanics || []), "lifesteal"]));
+          lifestealFromTalent = true;
+          result.popups.push({ type:"talent", text:`[血契] 附加吸血`, side: actor.id });
+          result.text += "\n[血契] 恶魔天赋：为本次攻击附加吸血效果。";
+        }
       }
       if (target.race === "龙族" && card.element !== "无") {
         power = Math.round(power * .92);
@@ -7179,13 +7243,27 @@
           const heal = Math.round(Math.max(1, damage) * .28);
           actor.hp = Math.min(actor.maxHp, actor.hp + heal);
           result.popups.push({ type:"status heal", text:`吸血 +${formatNumber(heal)}`, side: actor.id });
-          result.text += `\n[吸血] 根据实际伤害回复 ${formatNumber(heal)} 生命。`;
+          result.text += lifestealFromTalent
+            ? `\n[吸血｜天赋] 【血契】根据实际伤害回复 ${formatNumber(heal)} 生命。`
+            : `\n[吸血｜技能] 「${card.name}」根据实际伤害回复 ${formatNumber(heal)} 生命。`;
         }
         if (card.mechanics?.includes("burn")) { const st = createStatusFromMechanic("burn", card, power); if (st) { target.statuses.push(st); result.popups.push({ type:"status debuff", text:"燃烧 2 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「燃烧」2回合：每回合开始受到火属性持续伤害。"; } }
         if (card.mechanics?.includes("freeze")) { target.statuses.push({ type:"冻结", turns:1, power:0 }); result.popups.push({ type:"status control", text:"冻结 1 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「冻结」1回合：本回合能量恢复降低。"; }
         if (card.mechanics?.includes("curse")) { const st = createStatusFromMechanic("curse", card, power); if (st) { target.statuses.push(st); result.popups.push({ type:"status debuff", text:"诅咒 3 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「诅咒」3回合：每回合开始受到暗属性持续伤害。"; } }
         if (card.mechanics?.includes("control")) { const st = createStatusFromMechanic("control", card, power); if (st) { target.statuses.push(st); result.popups.push({ type:"status control", text:"禁锢 1 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「禁锢」1回合：下回合无法行动。"; } }
-        if (card.mechanics?.includes("summon")) { const st = createStatusFromMechanic("summon", card, power); if (st) { actor.statuses.push(st); result.popups.push({ type:"status", text:"召唤 3 回合", side: actor.id }); result.text += " 召唤物加入战场。"; } }
+        if (card.mechanics?.includes("summon")) {
+          const summon = createSummonEntity(card, power, actor);
+          const st = createStatusFromMechanic("summon", card, power);
+          if (st) {
+            st.summonId = summon.id;
+            st.summonName = summon.name;
+            st.maxHp = summon.maxHp;
+            actor.summons.push(summon);
+            actor.statuses.push(st);
+            result.popups.push({ type:"status", text:"召唤 3 回合", side: actor.id });
+            result.text += `\n[召唤] ${summon.name}加入战场，生命值 ${formatNumber(summon.maxHp)}，将在${actor.name}回合结束时协助攻击。`;
+          }
+        }
       } else if (["defense","shield"].includes(card.effectType)) {
         const shield = Math.round(power * actor.profile.defense);
         actor.shield += shield;
@@ -7236,10 +7314,12 @@
         result.text = `${actor.name}使用「${card.name}」。
 [状态施加] ${card.effectType === "buff" ? "自身获得「增幅」2回合，伤害提高25%" : "目标获得「虚弱」2回合，伤害降低20%"}。`;
       } else if (card.effectType === "summon") {
-        actor.statuses.push({ type:"召唤", turns:3, power:Math.round(power*.18) });
+        const summon = createSummonEntity(card, power, actor);
+        actor.summons.push(summon);
+        actor.statuses.push({ type:"召唤", turns:3, power:summon.power, source:card.name, summonId:summon.id, summonName:summon.name, maxHp:summon.maxHp });
         result.targetId = actor.id;
         result.popups.push({ type:"status", text:"召唤 3 回合", side: actor.id });
-        result.text = `${actor.name}使用「${card.name}」，召唤物加入战场。`;
+        result.text = `${actor.name}使用「${card.name}」。\n[召唤] ${summon.name}加入战场，生命值 ${formatNumber(summon.maxHp)}，将在${actor.name}回合结束时协助攻击。`;
       }
 
       if (actor.id === "enemy" && ["advanced","special"].includes(card.skillTier)) setTimeout(() => uiRenderer.showAiDialogue(card.skillTier === "special" ? "playSpecial" : "playAdvanced"), 120);
@@ -7271,6 +7351,16 @@
       return clamp(multiplier, .25, 2.6);
     };
 
+    function processSummonsAtTurnEnd(fighter) {
+      if (!fighter?.summons?.length || !gameEngine.state || gameEngine.state.gameOver) return;
+      const target = fighter.id === "player" ? gameEngine.state.enemy : gameEngine.state.player;
+      fighter.summons.filter(summon => summon.hp > 0 && summon.turns > 0).forEach(summon => {
+        target.hp = Math.max(0, target.hp - summon.power);
+        gameEngine.log(`[召唤] ${fighter.name}的${summon.name}协助攻击，造成 ${formatNumber(summon.power)} 伤害。`);
+      });
+      gameEngine.checkGameOver();
+    }
+
     gameEngine.tickStatuses = function(fighter) {
       fighter.statuses.forEach(status => {
         if (["燃烧","诅咒","中毒"].includes(status.type)) {
@@ -7290,18 +7380,25 @@
           }
         }
         if (["迟缓","冻结"].includes(status.type)) fighter.energy = Math.max(0, fighter.energy - 1);
-        if (status.type === "召唤") {
-          const target = fighter.id === "player" ? this.state.enemy : this.state.player;
-          target.hp = Math.max(0, target.hp - status.power);
-          this.log(`${fighter.name}的召唤物发动协助，造成 ${formatNumber(status.power)} 伤害。`);
-        }
       });
       fighter.statuses.forEach(s => { if (s.turns <= 1 && s.type !== '禁锢') this.log(`${fighter.name}的「${s.type}」状态已解除。`); });
       fighter.statuses = fighter.statuses.map(status => ({ ...status, turns: status.turns - 1 })).filter(status => status.turns > 0);
+      const activeSummons = new Map(fighter.statuses.filter(s => s.type === "召唤" && s.summonId).map(s => [s.summonId, s.turns]));
+      fighter.summons = (fighter.summons || [])
+        .filter(summon => summon.hp > 0 && activeSummons.has(summon.id))
+        .map(summon => ({ ...summon, turns: activeSummons.get(summon.id) }));
     };
 
     const originalEndTurnStandard = gameEngine.endTurn.bind(gameEngine);
     gameEngine.endTurn = function(side) {
+      if (this.state?.turn === side) {
+        const fighter = this.state[side];
+        processSummonsAtTurnEnd(fighter);
+        if (this.state.gameOver) {
+          uiRenderer.render();
+          return true;
+        }
+      }
       if (this.state?.turn === "enemy") setTimeout(() => uiRenderer.showAiDialogue("turnEnd"), 80);
       return originalEndTurnStandard(side);
     };
@@ -7818,7 +7915,7 @@
           <div class="energy-row">${Array.from({ length: fighter.maxEnergy }, (_, i) => `<span class="energy-dot ${i < fighter.energy ? "full" : ""}"></span>`).join("")}<span class="status">${fighter.energy}/${fighter.maxEnergy}</span></div>
           <div class="status-line">
             <span class="status" title="优先抵扣受到的伤害">${atlasStatusIcon("shield")}护盾 ${formatNumber(fighter.shield)}</span>
-            ${fighter.statuses.map(s => `<span class="status" title="${describeStatus(s.type, s.turns, s.power, s.source)}">${atlasStatusIcon(s.type)}${s.type} ${s.turns}</span>`).join("")}
+            ${fighter.statuses.map(s => `<span class="status" title="${describeStatus(s.type, s.turns, s.power, s.source, s.maxHp)}">${atlasStatusIcon(s.type)}${s.type} ${s.turns}</span>`).join("")}
           </div>
           ${enemyHandHtml}
         </div>`;
@@ -9257,6 +9354,76 @@
       height: 4px !important;
       background: linear-gradient(90deg, #58c7ff, #ffe18a) !important;
       opacity: .9 !important;
+    }
+
+    body.battle-mode .summon-unit {
+      position: absolute !important;
+      z-index: 17 !important;
+      width: 118px !important;
+      min-height: 128px !important;
+      display: grid !important;
+      place-items: center !important;
+      pointer-events: auto !important;
+      filter: drop-shadow(0 12px 12px rgba(0,0,0,.45)) !important;
+    }
+
+    body.battle-mode .summon-unit.player-summon {
+      left: calc(34% + var(--summon-x, 0px)) !important;
+      bottom: calc(15% + var(--summon-y, 0px)) !important;
+    }
+
+    body.battle-mode .summon-unit.enemy-summon {
+      right: calc(42% + var(--summon-x, 0px)) !important;
+      bottom: calc(20% + var(--summon-y, 0px)) !important;
+    }
+
+    body.battle-mode .summon-name {
+      max-width: 128px !important;
+      margin-bottom: 3px !important;
+      padding: 2px 6px !important;
+      border: 1px solid rgba(255,231,160,.42) !important;
+      background: rgba(5,8,8,.78) !important;
+      color: #ffe8ae !important;
+      font-size: 10px !important;
+      font-weight: 900 !important;
+      text-align: center !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    body.battle-mode .summon-sprite {
+      max-width: 108px !important;
+      max-height: 92px !important;
+      object-fit: contain !important;
+    }
+
+    body.battle-mode .summon-hp {
+      position: relative !important;
+      width: 96px !important;
+      height: 12px !important;
+      margin-top: 2px !important;
+      border: 1px solid rgba(255,232,160,.32) !important;
+      background: rgba(0,0,0,.72) !important;
+      overflow: hidden !important;
+    }
+
+    body.battle-mode .summon-hp-fill {
+      position: absolute !important;
+      inset: 0 auto 0 0 !important;
+      background: linear-gradient(90deg, #29d68b, #d8ff8d) !important;
+      transition: width .35s ease !important;
+    }
+
+    body.battle-mode .summon-hp span {
+      position: relative !important;
+      z-index: 1 !important;
+      display: block !important;
+      color: #fff7cf !important;
+      font-size: 9px !important;
+      line-height: 12px !important;
+      text-align: center !important;
+      text-shadow: 0 1px 3px #000 !important;
     }
 
     body.battle-mode .mechanic-popup {
