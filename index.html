@@ -5922,10 +5922,19 @@
         banner.textContent = "";
         banner.className = "skill-banner";
         stage.className = "played-card-stage";
+        const castColor = this.color(card.element);
+        stage.style.setProperty("--elm-p1", castColor);
+        stage.style.setProperty("--elm-p2", castColor);
+        stage.style.setProperty("--elm-glow", castColor + "66");
         const sourceCardEl = card?.instanceId ? document.querySelector(`#playerHand .card[data-instance-id="${card.instanceId}"]`) : null;
         stage.innerHTML = `
+          <div class="ultimate-backdrop"></div>
+          <div class="ultimate-rays"></div>
+          <div class="cast-vortex"></div>
+          <div class="cast-ring"></div>
           <div class="cast-banner">${bannerText}</div>
           <div class="played-card-wrap"></div>
+          <div class="cast-burst"></div>
           <div class="cast-subtitle">${subtitleText}</div>
         `;
         const wrap = stage.querySelector(".played-card-wrap");
@@ -5984,6 +5993,7 @@
             setTimeout(() => text.remove(), drama.numbers);
           }
           this.showMechanicPopups(result, drama);
+          this.showTargetImpact(result, card, drama);
           if (settings.shake && result.visualTargets?.shake) {
             targetUnit?.classList.remove("hit");
             void targetUnit?.offsetWidth;
@@ -6031,6 +6041,18 @@
           field.appendChild(el);
           setTimeout(() => el.remove(), hold + index * 90);
         });
+      },
+      showTargetImpact(result, card, drama) {
+        const field = document.getElementById("battlefield");
+        if (!field) return;
+        const side = result.visualTargets?.impact || result.targetId;
+        const el = document.createElement("div");
+        el.className = `target-impact ${drama.tier} ${result.intent || ""}`;
+        el.style.setProperty("--fx-x", side === "player" ? "28%" : "72%");
+        el.style.setProperty("--fx-y", side === "player" ? "58%" : "50%");
+        el.style.setProperty("--fx-color", this.color(card.element));
+        field.appendChild(el);
+        setTimeout(() => el.remove(), drama.tier === "ultimate" ? 1450 : drama.tier === "advanced" ? 1150 : 760);
       },
       textColor(effectType, element) {
         if (["heal", "revive"].includes(effectType)) return "#7dff9b";
@@ -8426,6 +8448,173 @@
       font-weight: 800 !important;
       text-align: center !important;
       text-shadow: 0 2px 6px rgba(0,0,0,.9) !important;
+    }
+
+    body.battle-mode .played-card-stage .ultimate-backdrop,
+    body.battle-mode .played-card-stage .ultimate-rays,
+    body.battle-mode .played-card-stage .cast-vortex,
+    body.battle-mode .played-card-stage .cast-ring,
+    body.battle-mode .played-card-stage .cast-burst {
+      position: absolute !important;
+      left: 50% !important;
+      top: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      pointer-events: none !important;
+      opacity: 0 !important;
+    }
+
+    body.battle-mode .played-card-stage.show.advanced .cast-vortex,
+    body.battle-mode .played-card-stage.show.ultimate .cast-vortex {
+      width: min(520px, 82vw) !important;
+      height: min(520px, 82vw) !important;
+      z-index: -2 !important;
+      opacity: 1 !important;
+      background:
+        radial-gradient(circle, rgba(255,255,255,.42) 0 2px, transparent 3px 100%),
+        radial-gradient(circle, var(--elm-glow, rgba(255,220,126,.34)) 0 18%, transparent 58%) !important;
+      background-size: 42px 42px, 100% 100% !important;
+      border-radius: 50% !important;
+      animation: castVortexGather 1800ms ease-in-out infinite !important;
+      filter: drop-shadow(0 0 18px var(--elm-p1, #ffe18a)) !important;
+    }
+
+    body.battle-mode .played-card-stage.show.advanced .cast-ring,
+    body.battle-mode .played-card-stage.show.ultimate .cast-ring {
+      width: min(420px, 72vw) !important;
+      height: min(420px, 72vw) !important;
+      z-index: -1 !important;
+      opacity: 1 !important;
+      border-radius: 50% !important;
+      border: 3px solid var(--elm-p1, #ffe18a) !important;
+      box-shadow:
+        0 0 30px var(--elm-glow, rgba(255,220,126,.45)),
+        inset 0 0 34px var(--elm-glow, rgba(255,220,126,.36)) !important;
+      animation: castRingPulse 1500ms ease-in-out infinite !important;
+    }
+
+    body.battle-mode .played-card-stage.show.advanced .cast-burst,
+    body.battle-mode .played-card-stage.show.ultimate .cast-burst {
+      width: min(480px, 78vw) !important;
+      height: min(480px, 78vw) !important;
+      z-index: -1 !important;
+      opacity: 1 !important;
+      border-radius: 50% !important;
+      background: conic-gradient(from 0deg, transparent, var(--elm-p1, #ffe18a), transparent, var(--elm-p2, #ff9f43), transparent) !important;
+      -webkit-mask: radial-gradient(circle, transparent 0 44%, #000 45% 48%, transparent 49% 100%) !important;
+      mask: radial-gradient(circle, transparent 0 44%, #000 45% 48%, transparent 49% 100%) !important;
+      animation: castBurstSpin 1250ms linear infinite !important;
+    }
+
+    body.battle-mode .played-card-stage.show.ultimate .ultimate-backdrop {
+      position: fixed !important;
+      inset: -20vh -20vw !important;
+      left: 50% !important;
+      top: 50% !important;
+      width: 140vw !important;
+      height: 140vh !important;
+      z-index: -5 !important;
+      opacity: 1 !important;
+      background: radial-gradient(circle at 50% 44%, rgba(255,232,150,.18), rgba(5,4,8,.64) 44%, rgba(0,0,0,.82) 100%) !important;
+      animation: ultimateBackdropPulse 2600ms ease-in-out infinite !important;
+    }
+
+    body.battle-mode .played-card-stage.show.ultimate .ultimate-rays {
+      width: min(760px, 110vw) !important;
+      height: min(760px, 110vw) !important;
+      z-index: -4 !important;
+      opacity: 1 !important;
+      background: repeating-conic-gradient(from 0deg, rgba(255,242,180,.32) 0 8deg, transparent 8deg 20deg) !important;
+      border-radius: 50% !important;
+      filter: blur(.3px) drop-shadow(0 0 22px rgba(255,230,142,.48)) !important;
+      animation: ultimateRaysSpin 4200ms linear infinite !important;
+    }
+
+    body.battle-mode .played-card-stage.show.ultimate .cast-ring {
+      width: min(620px, 96vw) !important;
+      height: min(620px, 96vw) !important;
+      border-width: 5px !important;
+      box-shadow:
+        0 0 44px #fff0a8,
+        0 0 82px var(--elm-p1, #ffe18a),
+        inset 0 0 54px rgba(255,240,168,.32) !important;
+    }
+
+    body.battle-mode .target-impact {
+      position: absolute !important;
+      left: var(--fx-x, 50%) !important;
+      top: var(--fx-y, 50%) !important;
+      width: 160px !important;
+      height: 160px !important;
+      z-index: 32 !important;
+      transform: translate(-50%, -50%) scale(.4) !important;
+      border-radius: 50% !important;
+      pointer-events: none !important;
+      background:
+        radial-gradient(circle, rgba(255,255,255,.86) 0 8%, var(--fx-color, #ffe18a) 9% 24%, transparent 25% 100%),
+        conic-gradient(from 0deg, transparent, var(--fx-color, #ffe18a), transparent 42%, rgba(255,255,255,.62), transparent) !important;
+      box-shadow: 0 0 34px var(--fx-color, #ffe18a) !important;
+      animation: targetImpactBurst 760ms ease-out forwards !important;
+    }
+
+    body.battle-mode .target-impact.friendly-heal {
+      background: radial-gradient(circle, rgba(206,255,194,.94) 0 10%, rgba(92,255,139,.58) 11% 28%, transparent 29% 100%) !important;
+      box-shadow: 0 0 32px rgba(92,255,139,.7) !important;
+    }
+
+    body.battle-mode .target-impact.friendly-shield {
+      background: radial-gradient(circle, transparent 0 38%, rgba(116,215,255,.78) 39% 44%, transparent 45% 100%) !important;
+      box-shadow: 0 0 34px rgba(116,215,255,.72), inset 0 0 24px rgba(116,215,255,.38) !important;
+    }
+
+    body.battle-mode .target-impact.hostile-status,
+    body.battle-mode .target-impact.friendly-buff,
+    body.battle-mode .target-impact.friendly-summon {
+      background: radial-gradient(circle, rgba(191,145,255,.74) 0 14%, rgba(92,180,255,.28) 15% 42%, transparent 43% 100%) !important;
+      box-shadow: 0 0 28px rgba(171,111,255,.66) !important;
+    }
+
+    body.battle-mode .target-impact.advanced {
+      width: 230px !important;
+      height: 230px !important;
+      animation-duration: 1080ms !important;
+    }
+
+    body.battle-mode .target-impact.ultimate {
+      width: 340px !important;
+      height: 340px !important;
+      animation-duration: 1380ms !important;
+      box-shadow: 0 0 46px #fff0a8, 0 0 86px var(--fx-color, #ffe18a) !important;
+    }
+
+    @keyframes castVortexGather {
+      0% { transform: translate(-50%, -50%) rotate(0deg) scale(.78); opacity: .35; }
+      45% { opacity: 1; }
+      100% { transform: translate(-50%, -50%) rotate(210deg) scale(1.05); opacity: .62; }
+    }
+
+    @keyframes castRingPulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(.86); opacity: .58; }
+      50% { transform: translate(-50%, -50%) scale(1.08); opacity: 1; }
+    }
+
+    @keyframes castBurstSpin {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    @keyframes ultimateBackdropPulse {
+      0%, 100% { opacity: .76; }
+      50% { opacity: 1; }
+    }
+
+    @keyframes ultimateRaysSpin {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    @keyframes targetImpactBurst {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(.36) rotate(0deg); }
+      18% { opacity: 1; }
+      70% { opacity: .78; transform: translate(-50%, -50%) scale(1) rotate(32deg); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.24) rotate(52deg); }
     }
 
     body.battle-mode .played-card-stage::before,
