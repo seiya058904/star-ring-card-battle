@@ -2630,6 +2630,7 @@
       font-size: 12px !important;
       padding: 7px 8px !important;
       background: rgba(0,0,0,.30) !important;
+      white-space: pre-wrap !important;
     }
 
     /* Bottom reference-like action zone */
@@ -7063,10 +7064,10 @@
       if (!attackElement || attackElement === "无" || !defendElement || defendElement === "无") return { multiplier: 1, text: "" };
       if (ELEMENT_COUNTER[attackElement] === defendElement) {
         const value = defender.race === "龙族" ? 1.10 : 1.20;
-        return { multiplier: value, text: `元素克制，伤害 ×${value.toFixed(2)}。` };
+        return { multiplier: value, text: `[元素克制] 目标被${attackElement}克制，伤害提高。` };
       }
-      if (ELEMENT_COUNTER[defendElement] === attackElement) return { multiplier: .85, text: "元素被抵抗，伤害降低。" };
-      if (attackElement === defendElement) return { multiplier: .90, text: "同属性抵抗，伤害略降。" };
+      if (ELEMENT_COUNTER[defendElement] === attackElement) return { multiplier: .85, text: "[元素抵抗] 目标抵抗${attackElement}，伤害降低。" };
+      if (attackElement === defendElement) return { multiplier: .90, text: "[同属性抵抗] 目标与攻击同属性，伤害略降。" };
       return { multiplier: 1, text: "" };
     }
 
@@ -7136,12 +7137,12 @@
       if (actor.race === "兽人族" && actor.hp / actor.maxHp < .5 && ["attack","burn","pierce","execute"].includes(card.effectType)) {
         power = Math.round(power * 1.12);
         result.popups.push({ type:"talent", text:`[狂战血性] 伤害 +12%`, side: actor.id });
-        result.text += ` ${actor.talent?.name || "狂战血性"}触发，伤害提高。`;
+        result.text += `\n[狂战血性] 兽人族天赋：生命低于50%，本次伤害提高12%。`;
       }
       if (actor.race === "恶魔" && ["attack","burn","curse","lifesteal"].includes(card.effectType)) {
         card.mechanics = Array.from(new Set([...(card.mechanics || []), "lifesteal"]));
         result.popups.push({ type:"talent", text:`[血契] 附加吸血`, side: actor.id });
-        result.text += ` 血契触发，附加吸血效果。`;
+        result.text += "\n[血契] 恶魔天赋：为本次攻击附加吸血效果。"
       }
       if (target.race === "龙族" && card.element !== "无") {
         power = Math.round(power * .92);
@@ -7173,17 +7174,17 @@
         damage = Math.max(0, damage - blocked);
         target.hp = Math.max(0, target.hp - damage);
         result.amount = damage;
-        result.text = `${actor.name}使用「${card.name}」，造成 ${formatNumber(damage)} 点${card.element}属性伤害。${elem.text ? " " + elem.text : ""}`;
+        result.text = `${actor.name}使用「${card.name}」。\n[伤害] 造成 ${formatNumber(damage)} 点${card.element}属性伤害。${elem.text ? "\n" + elem.text : ""}`;
         if (card.mechanics?.includes("lifesteal")) {
           const heal = Math.round(Math.max(1, damage) * .28);
           actor.hp = Math.min(actor.maxHp, actor.hp + heal);
           result.popups.push({ type:"status heal", text:`吸血 +${formatNumber(heal)}`, side: actor.id });
-          result.text += ` 吸取 ${formatNumber(heal)} 生命。`;
+          result.text += `\n[吸血] 根据实际伤害回复 ${formatNumber(heal)} 生命。`;
         }
-        if (card.mechanics?.includes("burn")) { const st = createStatusFromMechanic("burn", card, power); if (st) { target.statuses.push(st); result.popups.push({ type:"status debuff", text:"燃烧 2 回合", side: target.id }); result.text += " [状态施加] 目标获得燃烧2回合。"; } }
-        if (card.mechanics?.includes("freeze")) { target.statuses.push({ type:"冻结", turns:1, power:0 }); result.popups.push({ type:"status control", text:"冻结 1 回合", side: target.id }); result.text += " [状态施加] 目标获得冻结1回合。"; }
-        if (card.mechanics?.includes("curse")) { const st = createStatusFromMechanic("curse", card, power); if (st) { target.statuses.push(st); result.popups.push({ type:"status debuff", text:"诅咒 3 回合", side: target.id }); result.text += " [状态施加] 目标获得诅咒3回合。"; } }
-        if (card.mechanics?.includes("control")) { const st = createStatusFromMechanic("control", card, power); if (st) { target.statuses.push(st); result.popups.push({ type:"status control", text:"禁锢 1 回合", side: target.id }); result.text += " [状态施加] 目标获得禁锢1回合。"; } }
+        if (card.mechanics?.includes("burn")) { const st = createStatusFromMechanic("burn", card, power); if (st) { target.statuses.push(st); result.popups.push({ type:"status debuff", text:"燃烧 2 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「燃烧」2回合：每回合开始受到火属性持续伤害。"; } }
+        if (card.mechanics?.includes("freeze")) { target.statuses.push({ type:"冻结", turns:1, power:0 }); result.popups.push({ type:"status control", text:"冻结 1 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「冻结」1回合：本回合能量恢复降低。"; }
+        if (card.mechanics?.includes("curse")) { const st = createStatusFromMechanic("curse", card, power); if (st) { target.statuses.push(st); result.popups.push({ type:"status debuff", text:"诅咒 3 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「诅咒」3回合：每回合开始受到暗属性持续伤害。"; } }
+        if (card.mechanics?.includes("control")) { const st = createStatusFromMechanic("control", card, power); if (st) { target.statuses.push(st); result.popups.push({ type:"status control", text:"禁锢 1 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「禁锢」1回合：下回合无法行动。"; } }
         if (card.mechanics?.includes("summon")) { const st = createStatusFromMechanic("summon", card, power); if (st) { actor.statuses.push(st); result.popups.push({ type:"status", text:"召唤 3 回合", side: actor.id }); result.text += " 召唤物加入战场。"; } }
       } else if (["defense","shield"].includes(card.effectType)) {
         const shield = Math.round(power * actor.profile.defense);
@@ -7232,7 +7233,8 @@
       } else if (["buff","debuff"].includes(card.effectType)) {
         if (card.effectType === "buff") { actor.statuses.push({ type:"增幅", turns:2, power:.25 }); result.targetId = actor.id; result.popups.push({ type:"status", text:"增幅 2 回合", side: actor.id }); }
         else { target.statuses.push({ type:"虚弱", turns:2, power:.2 }); result.targetId = target.id; result.popups.push({ type:"status debuff", text:"虚弱 2 回合", side: target.id }); }
-        result.text = `${actor.name}使用「${card.name}」，改变了战斗节奏。`;
+        result.text = `${actor.name}使用「${card.name}」。
+[状态施加] ${card.effectType === "buff" ? "自身获得「增幅」2回合，伤害提高25%" : "目标获得「虚弱」2回合，伤害降低20%"}。`;
       } else if (card.effectType === "summon") {
         actor.statuses.push({ type:"召唤", turns:3, power:Math.round(power*.18) });
         result.targetId = actor.id;
@@ -7249,7 +7251,7 @@
         target.shield += gain;
         target.talentUsed = true;
         result.popups.push({ type:"talent", text:`[均衡意志] 恢复 +${formatNumber(gain)}`, side: target.id });
-        this.log(`${target.name}触发种族天赋【${target.talent.name}】，恢复并获得 ${formatNumber(gain)} 护盾。`);
+        this.log(`${target.name}触发天赋【${target.talent.name}】：均衡意志，恢复 ${formatNumber(gain)} 生命并获得 ${formatNumber(gain)} 护盾。`);
       }
       effectsRenderer.play(card, result);
     };
