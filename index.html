@@ -8240,6 +8240,119 @@
         radial-gradient(circle at 80% 65%, rgba(255,230,150,.2) 0, transparent 7px) !important;
     }
 
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="advanced"] {
+      border-color: rgba(255, 231, 142, 1) !important;
+      box-shadow:
+        inset 0 0 0 1px rgba(255,250,214,.34),
+        inset 0 0 18px var(--elm-glow, rgba(255,218,112,.34)),
+        0 0 0 1px rgba(255,225,132,.4),
+        0 0 26px var(--elm-glow, rgba(255,218,112,.42)),
+        0 0 54px rgba(255,198,76,.22),
+        0 14px 28px rgba(0,0,0,.38) !important;
+      animation: advancedHandFlow 3.8s ease-in-out infinite !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="advanced"]::after {
+      inset: -3px !important;
+      border-radius: 8px !important;
+      background:
+        linear-gradient(115deg, transparent 0 20%, rgba(255,238,164,.48) 42%, transparent 62% 100%),
+        linear-gradient(45deg, transparent, var(--elm-glow, rgba(255,218,112,.24)), transparent) !important;
+      opacity: .78 !important;
+      animation: advancedBorderSweep 2.8s linear infinite !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="advanced"] .card-cost {
+      filter: drop-shadow(0 0 8px rgba(255,231,142,.9)) brightness(1.2) saturate(1.18) !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="advanced"] .card-art::after {
+      opacity: 1 !important;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,238,170,.18) 0, transparent 42%),
+        radial-gradient(circle at 14% 25%, var(--elm-p1, rgba(255,226,143,.42)) 0, transparent 9px),
+        radial-gradient(circle at 82% 18%, var(--elm-p2, rgba(255,226,143,.36)) 0, transparent 8px),
+        radial-gradient(circle at 32% 78%, var(--elm-glow, rgba(255,226,143,.35)) 0, transparent 8px),
+        radial-gradient(circle at 73% 72%, rgba(255,246,190,.3) 0, transparent 7px),
+        radial-gradient(circle at 48% 18%, var(--elm-p1, rgba(255,226,143,.28)) 0, transparent 5px) !important;
+      animation: elmParticleFloat 3.8s ease-in-out infinite !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="ultimate"] {
+      border-color: rgba(255, 247, 196, 1) !important;
+      box-shadow:
+        inset 0 0 0 1px rgba(255,252,226,.52),
+        inset 0 0 24px rgba(255,235,148,.26),
+        0 0 0 2px rgba(255,235,148,.48),
+        0 0 34px rgba(255,229,137,.62),
+        0 0 72px var(--elm-glow, rgba(255,226,132,.45)),
+        0 16px 32px rgba(0,0,0,.42) !important;
+      animation: ultimateHandPulse 2.4s ease-in-out infinite !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="ultimate"]::after {
+      inset: -7px !important;
+      border-radius: 10px !important;
+      border: 2px solid rgba(255,244,185,.72) !important;
+      background:
+        linear-gradient(120deg, transparent 0 18%, rgba(255,251,210,.58) 38%, transparent 58% 100%),
+        conic-gradient(from 0deg, transparent, rgba(255,236,150,.34), transparent, var(--elm-glow, rgba(255,226,132,.26)), transparent) !important;
+      box-shadow:
+        0 0 28px rgba(255,236,150,.66),
+        0 0 54px var(--elm-glow, rgba(255,226,132,.42)) !important;
+      opacity: 1 !important;
+      animation: ultimateBorderPulse 2.6s ease-in-out infinite !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="ultimate"] .card-cost {
+      filter: drop-shadow(0 0 12px rgba(255,244,181,1)) drop-shadow(0 0 20px var(--elm-glow, rgba(255,226,132,.62))) brightness(1.34) saturate(1.24) !important;
+      animation: ultimateCostGleam 1.9s ease-in-out infinite !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="ultimate"] .card-art::after {
+      opacity: 1 !important;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,248,204,.34) 0, transparent 46%),
+        radial-gradient(circle at 16% 20%, rgba(255,255,255,.5) 0, transparent 9px),
+        radial-gradient(circle at 82% 16%, var(--elm-p1, rgba(255,226,143,.48)) 0, transparent 11px),
+        radial-gradient(circle at 26% 76%, var(--elm-p2, rgba(255,226,143,.42)) 0, transparent 10px),
+        radial-gradient(circle at 76% 74%, rgba(255,238,154,.42) 0, transparent 9px),
+        radial-gradient(circle at 50% 18%, var(--elm-glow, rgba(255,226,143,.42)) 0, transparent 8px),
+        radial-gradient(circle at 48% 84%, rgba(255,255,255,.35) 0, transparent 7px) !important;
+      animation: elmParticleFloat 2.8s ease-in-out infinite !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="ultimate"] .card-name,
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="ultimate"] .card-desc,
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="ultimate"] .card-power {
+      text-shadow: 0 2px 5px rgba(0,0,0,.95), 0 0 8px rgba(255,230,150,.28) !important;
+    }
+
+    @keyframes advancedHandFlow {
+      0%, 100% { filter: brightness(1.12) saturate(1.18); }
+      50% { filter: brightness(1.2) saturate(1.3); }
+    }
+
+    @keyframes advancedBorderSweep {
+      0% { background-position: -180px 0, 0 0; }
+      100% { background-position: 180px 0, 0 0; }
+    }
+
+    @keyframes ultimateHandPulse {
+      0%, 100% { filter: brightness(1.18) saturate(1.28); }
+      50% { filter: brightness(1.32) saturate(1.42); }
+    }
+
+    @keyframes ultimateBorderPulse {
+      0%, 100% { transform: scale(1); opacity: .86; }
+      50% { transform: scale(1.025); opacity: 1; }
+    }
+
+    @keyframes ultimateCostGleam {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+
     body.battle-mode .played-card-stage .card-art::after {
       opacity: .9 !important;
       animation: elmCardPlayed 2.5s ease-out forwards !important;
@@ -8871,6 +8984,14 @@
     body[data-anim="low"] .played-card-stage .card-art::after {
       animation: none !important;
       opacity: .12 !important;
+    }
+
+    body[data-anim="low"] .hand-dock-v3 .card[data-drama-tier="advanced"] .card-art::after {
+      opacity: .52 !important;
+    }
+
+    body[data-anim="low"] .hand-dock-v3 .card[data-drama-tier="ultimate"] .card-art::after {
+      opacity: .72 !important;
     }
 
     body[data-anim="low"].battle-mode.advanced-drama #battlefield::before,
