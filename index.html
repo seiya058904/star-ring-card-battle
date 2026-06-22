@@ -6745,7 +6745,7 @@
     }
 
     function createSummonEntity(card, power, owner) {
-      const summonPower = Math.max(1, Math.round(power * 0.18));
+      const summonPower = Math.max(1, Math.round(power * 0.28));
       const maxHp = Math.max(1, Math.round(power * 0.45));
       return {
         id: deterministicId("summon"),
@@ -7090,7 +7090,7 @@
       if (type === "燃烧") return { type, name: "燃烧", turns: 2, power: Math.max(1, Math.round(power * 0.18)), source: card.name, element: card.element };
       if (type === "诅咒") return { type, name: "诅咒", turns: 3, power: Math.max(1, Math.round(power * 0.12)), source: card.name, element: card.element };
       if (type === "冻结") return { type, name: "冻结", turns: 1, source: card.name };
-      if (type === "召唤") return { type, name: "召唤", power: Math.max(1, Math.round(power * 0.18)), source: card.name };
+      if (type === "召唤") return { type, name: "召唤", power: Math.max(1, Math.round(power * 0.28)), source: card.name };
       return null;
     }
 
@@ -7378,11 +7378,22 @@
 
     function processSummonsAtTurnEnd(fighter) {
       if (!fighter?.summons?.length || !gameEngine.state || gameEngine.state.gameOver) return;
+      if (fighter.hp <= 0) {
+        fighter.summons = [];
+        return;
+      }
       const target = fighter.id === "player" ? gameEngine.state.enemy : gameEngine.state.player;
-      fighter.summons.filter(summon => summon.hp > 0 && summon.turns > 0).forEach(summon => {
+      if (!target || target.hp <= 0) return;
+      removeDefeatedSummons(fighter);
+      const activeSummons = fighter.summons.filter(summon => summon.hp > 0);
+      const summonAssistEvents = [];
+      for (const summon of activeSummons) {
+        if (gameEngine.state.gameOver || target.hp <= 0 || summon.hp <= 0) break;
         target.hp = Math.max(0, target.hp - summon.power);
-        gameEngine.log(`[召唤] ${fighter.name}的${summon.name}协助攻击，造成 ${formatNumber(summon.power)} 伤害。`);
-      });
+        summonAssistEvents.push({ summon, target, amount: summon.power });
+        gameEngine.log(`[召唤攻击] ${summon.name} 对${target.name}造成 ${formatNumber(summon.power)} 伤害。`);
+        gameEngine.checkGameOver();
+      }
       gameEngine.checkGameOver();
     }
 
