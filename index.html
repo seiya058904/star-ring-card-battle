@@ -6537,6 +6537,11 @@
           event.preventDefault();
           event.stopPropagation();
           if (gameEngine.state.turn !== "player" || gameEngine.state.gameOver || el.classList.contains("unplayable")) return;
+          if (gameEngine.state.player.skipAction) {
+            gameEngine.log("[控制] 你被禁锢，本回合无法出牌。");
+            uiRenderer.showToast("被禁锢，无法行动！");
+            return;
+          }
           resetBattleViewTransform();
           el.classList.add("playing");
           gameEngine.resolveAction({ type: "playCard", side: "player", cardInstanceId: el.dataset.instanceId });
@@ -7026,7 +7031,12 @@
       fighter.energy = clamp(3 + (this.state.round - 1) * 2, 0, fighter.maxEnergy);
       fighter.shield = Math.max(0, Math.round(fighter.shield * .35));
       this.tickStatuses(fighter);
-      this.draw(fighter, 5 - fighter.hand.length);
+      const controlStatus = fighter.statuses.find(s => s.type === "禁锢");
+      fighter.skipAction = !!controlStatus;
+      if (controlStatus) {
+        this.log(`[控制] ${fighter.name} 被${controlStatus.type}，本回合无法行动。`);
+      }
+      if (!fighter.skipAction) this.draw(fighter, 5 - fighter.hand.length);
       this.log(`${fighter.name}进入第 ${this.state.round} 回合，能量恢复到 ${fighter.energy}。`);
       if (side === "enemy") setTimeout(() => uiRenderer.showAiDialogue("turnStart"), 180);
     };
@@ -7167,6 +7177,7 @@
           this.log(`${fighter.name}的召唤物发动协助，造成 ${formatNumber(status.power)} 伤害。`);
         }
       });
+      fighter.statuses.forEach(s => { if (s.turns <= 1) this.log(`${fighter.name}的「${s.type}」状态已解除。`); });
       fighter.statuses = fighter.statuses.map(status => ({ ...status, turns: status.turns - 1 })).filter(status => status.turns > 0);
     };
 
@@ -7180,6 +7191,12 @@
       const state = gameEngine.state;
       if (!state || state.gameOver || state.turn !== "enemy") return;
       const enemy = state.enemy;
+      if (enemy.skipAction) {
+        const controlStatus = enemy.statuses.find(s => s.type === "禁锢");
+        gameEngine.log(`[控制] ${enemy.name} 被${controlStatus?.type || "控制"}束缚，无法行动。`);
+        setTimeout(() => gameEngine.resolveAction({ type:"endTurn", side:"enemy" }), 650);
+        return;
+      }
       let steps = 0;
       const loop = () => {
         if (state.gameOver || state.turn !== "enemy") return;
