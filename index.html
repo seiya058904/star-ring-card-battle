@@ -5453,16 +5453,16 @@
           draw: `抽 2 张牌，并获得少量战术优势。`,
           charge: `获得 2 点能量。`,
           burn: `造成 ${value} 点伤害，并附加燃烧。`,
-          freeze: `造成 ${value} 点伤害，并尝试冻结对手。`,
-          curse: `施加诅咒，造成 ${value} 点持续压力。`,
-          summon: `召唤存在协助作战，立即造成 ${value} 点影响。`,
+          freeze: `造成 ${value} 点伤害，有概率冻结目标。`,
+          curse: `施加诅咒，每回合受到持续伤害。`,
+          summon: `造成 ${value} 点伤害。`,
           revive: `恢复 ${value} 点生命，濒危时效果更明显。`,
-          buff: `获得增益，下次攻击或防御提升。`,
-          debuff: `削弱对手，使其下一次行动变弱。`,
+          buff: `获得增幅，持续 2 回合攻击提升。`,
+          debuff: `削弱对手，使其 2 回合内受到伤害提高。`,
           shield: `获得 ${value} 点护盾。`,
-          execute: `造成 ${value} 点裁决伤害，目标低生命时更强。`,
-          control: `控制对手节奏，并造成 ${value} 点影响。`,
-          lifesteal: `造成 ${value} 点伤害，并回复部分生命。`,
+          execute: `造成 ${value} 点裁决伤害，目标生命低于 30% 时伤害提高 55%。`,
+          control: `禁锢目标，下回合无法行动，并造成 ${value} 点伤害。`,
+          lifesteal: `造成 ${value} 点伤害，并回复造成伤害 28% 的生命。`,
           pierce: `造成 ${value} 点穿透伤害，部分无视护盾。`
         };
         return map[card.effectType] || `产生 ${value} 点效果。`;
@@ -6853,14 +6853,14 @@
       else if (card.effectType === "debuff") parts.push("使目标削弱 2 回合");
 
       if (card.mechanics?.includes("lifesteal")) parts.push("吸取部分伤害转化为生命");
-      if (card.mechanics?.includes("burn")) parts.push("附加燃烧，回合开始时造成持续伤害");
-      if (card.mechanics?.includes("freeze")) parts.push("附加冻结，使目标下回合能量恢复降低");
-      if (card.mechanics?.includes("curse")) parts.push("附加诅咒，使目标受到暗属性伤害提高");
+      if (card.mechanics?.includes("burn")) parts.push("附加燃烧，每回合开始受到持续伤害");
+      if (card.mechanics?.includes("freeze")) parts.push("附加冻结，本回合能量恢复降低");
+      if (card.mechanics?.includes("curse")) parts.push("附加诅咒，每回合受到持续暗属性伤害");
       if (card.mechanics?.includes("chain")) parts.push("若目标没有护盾，追加一次 30% 连锁伤害");
       if (card.mechanics?.includes("cleanse")) parts.push("净化自身 1 个负面状态");
       if (card.mechanics?.includes("pierce")) parts.push("部分无视护盾");
-      if (card.mechanics?.includes("execute")) parts.push("目标生命低于 30% 时伤害提高");
-      if (card.mechanics?.includes("control")) parts.push("限制目标下回合行动");
+      if (card.mechanics?.includes("execute")) parts.push("目标生命低于 30% 时伤害提高 55%");
+      if (card.mechanics?.includes("control")) parts.push("禁锢目标，下回合无法行动");
       if (card.mechanics?.includes("summon")) parts.push("召唤单位持续 3 回合，每回合协助攻击或防御");
       if (card.mechanics?.includes("fortify")) parts.push("若自己已有护盾，额外获得减伤");
       if (card.mechanics?.includes("drawOrEvade")) parts.push("获得轻灵状态，下一次受击减伤并抽牌");
