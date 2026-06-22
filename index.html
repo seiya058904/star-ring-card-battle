@@ -7293,6 +7293,10 @@
       return card.skillTier || "normal";
     }
 
+    function dramaTierNameFor(card) {
+      return cardDramaTier(card);
+    }
+
     function renderCardPreview(card) {
       if (!card) return `<div class="preview-empty">悬停手牌查看完整说明</div>`;
       const typeName = card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能";
@@ -7317,7 +7321,7 @@
       const rankText = card.skillRank || (card.rankMode === "fixed" ? "固定规格" : card.rankMode === "ultimate" ? "终极" : "");
       const tier = tierNameFor(card);
       return `
-        <div class="card ${unplayable ? "unplayable" : ""}" data-instance-id="${card.instanceId || ""}" data-tier="${tier}" data-element="${card.element}" data-symbol="${card.mark || "•"}" style="--c1:${c1};--c2:${c2};">
+        <div class="card ${unplayable ? "unplayable" : ""}" data-instance-id="${card.instanceId || ""}" data-tier="${tier}" data-drama-tier="${dramaTierNameFor(card)}" data-cost="${card.cost}" data-element="${card.element}" data-symbol="${card.mark || "•"}" style="--c1:${c1};--c2:${c2};">
           <div class="card-top">
             <img class="card-icon" src="${icon}" alt="">
             <div class="card-name">${card.name}</div>
@@ -7416,7 +7420,7 @@
       const rankText = card.skillRank || (card.rankMode === "fixed" ? "固定规格" : card.rankMode === "ultimate" ? "终极" : "");
       const tier = tierNameFor(card);
       return `
-        <div class="card ${unplayable ? "unplayable" : ""}" data-instance-id="${card.instanceId || ""}" data-tier="${tier}" data-element="${card.element}" data-effect="${card.effectType}" data-symbol="${card.mark || "•"}" style="--c1:${c1};--c2:${c2};">
+        <div class="card ${unplayable ? "unplayable" : ""}" data-instance-id="${card.instanceId || ""}" data-tier="${tier}" data-drama-tier="${dramaTierNameFor(card)}" data-cost="${card.cost}" data-element="${card.element}" data-effect="${card.effectType}" data-symbol="${card.mark || "•"}" style="--c1:${c1};--c2:${c2};">
           <div class="card-top">
             <img class="card-icon" src="${icon}" alt="">
             <div class="card-name">${card.name}</div>
@@ -7539,7 +7543,7 @@
       const costStyle = costSprite ? `--cost-sprite-img:url('assets/ui/sprites/${costSprite}.png')` : "";
       const artStyle = atlasBackgroundVars("atlas-art", cardArtSprite(card), 120, 82);
       return `
-        <div class="card ${unplayable ? "unplayable" : ""}" data-instance-id="${card.instanceId || ""}" data-tier="${tier}" data-element="${card.element}" data-effect="${card.effectType}" data-symbol="${card.mark || "✦"}" style="--c1:${c1};--c2:${c2};${frameStyle}">
+        <div class="card ${unplayable ? "unplayable" : ""}" data-instance-id="${card.instanceId || ""}" data-tier="${tier}" data-drama-tier="${dramaTierNameFor(card)}" data-cost="${card.cost}" data-element="${card.element}" data-effect="${card.effectType}" data-symbol="${card.mark || "✦"}" style="--c1:${c1};--c2:${c2};${frameStyle}">
           <div class="card-top">
             <div class="card-name">${card.name}</div>
             ${costSprite ? `<div class="card-cost" style="${costStyle}" aria-label="${card.cost} 能量"></div>` : ""}
@@ -8016,6 +8020,79 @@
     body.battle-mode .hand-dock-v3 .card.selected .card-art::after {
       opacity: .95 !important;
       animation-duration: 4s !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="enhanced"] {
+      border-color: rgba(255, 214, 120, .58) !important;
+      box-shadow: inset 0 0 0 1px rgba(255,238,174,.12), 0 0 16px var(--elm-glow, rgba(255,220,126,.16)) !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="enhanced"] .card-cost {
+      filter: drop-shadow(0 0 5px rgba(255, 220, 130, .42)) !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="strong"] {
+      border-color: rgba(255, 205, 91, .78) !important;
+      box-shadow: inset 0 0 0 1px rgba(255,242,176,.18), 0 0 22px var(--elm-glow, rgba(255,205,91,.24)) !important;
+      filter: brightness(1.06) saturate(1.1) !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="strong"] .card-art::after {
+      opacity: .9 !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="advanced"] {
+      border-color: rgba(255, 218, 112, .95) !important;
+      box-shadow:
+        inset 0 0 0 1px rgba(255,246,198,.22),
+        0 0 28px var(--elm-glow, rgba(255,218,112,.32)),
+        0 0 46px rgba(255,196,76,.16) !important;
+      filter: brightness(1.1) saturate(1.16) !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="advanced"]::after {
+      content: "" !important;
+      position: absolute !important;
+      inset: -2px !important;
+      border-radius: 7px !important;
+      pointer-events: none !important;
+      background: linear-gradient(115deg, transparent 0 28%, rgba(255,224,132,.34) 45%, transparent 62% 100%) !important;
+      opacity: .46 !important;
+      mix-blend-mode: screen !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="ultimate"] {
+      border-color: rgba(255, 242, 180, .98) !important;
+      box-shadow:
+        inset 0 0 0 1px rgba(255,248,202,.34),
+        0 0 34px rgba(255,226,132,.44),
+        0 0 58px var(--elm-glow, rgba(255,226,132,.32)) !important;
+      filter: brightness(1.14) saturate(1.24) !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="ultimate"]::after {
+      content: "" !important;
+      position: absolute !important;
+      inset: -5px !important;
+      border-radius: 9px !important;
+      pointer-events: none !important;
+      border: 1px solid rgba(255,241,174,.5) !important;
+      box-shadow: 0 0 24px rgba(255,222,118,.5), 0 0 38px var(--elm-glow, rgba(255,222,118,.28)) !important;
+      opacity: .9 !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="ultimate"] .card-cost {
+      filter: drop-shadow(0 0 9px rgba(255,232,141,.82)) brightness(1.12) !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card[data-drama-tier="ultimate"] .card-art::after {
+      opacity: 1 !important;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,236,154,.24) 0, transparent 48%),
+        radial-gradient(circle at 22% 28%, var(--elm-glow, rgba(255,226,143,.22)) 0, transparent 10px),
+        radial-gradient(circle at 72% 20%, var(--elm-p1, rgba(255,226,143,.28)) 0, transparent 8px),
+        radial-gradient(circle at 35% 75%, var(--elm-p2, rgba(255,226,143,.22)) 0, transparent 8px),
+        radial-gradient(circle at 80% 65%, rgba(255,230,150,.2) 0, transparent 7px) !important;
     }
 
     body.battle-mode .played-card-stage .card-art::after {
