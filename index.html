@@ -5556,17 +5556,17 @@
     };
 
     const COMBAT_DRAMA_TIMING = {
-      normal: { enter: 360, focus: 520, charge: 300, cast: 360, impact: 300, numbers: 1200, outro: 360, totalMin: 2200 },
-      enhanced: { enter: 520, focus: 700, charge: 520, cast: 480, impact: 420, numbers: 1350, outro: 460, totalMin: 3000 },
-      strong: { enter: 620, focus: 780, charge: 700, cast: 560, impact: 520, numbers: 1450, outro: 520, totalMin: 3600 },
-      advanced: { enter: 720, focus: 900, charge: 900, cast: 700, impact: 650, numbers: 1600, outro: 620, totalMin: 4300 },
-      ultimate: { enter: 950, focus: 1200, charge: 1400, cast: 900, impact: 850, numbers: 2100, outro: 900, totalMin: 6200 }
+      normal: { enter: 280, focus: 400, charge: 230, cast: 280, impact: 230, numbers: 900, outro: 280, totalMin: 1700 },
+      enhanced: { enter: 400, focus: 540, charge: 400, cast: 370, impact: 320, numbers: 1040, outro: 350, totalMin: 2300 },
+      strong: { enter: 460, focus: 580, charge: 520, cast: 420, impact: 390, numbers: 1090, outro: 390, totalMin: 2700 },
+      advanced: { enter: 530, focus: 670, charge: 670, cast: 520, impact: 480, numbers: 1200, outro: 460, totalMin: 3200 },
+      ultimate: { enter: 700, focus: 890, charge: 1040, cast: 670, impact: 630, numbers: 1550, outro: 670, totalMin: 4600 }
     };
 
     const VICTORY_TIMING = {
-      finalNumberHold: 1800,
-      enemyDefeatLine: 2200,
-      victoryDelay: 3000
+      finalNumberHold: 1400,
+      enemyDefeatLine: 1700,
+      victoryDelay: 2300
     };
 
     function cardDramaTier(card) {
@@ -5583,7 +5583,7 @@
       const settings = storageManager?.getSettings?.() || DEFAULT_GAME_SETTINGS;
       const base = COMBAT_DRAMA_TIMING[tier] || COMBAT_DRAMA_TIMING.normal;
       if (settings.animation !== "low") return { ...base, tier };
-      const lowTotal = tier === "ultimate" ? 3600 : tier === "advanced" ? 3000 : Math.max(1600, Math.round(base.totalMin * .72));
+      const lowTotal = tier === "ultimate" ? 2700 : tier === "advanced" ? 2200 : Math.max(1200, Math.round(base.totalMin * .72));
       return {
         ...base,
         tier,
@@ -8922,14 +8922,14 @@
     body.battle-mode .target-impact.advanced {
       width: 230px !important;
       height: 230px !important;
-      animation-duration: 1080ms !important;
+      animation-duration: 800ms !important;
       box-shadow: 0 0 28px var(--fx-color, #ffe18a), 0 0 56px rgba(255,200,80,.28) !important;
     }
 
     body.battle-mode .target-impact.ultimate {
       width: 360px !important;
       height: 360px !important;
-      animation-duration: 1500ms !important;
+      animation-duration: 1100ms !important;
       box-shadow: 0 0 50px #fff0a8, 0 0 90px var(--fx-color, #ffe18a), 0 0 130px rgba(255,200,60,.35) !important;
     }
 
@@ -8985,23 +8985,23 @@
     }
 
     body.battle-mode .played-card-stage.show {
-      animation: playedCardFloat 2200ms ease forwards !important;
+      animation: playedCardFloat 1700ms ease forwards !important;
     }
 
     body.battle-mode .played-card-stage.show.enhanced {
-      animation-duration: 3000ms !important;
+      animation-duration: 2300ms !important;
     }
 
     body.battle-mode .played-card-stage.show.strong {
-      animation-duration: 3600ms !important;
+      animation-duration: 2700ms !important;
     }
 
     body.battle-mode .played-card-stage.show.advanced {
-      animation-duration: 4300ms !important;
+      animation-duration: 3200ms !important;
     }
 
     body.battle-mode .played-card-stage.show.ultimate {
-      animation-duration: 6200ms !important;
+      animation-duration: 4600ms !important;
     }
 
     body.battle-mode.advanced-drama #battlefield::before,
@@ -9257,7 +9257,7 @@
         0 0 42px var(--elm-glow, rgba(255,220,126,.62)),
         0 0 76px rgba(255,200,80,.34),
         inset 0 0 48px var(--elm-glow, rgba(255,220,126,.52)) !important;
-      animation-duration: 1200ms !important;
+      animation-duration: 900ms !important;
     }
 
     body.battle-mode .played-card-stage:has(.card[data-cost="10"]) .cast-ring {
@@ -9270,7 +9270,7 @@
         0 0 88px var(--elm-p1, #ffe18a),
         0 0 120px rgba(255,200,60,.28),
         inset 0 0 60px rgba(255,240,168,.38) !important;
-      animation-duration: 1000ms !important;
+      animation-duration: 750ms !important;
     }
 
     /* ── Enhanced cast-burst per cost tier ── */
@@ -9279,7 +9279,7 @@
       height: min(540px, 82vw) !important;
       -webkit-mask: radial-gradient(circle, transparent 0 42%, #000 43% 48%, transparent 49% 100%) !important;
       mask: radial-gradient(circle, transparent 0 42%, #000 43% 48%, transparent 49% 100%) !important;
-      animation-duration: 1000ms !important;
+      animation-duration: 750ms !important;
     }
 
     body.battle-mode .played-card-stage:has(.card[data-cost="10"]) .cast-burst {
@@ -9288,13 +9288,13 @@
       background: conic-gradient(from 0deg, transparent, rgba(255,215,0,.7), transparent, var(--elm-p1, #ffe18a), rgba(255,255,255,.5), transparent) !important;
       -webkit-mask: radial-gradient(circle, transparent 0 40%, #000 41% 48%, transparent 49% 100%) !important;
       mask: radial-gradient(circle, transparent 0 40%, #000 41% 48%, transparent 49% 100%) !important;
-      animation-duration: 800ms !important;
+      animation-duration: 600ms !important;
     }
 
     /* ── Enhanced ultimate backdrop and rays ── */
     body.battle-mode .played-card-stage:has(.card[data-cost="10"]) .ultimate-backdrop {
       background: radial-gradient(circle at 50% 44%, rgba(255,240,180,.28), rgba(120,80,40,.54) 36%, rgba(0,0,0,.86) 100%) !important;
-      animation-duration: 2000ms !important;
+      animation-duration: 1500ms !important;
     }
 
     body.battle-mode .played-card-stage:has(.card[data-cost="10"]) .ultimate-rays {
@@ -9302,7 +9302,7 @@
       height: min(860px, 120vw) !important;
       background: repeating-conic-gradient(from 0deg, rgba(255,245,200,.42) 0 6deg, transparent 6deg 18deg) !important;
       filter: blur(.5px) drop-shadow(0 0 28px rgba(255,235,160,.6)) !important;
-      animation-duration: 3200ms !important;
+      animation-duration: 2400ms !important;
     }
 
     /* ── Enhanced banner for 10-cost ── */
