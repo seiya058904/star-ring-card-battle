@@ -5894,6 +5894,7 @@
         text.style.setProperty("--fx-color", this.textColor(card.effectType, card.element));
         text.textContent = result.amount ? this.valuePrefix(card.effectType) + formatNumber(result.amount) : card.name;
         field.appendChild(text);
+        this.showMechanicPopups(result, drama);
         setTimeout(() => text.remove(), drama.numbers);
         const settings = uiRenderer?.settings || DEFAULT_GAME_SETTINGS;
         if (card.skillTier === "advanced" || card.skillTier === "special") {
@@ -5937,6 +5938,22 @@
             shape: this.shape(card.element)
           });
         }
+      },
+      showMechanicPopups(result, drama) {
+        const field = document.getElementById("battlefield");
+        if (!field || !result?.popups?.length) return;
+        const baseX = result.targetId === "player" ? "30%" : "70%";
+        const baseY = result.targetId === "player" ? "34%" : "30%";
+        const hold = drama.tier === "ultimate" || drama.tier === "advanced" ? 1600 : 1400;
+        result.popups.slice(0, 4).forEach((popup, index) => {
+          const el = document.createElement("div");
+          el.className = `mechanic-popup ${popup.type || "status"}`;
+          el.style.setProperty("--fx-x", baseX);
+          el.style.setProperty("--fx-y", `calc(${baseY} + ${index * 28}px)`);
+          el.textContent = popup.text;
+          field.appendChild(el);
+          setTimeout(() => el.remove(), hold + index * 90);
+        });
       },
       textColor(effectType, element) {
         if (["heal", "revive"].includes(effectType)) return "#7dff9b";
@@ -6444,12 +6461,20 @@
       },
       renderDuelUnit(id, fighter, isPlayer) {
         const hpPct = clamp((fighter.hp / fighter.maxHp) * 100, 0, 100);
+        const shieldPct = clamp((fighter.shield / fighter.maxHp) * 100, 0, 100);
         const sprite = unitSpriteFor(fighter);
         const unit = document.getElementById(id);
         const raceKey = normalizeRace(fighter.race);
         if (!unit) return;
         unit.dataset.race = raceKey === "龙族" ? "dragon" : raceKey;
         unit.innerHTML = `
+          <div class="unit-overhead-hp ${isPlayer ? "player" : "enemy"}">
+            <div class="hp-label">${fighter.name} ${formatNumber(fighter.hp)} / ${formatNumber(fighter.maxHp)}</div>
+            <div class="hp-track">
+              <div class="hp-fill" style="width:${hpPct}%"></div>
+              <div class="shield-fill" style="width:${shieldPct}%"></div>
+            </div>
+          </div>
           <img class="unit-sprite" src="${sprite}" alt="${fighter.name}">
           <div class="unit-label">${fighter.name} · ${fighter.race}</div>
           <div class="unit-hp"><div class="unit-hp-fill" style="width:${hpPct}%"></div><span>${formatNumber(fighter.hp)}</span></div>
@@ -6907,11 +6932,12 @@
     };
 
     gameEngine.applyCard = function(actor, target, card) {
-      const result = { text:"", amount:0, kind:card.effectType, element:card.element, tier:card.skillTier, actorId:actor.id, targetId:target.id };
+      const result = { text:"", amount:0, kind:card.effectType, element:card.element, tier:card.skillTier, actorId:actor.id, targetId:target.id, popups:[] };
       const NEGATIVE_STATUS_TYPES = new Set(["燃烧","冻结","诅咒","破甲","虚弱","禁锢","中毒"]);
       let power = Math.round(card.power * this.statusMultiplier(actor, target, card));
       const elem = elementMultiplier(card.element, target);
       if (["attack","burn","freeze","curse","execute","control","lifesteal","pierce","summon"].includes(card.effectType)) power = Math.round(power * elem.multiplier);
+      if (elem.text) result.popups.push({ type:"element", text: elem.multiplier > 1 ? "元素克制" : "元素抵抗" });
       if (actor.race === "兽人族" && actor.hp / actor.maxHp < .5 && ["attack","burn","pierce","execute"].includes(card.effectType)) power = Math.round(power * 1.12);
       if (actor.race === "恶魔" && ["attack","burn","curse","lifesteal"].includes(card.effectType)) card.mechanics = Array.from(new Set([...(card.mechanics || []), "lifesteal"]));
       if (target.race === "龙族" && card.element !== "无") power = Math.round(power * .92);
@@ -6936,16 +6962,18 @@
         if (card.mechanics?.includes("lifesteal")) {
           const heal = Math.round(Math.max(1, damage) * .28);
           actor.hp = Math.min(actor.maxHp, actor.hp + heal);
+          result.popups.push({ type:"status", text:`吸血 +${formatNumber(heal)}` });
           result.text += ` 吸取 ${formatNumber(heal)} 生命。`;
         }
-        if (card.mechanics?.includes("burn")) { target.statuses.push({ type:"燃烧", turns:2, power:Math.round(power * .18) }); result.text += " 目标被燃烧。"; }
-        if (card.mechanics?.includes("freeze")) { target.statuses.push({ type:"冻结", turns:1, power:0 }); result.text += " 目标被冻结。"; }
-        if (card.mechanics?.includes("curse")) { target.statuses.push({ type:"诅咒", turns:3, power:Math.round(power * .12) }); result.text += " 目标受到诅咒。"; }
-        if (card.mechanics?.includes("control")) { target.statuses.push({ type:"禁锢", turns:1, power:0 }); result.text += " 目标行动受限。"; }
-        if (card.mechanics?.includes("summon")) { actor.statuses.push({ type:"召唤", turns:3, power:Math.round(power*.18) }); result.text += " 召唤物加入战场。"; }
+        if (card.mechanics?.includes("burn")) { target.statuses.push({ type:"燃烧", turns:2, power:Math.round(power * .18) }); result.popups.push({ type:"status debuff", text:"燃烧 2 回合" }); result.text += " 目标被燃烧。"; }
+        if (card.mechanics?.includes("freeze")) { target.statuses.push({ type:"冻结", turns:1, power:0 }); result.popups.push({ type:"status control", text:"冻结 1 回合" }); result.text += " 目标被冻结。"; }
+        if (card.mechanics?.includes("curse")) { target.statuses.push({ type:"诅咒", turns:3, power:Math.round(power * .12) }); result.popups.push({ type:"status debuff", text:"诅咒 3 回合" }); result.text += " 目标受到诅咒。"; }
+        if (card.mechanics?.includes("control")) { target.statuses.push({ type:"禁锢", turns:1, power:0 }); result.popups.push({ type:"status control", text:"禁锢 1 回合" }); result.text += " 目标行动受限。"; }
+        if (card.mechanics?.includes("summon")) { actor.statuses.push({ type:"召唤", turns:3, power:Math.round(power*.18) }); result.popups.push({ type:"status", text:"召唤 3 回合" }); result.text += " 召唤物加入战场。"; }
       } else if (["defense","shield"].includes(card.effectType)) {
         const shield = Math.round(power * actor.profile.defense);
         actor.shield += shield;
+        result.popups.push({ type:"status", text:`护盾 +${formatNumber(shield)}` });
         if (card.mechanics?.includes("damageReduction")) actor.statuses.push({ type:"减伤", turns:2, power:.18 });
         if (card.mechanics?.includes("fortify") && actor.shield > shield) actor.statuses.push({ type:"减伤", turns:1, power:.12 });
         result.amount = shield;
@@ -6973,8 +7001,8 @@
         actor.statuses.push({ type:"蓄力", turns:1, power:.25 });
         result.text = `${actor.name}使用「${card.name}」，获得 2 点能量，并蓄力。`;
       } else if (["buff","debuff"].includes(card.effectType)) {
-        if (card.effectType === "buff") actor.statuses.push({ type:"增幅", turns:2, power:.25 });
-        else target.statuses.push({ type:"虚弱", turns:2, power:.2 });
+        if (card.effectType === "buff") { actor.statuses.push({ type:"增幅", turns:2, power:.25 }); result.popups.push({ type:"status", text:"增幅 2 回合" }); }
+        else { target.statuses.push({ type:"虚弱", turns:2, power:.2 }); result.popups.push({ type:"status debuff", text:"虚弱 2 回合" }); }
         result.text = `${actor.name}使用「${card.name}」，改变了战斗节奏。`;
       }
 
@@ -8368,6 +8396,95 @@
       font-size: 52px !important;
       color: #fff5bd !important;
       text-shadow: 0 0 14px #fff0a8, 0 0 30px var(--fx-color, #ffe18a), 0 5px 16px rgba(0,0,0,.96) !important;
+    }
+
+    body.battle-mode .unit-overhead-hp {
+      position: absolute !important;
+      left: 50% !important;
+      top: -44px !important;
+      width: 260px !important;
+      transform: translateX(-50%) !important;
+      z-index: 6 !important;
+      padding: 5px 7px 7px !important;
+      border: 1px solid rgba(255, 220, 126, .42) !important;
+      background: linear-gradient(180deg, rgba(8, 9, 8, .92), rgba(2, 3, 3, .88)) !important;
+      box-shadow: 0 8px 18px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.05) !important;
+      pointer-events: none !important;
+    }
+
+    body.battle-mode .unit-overhead-hp .hp-label {
+      font-size: 12px !important;
+      font-weight: 900 !important;
+      color: #ffe8ae !important;
+      text-align: center !important;
+      text-shadow: 0 2px 5px #000 !important;
+      margin-bottom: 4px !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    body.battle-mode .unit-overhead-hp .hp-track {
+      position: relative !important;
+      height: 13px !important;
+      overflow: hidden !important;
+      background: rgba(0, 0, 0, .72) !important;
+      border: 1px solid rgba(255, 232, 160, .22) !important;
+    }
+
+    body.battle-mode .unit-overhead-hp .hp-fill,
+    body.battle-mode .unit-overhead-hp .shield-fill {
+      position: absolute !important;
+      left: 0 !important;
+      top: 0 !important;
+      bottom: 0 !important;
+      transition: width .35s ease !important;
+    }
+
+    body.battle-mode .unit-overhead-hp.player .hp-fill {
+      background: linear-gradient(90deg, #23d76f, #96ff9d) !important;
+    }
+
+    body.battle-mode .unit-overhead-hp.enemy .hp-fill {
+      background: linear-gradient(90deg, #d73330, #ff8768) !important;
+    }
+
+    body.battle-mode .unit-overhead-hp .shield-fill {
+      top: auto !important;
+      height: 4px !important;
+      background: linear-gradient(90deg, #58c7ff, #ffe18a) !important;
+      opacity: .9 !important;
+    }
+
+    body.battle-mode .mechanic-popup {
+      position: absolute !important;
+      left: var(--fx-x, 50%) !important;
+      top: var(--fx-y, 34%) !important;
+      z-index: 28 !important;
+      transform: translate(-50%, -50%) !important;
+      padding: 6px 11px !important;
+      border-radius: 999px !important;
+      border: 1px solid rgba(255,231,160,.52) !important;
+      background: linear-gradient(180deg, rgba(28,24,15,.94), rgba(7,8,8,.92)) !important;
+      color: #ffe9a8 !important;
+      font-size: 16px !important;
+      font-weight: 900 !important;
+      pointer-events: none !important;
+      white-space: nowrap !important;
+      text-shadow: 0 2px 6px rgba(0,0,0,.9) !important;
+      box-shadow: 0 0 18px rgba(255,214,112,.22) !important;
+      animation: mechanicPopupFloat 1400ms ease-out forwards !important;
+    }
+
+    body.battle-mode .mechanic-popup.element { color: #fff3b8 !important; box-shadow: 0 0 20px rgba(255,226,132,.34) !important; }
+    body.battle-mode .mechanic-popup.debuff { color: #ffb0dc !important; border-color: rgba(255,111,177,.56) !important; }
+    body.battle-mode .mechanic-popup.control { color: #c8eeff !important; border-color: rgba(132,220,255,.58) !important; }
+
+    @keyframes mechanicPopupFloat {
+      0% { opacity: 0; transform: translate(-50%, 8px) scale(.92); }
+      18% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      78% { opacity: 1; transform: translate(-50%, -66%) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -88%) scale(.98); }
     }
     }
 
