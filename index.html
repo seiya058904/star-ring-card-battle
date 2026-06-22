@@ -8882,13 +8882,14 @@
       width: 230px !important;
       height: 230px !important;
       animation-duration: 1080ms !important;
+      box-shadow: 0 0 28px var(--fx-color, #ffe18a), 0 0 56px rgba(255,200,80,.28) !important;
     }
 
     body.battle-mode .target-impact.ultimate {
-      width: 340px !important;
-      height: 340px !important;
-      animation-duration: 1380ms !important;
-      box-shadow: 0 0 46px #fff0a8, 0 0 86px var(--fx-color, #ffe18a) !important;
+      width: 360px !important;
+      height: 360px !important;
+      animation-duration: 1500ms !important;
+      box-shadow: 0 0 50px #fff0a8, 0 0 90px var(--fx-color, #ffe18a), 0 0 130px rgba(255,200,60,.35) !important;
     }
 
     @keyframes castVortexGather {
@@ -8984,7 +8985,25 @@
     body.battle-mode .float-text.ultimate {
       font-size: 52px !important;
       color: #fff5bd !important;
-      text-shadow: 0 0 14px #fff0a8, 0 0 30px var(--fx-color, #ffe18a), 0 5px 16px rgba(0,0,0,.96) !important;
+      text-shadow: 0 0 14px #fff0a8, 0 0 30px var(--fx-color, #ffe18a), 0 0 50px rgba(255,200,80,.4), 0 5px 16px rgba(0,0,0,.96) !important;
+      animation: floatTextUltimate 800ms ease-out forwards !important;
+    }
+
+    @keyframes floatTextUltimate {
+      0% { opacity: 0; transform: translate(-50%, 10px) scale(.6); }
+      25% { opacity: 1; transform: translate(-50%, -8px) scale(1.12); }
+      50% { transform: translate(-50%, -14px) scale(1); }
+      100% { opacity: 1; transform: translate(-50%, -22px) scale(1); }
+    }
+
+    body.battle-mode .float-text.ultimate.friendly-heal {
+      color: #b5ffc8 !important;
+      text-shadow: 0 0 14px rgba(92,255,139,.8), 0 0 34px rgba(92,255,139,.5), 0 5px 16px rgba(0,0,0,.96) !important;
+    }
+
+    body.battle-mode .float-text.ultimate.friendly-shield {
+      color: #b8edff !important;
+      text-shadow: 0 0 14px rgba(116,215,255,.8), 0 0 34px rgba(116,215,255,.5), 0 5px 16px rgba(0,0,0,.96) !important;
     }
 
     body.battle-mode .unit-overhead-hp {
@@ -9075,7 +9094,6 @@
       78% { opacity: 1; transform: translate(-50%, -66%) scale(1); }
       100% { opacity: 0; transform: translate(-50%, -88%) scale(.98); }
     }
-    }
 
     body.battle-mode .played-card-stage.show .card {
       transform: scale(1.1) !important;
@@ -9083,11 +9101,183 @@
       outline: 0 !important;
     }
 
+    body.battle-mode .played-card-stage.show:has(.card[data-cost="8"]) .card {
+      filter: brightness(1.1) drop-shadow(0 0 18px var(--elm-glow, rgba(255,218,112,.4))) !important;
+    }
+
+    body.battle-mode .played-card-stage.show:has(.card[data-cost="9"]) .card {
+      filter: brightness(1.16) drop-shadow(0 0 24px var(--elm-glow, rgba(255,218,112,.55))) drop-shadow(0 0 48px rgba(255,200,80,.22)) !important;
+      transform: scale(1.14) !important;
+    }
+
+    body.battle-mode .played-card-stage.show:has(.card[data-cost="10"]) .card {
+      filter: brightness(1.22) drop-shadow(0 0 28px rgba(255,245,190,.6)) drop-shadow(0 0 56px rgba(255,200,80,.35)) !important;
+      transform: scale(1.18) !important;
+    }
+
     @keyframes playedCardFloat {
       0% { opacity: 0; transform: translate(-50%, 20px) scale(.96); }
       18% { opacity: 1; transform: translate(-50%, 0) scale(1); }
       72% { opacity: 1; transform: translate(-50%, -12px) scale(1); }
       100% { opacity: 0; transform: translate(-50%, -34px) scale(.98); }
+    }
+
+    /* ════════════════════════════════════════════════ */
+    /* Enhanced Cast Stage for 8-9-10 Cost Cards      */
+    /* ════════════════════════════════════════════════ */
+
+    /* ── Enhanced card glow behind the played card ── */
+    body.battle-mode .played-card-stage:has(.card[data-cost="8"]) .played-card-wrap::after,
+    body.battle-mode .played-card-stage:has(.card[data-cost="9"]) .played-card-wrap::after,
+    body.battle-mode .played-card-stage:has(.card[data-cost="10"]) .played-card-wrap::after {
+      content: "" !important;
+      position: absolute !important;
+      left: 50% !important;
+      top: 50% !important;
+      width: 90% !important;
+      height: 90% !important;
+      transform: translate(-50%, -50%) !important;
+      border-radius: 30% !important;
+      pointer-events: none !important;
+      z-index: -1 !important;
+      opacity: 0 !important;
+      animation: castCardGlowIn 700ms ease-out 300ms forwards !important;
+    }
+
+    body.battle-mode .played-card-stage:has(.card[data-cost="8"]) .played-card-wrap::after {
+      background: radial-gradient(circle, var(--elm-glow, rgba(255,218,112,.38)) 0, transparent 68%) !important;
+    }
+
+    body.battle-mode .played-card-stage:has(.card[data-cost="9"]) .played-card-wrap::after {
+      background: radial-gradient(circle, var(--elm-glow, rgba(255,218,112,.52)) 0, var(--elm-p1, #ffe18a) 18%, transparent 72%) !important;
+    }
+
+    body.battle-mode .played-card-stage:has(.card[data-cost="10"]) .played-card-wrap::after {
+      background: radial-gradient(circle, rgba(255,248,200,.7) 0, var(--elm-p1, #ffe18a) 14%, var(--elm-glow, rgba(255,218,112,.5)) 28%, transparent 76%) !important;
+      filter: blur(2px) !important;
+    }
+
+    @keyframes castCardGlowIn {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(.6); }
+      100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+
+    /* ── Enhanced cast-vortex per cost tier ── */
+    body.battle-mode .played-card-stage:has(.card[data-cost="8"]) .cast-vortex {
+      width: min(560px, 86vw) !important;
+      height: min(560px, 86vw) !important;
+      background:
+        radial-gradient(circle, rgba(255,255,255,.46) 0 2px, transparent 3px 100%),
+        radial-gradient(circle, var(--elm-glow, rgba(255,220,126,.42)) 0 18%, transparent 62%) !important;
+      background-size: 38px 38px, 100% 100% !important;
+      filter: drop-shadow(0 0 22px var(--elm-p1, #ffe18a)) !important;
+    }
+
+    body.battle-mode .played-card-stage:has(.card[data-cost="9"]) .cast-vortex {
+      width: min(620px, 90vw) !important;
+      height: min(620px, 90vw) !important;
+      background:
+        radial-gradient(circle, rgba(255,255,255,.54) 0 2px, transparent 3px 100%),
+        radial-gradient(circle, var(--elm-p1, #ffe18a) 0 6%, var(--elm-glow, rgba(255,220,126,.52)) 12%, transparent 66%) !important;
+      background-size: 34px 34px, 100% 100% !important;
+      filter: drop-shadow(0 0 28px var(--elm-p1, #ffe18a)) drop-shadow(0 0 48px rgba(255,200,80,.3)) !important;
+    }
+
+    body.battle-mode .played-card-stage:has(.card[data-cost="10"]) .cast-vortex {
+      width: min(720px, 94vw) !important;
+      height: min(720px, 94vw) !important;
+      background:
+        radial-gradient(circle, rgba(255,248,200,.6) 0 2px, transparent 3px 100%),
+        radial-gradient(circle, rgba(255,248,210,.34) 0 6%, var(--elm-p1, #ffe18a) 10%, var(--elm-glow, rgba(255,220,126,.62)) 18%, transparent 70%) !important;
+      background-size: 30px 30px, 100% 100% !important;
+      filter: drop-shadow(0 0 30px rgba(255,230,150,.7)) drop-shadow(0 0 60px rgba(255,200,80,.4)) !important;
+    }
+
+    /* ── Enhanced cast-ring per cost tier ── */
+    body.battle-mode .played-card-stage:has(.card[data-cost="8"]) .cast-ring {
+      width: min(480px, 76vw) !important;
+      height: min(480px, 76vw) !important;
+      border-width: 4px !important;
+      box-shadow:
+        0 0 36px var(--elm-glow, rgba(255,220,126,.52)),
+        0 0 64px rgba(255,200,80,.22),
+        inset 0 0 40px var(--elm-glow, rgba(255,220,126,.42)) !important;
+    }
+
+    body.battle-mode .played-card-stage:has(.card[data-cost="9"]) .cast-ring {
+      width: min(560px, 86vw) !important;
+      height: min(560px, 86vw) !important;
+      border-width: 5px !important;
+      box-shadow:
+        0 0 42px var(--elm-glow, rgba(255,220,126,.62)),
+        0 0 76px rgba(255,200,80,.34),
+        inset 0 0 48px var(--elm-glow, rgba(255,220,126,.52)) !important;
+      animation-duration: 1200ms !important;
+    }
+
+    body.battle-mode .played-card-stage:has(.card[data-cost="10"]) .cast-ring {
+      width: min(680px, 98vw) !important;
+      height: min(680px, 98vw) !important;
+      border-width: 6px !important;
+      border-color: #fff0a8 !important;
+      box-shadow:
+        0 0 48px #fff0a8,
+        0 0 88px var(--elm-p1, #ffe18a),
+        0 0 120px rgba(255,200,60,.28),
+        inset 0 0 60px rgba(255,240,168,.38) !important;
+      animation-duration: 1000ms !important;
+    }
+
+    /* ── Enhanced cast-burst per cost tier ── */
+    body.battle-mode .played-card-stage:has(.card[data-cost="9"]) .cast-burst {
+      width: min(540px, 82vw) !important;
+      height: min(540px, 82vw) !important;
+      -webkit-mask: radial-gradient(circle, transparent 0 42%, #000 43% 48%, transparent 49% 100%) !important;
+      mask: radial-gradient(circle, transparent 0 42%, #000 43% 48%, transparent 49% 100%) !important;
+      animation-duration: 1000ms !important;
+    }
+
+    body.battle-mode .played-card-stage:has(.card[data-cost="10"]) .cast-burst {
+      width: min(620px, 90vw) !important;
+      height: min(620px, 90vw) !important;
+      background: conic-gradient(from 0deg, transparent, rgba(255,215,0,.7), transparent, var(--elm-p1, #ffe18a), rgba(255,255,255,.5), transparent) !important;
+      -webkit-mask: radial-gradient(circle, transparent 0 40%, #000 41% 48%, transparent 49% 100%) !important;
+      mask: radial-gradient(circle, transparent 0 40%, #000 41% 48%, transparent 49% 100%) !important;
+      animation-duration: 800ms !important;
+    }
+
+    /* ── Enhanced ultimate backdrop and rays ── */
+    body.battle-mode .played-card-stage:has(.card[data-cost="10"]) .ultimate-backdrop {
+      background: radial-gradient(circle at 50% 44%, rgba(255,240,180,.28), rgba(120,80,40,.54) 36%, rgba(0,0,0,.86) 100%) !important;
+      animation-duration: 2000ms !important;
+    }
+
+    body.battle-mode .played-card-stage:has(.card[data-cost="10"]) .ultimate-rays {
+      width: min(860px, 120vw) !important;
+      height: min(860px, 120vw) !important;
+      background: repeating-conic-gradient(from 0deg, rgba(255,245,200,.42) 0 6deg, transparent 6deg 18deg) !important;
+      filter: blur(.5px) drop-shadow(0 0 28px rgba(255,235,160,.6)) !important;
+      animation-duration: 3200ms !important;
+    }
+
+    /* ── Enhanced banner for 10-cost ── */
+    body.battle-mode .played-card-stage:has(.card[data-cost="10"]) .cast-banner {
+      border-color: rgba(255, 248, 210, .9) !important;
+      box-shadow: 0 0 36px rgba(255, 236, 160, .5), inset 0 0 24px rgba(255, 240, 170, .22) !important;
+      text-shadow: 0 0 20px rgba(255, 238, 160, .7), 0 2px 10px rgba(0,0,0,.95) !important;
+    }
+
+    /* ── Low-animation overrides for cast stage enhancements ── */
+    body[data-anim="low"] .played-card-stage:has(.card[data-cost="8"]) .played-card-wrap::after,
+    body[data-anim="low"] .played-card-stage:has(.card[data-cost="9"]) .played-card-wrap::after,
+    body[data-anim="low"] .played-card-stage:has(.card[data-cost="10"]) .played-card-wrap::after {
+      animation: none !important;
+      opacity: .24 !important;
+    }
+
+    body[data-anim="low"] .played-card-stage:has(.card[data-cost="10"]) .ultimate-rays,
+    body[data-anim="low"] .played-card-stage:has(.card[data-cost="10"]) .ultimate-backdrop {
+      animation: none !important;
     }
 
     body.battle-mode .preview-detail-grid {
