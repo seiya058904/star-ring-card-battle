@@ -779,6 +779,21 @@
       animation: hitJolt .36s steps(2, end);
     }
 
+    .duel-unit.heal-impact {
+      animation: healRise .52s ease-out;
+      filter: drop-shadow(0 0 18px rgba(112, 255, 154, .72));
+    }
+
+    .duel-unit.shield-impact {
+      animation: shieldPulse .58s ease-out;
+      filter: drop-shadow(0 0 18px rgba(118, 213, 255, .75));
+    }
+
+    .duel-unit.status-impact {
+      animation: statusPulse .46s ease-out;
+      filter: drop-shadow(0 0 15px rgba(174, 128, 255, .7));
+    }
+
     @keyframes idleFloat {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-7px); }
@@ -789,6 +804,24 @@
       25% { transform: translateX(-10px); }
       50% { transform: translateX(8px); }
       75% { transform: translateX(-5px); }
+    }
+
+    @keyframes healRise {
+      0% { transform: translateY(0); }
+      42% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+
+    @keyframes shieldPulse {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.06); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes statusPulse {
+      0% { transform: translateY(0); }
+      38% { transform: translateY(4px); }
+      100% { transform: translateY(0); }
     }
 
     .pixel-avatar {
@@ -5819,7 +5852,6 @@
             return;
           }
           gameEngine.resolveAction({ type: "playCard", side: "enemy", cardInstanceId: card.instanceId });
-          uiRenderer.render();
           setTimeout(loop, 480);
         };
         setTimeout(loop, 420);
@@ -5919,17 +5951,6 @@
           document.body.classList.remove(`${drama.tier}-drama`);
           resetBattleViewTransform();
         }, drama.totalMin);
-        const text = document.createElement("div");
-        text.className = `float-text ${drama.tier}`;
-        const targetX = result.targetId === "player" ? "28%" : "72%";
-        const targetY = result.targetId === "player" ? "58%" : "50%";
-        text.style.setProperty("--fx-x", targetX);
-        text.style.setProperty("--fx-y", targetY);
-        text.style.setProperty("--fx-color", this.textColor(card.effectType, card.element));
-        text.textContent = result.amount ? this.valuePrefix(card.effectType) + formatNumber(result.amount) : card.name;
-        field.appendChild(text);
-        this.showMechanicPopups(result, drama);
-        setTimeout(() => text.remove(), drama.numbers);
         const settings = uiRenderer?.settings || DEFAULT_GAME_SETTINGS;
         if (card.skillTier === "advanced" || card.skillTier === "special") {
           document.getElementById("screenFlash").classList.remove("on");
@@ -5937,22 +5958,42 @@
           void document.getElementById("screenFlash").offsetWidth;
           document.getElementById("screenFlash").classList.add("on");
         }
+        const impactDelay = drama.enter + drama.focus + drama.charge + drama.cast;
         setTimeout(() => {
-          const targetUnit = document.getElementById(result.targetId === "player" ? "playerUnit" : "enemyUnit");
-          targetUnit?.classList.remove("hit");
+          uiRenderer.render();
+          const numberSide = result.visualTargets?.number || result.targetId;
+          const impactSide = result.visualTargets?.impact || result.targetId;
+          const targetUnit = document.getElementById(impactSide === "player" ? "playerUnit" : "enemyUnit");
+          const impactClass = result.intent === "friendly-heal" ? "heal-impact"
+            : result.intent === "friendly-shield" ? "shield-impact"
+            : result.intent === "hostile-status" || result.intent === "friendly-buff" || result.intent === "friendly-summon" ? "status-impact"
+            : "hit";
+          targetUnit?.classList.remove("hit", "heal-impact", "shield-impact", "status-impact");
           void targetUnit?.offsetWidth;
-          targetUnit?.classList.add("hit");
-        }, drama.enter + drama.focus + drama.charge + drama.cast);
-        if (settings.shake) {
-          field.classList.remove("shake");
-          void field.offsetWidth;
-          field.classList.add("shake");
+          targetUnit?.classList.add(impactClass);
+          if (result.amount > 0) {
+            const text = document.createElement("div");
+            text.className = `float-text ${drama.tier} ${result.intent || ""}`;
+            const targetX = numberSide === "player" ? "28%" : "72%";
+            const targetY = numberSide === "player" ? "58%" : "50%";
+            text.style.setProperty("--fx-x", targetX);
+            text.style.setProperty("--fx-y", targetY);
+            text.style.setProperty("--fx-color", this.textColor(card.effectType, card.element));
+            text.textContent = this.valuePrefix(card.effectType) + formatNumber(result.amount);
+            field.appendChild(text);
+            setTimeout(() => text.remove(), drama.numbers);
+          }
+          this.showMechanicPopups(result, drama);
+          if (settings.shake && result.visualTargets?.shake) {
+            targetUnit?.classList.remove("hit");
+            void targetUnit?.offsetWidth;
+            targetUnit?.classList.add("hit");
+          }
           setTimeout(() => {
-            field.classList.remove("shake");
-            field.style.transform = "";
+            targetUnit?.classList.remove("hit", "heal-impact", "shield-impact", "status-impact");
             resetBattleViewTransform();
-          }, 320);
-        }
+          }, 420);
+        }, impactDelay);
         const rect = this.canvas.getBoundingClientRect();
         const animMul = settings.animation === "low" ? .35 : settings.animation === "high" ? 1.25 : 1;
         const baseCount = drama.tier === "ultimate" ? 180 : drama.tier === "advanced" ? 120 : drama.tier === "strong" ? 86 : drama.tier === "enhanced" ? 58 : 38;
@@ -5976,10 +6017,12 @@
       showMechanicPopups(result, drama) {
         const field = document.getElementById("battlefield");
         if (!field || !result?.popups?.length) return;
-        const baseX = result.targetId === "player" ? "30%" : "70%";
-        const baseY = result.targetId === "player" ? "34%" : "30%";
+        const defaultSide = result.visualTargets?.impact || result.targetId;
         const hold = drama.tier === "ultimate" || drama.tier === "advanced" ? 1600 : 1400;
         result.popups.slice(0, 4).forEach((popup, index) => {
+          const side = popup.side || defaultSide;
+          const baseX = side === "player" ? "30%" : "70%";
+          const baseY = side === "player" ? "34%" : "30%";
           const el = document.createElement("div");
           el.className = `mechanic-popup ${popup.type || "status"}`;
           el.style.setProperty("--fx-x", baseX);
@@ -6473,7 +6516,6 @@
           resetBattleViewTransform();
           el.classList.add("playing");
           gameEngine.resolveAction({ type: "playCard", side: "player", cardInstanceId: el.dataset.instanceId });
-          this.render();
           resetBattleViewTransform();
         }, { passive: false }));
         this.renderLog();
@@ -7126,7 +7168,6 @@
         uiRenderer.showAiDialogue(card.skillTier === "special" ? "beforeSpecial" : card.skillTier === "advanced" ? "beforeAdvanced" : "beforeCard");
         setTimeout(() => {
           gameEngine.resolveAction({ type:"playCard", side:"enemy", cardInstanceId: card.instanceId });
-          uiRenderer.render();
           const pause = dramaTimingForCard(card).totalMin + 280;
           setTimeout(loop, pause);
         }, 650 + Math.floor(rng() * 450));
