@@ -7002,10 +7002,10 @@
     function createStatusFromMechanic(mechanic, card, power) {
       const type = normalizeStatusType(mechanic);
       if (type === "禁锢") return { type, name: "禁锢", turns: 1, skipAction: true, source: card.name };
-      if (type === "燃烧") return { type, name: "燃烧", turns: 2, tickDamage: Math.max(1, Math.round(power * 0.18)), source: card.name, element: card.element };
-      if (type === "诅咒") return { type, name: "诅咒", turns: 3, tickDamage: Math.max(1, Math.round(power * 0.12)), source: card.name, element: card.element };
+      if (type === "燃烧") return { type, name: "燃烧", turns: 2, power: Math.max(1, Math.round(power * 0.18)), source: card.name, element: card.element };
+      if (type === "诅咒") return { type, name: "诅咒", turns: 3, power: Math.max(1, Math.round(power * 0.12)), source: card.name, element: card.element };
       if (type === "冻结") return { type, name: "冻结", turns: 1, source: card.name };
-      if (type === "召唤") return { type, name: "召唤", turns: 3, tickDamage: Math.max(1, Math.round(power * 0.18)), source: card.name };
+      if (type === "召唤") return { type, name: "召唤", turns: 3, power: Math.max(1, Math.round(power * 0.18)), source: card.name };
       return null;
     }
 
@@ -7129,11 +7129,11 @@
           result.popups.push({ type:"status heal", text:`吸血 +${formatNumber(heal)}`, side: actor.id });
           result.text += ` 吸取 ${formatNumber(heal)} 生命。`;
         }
-        if (card.mechanics?.includes("burn")) { target.statuses.push({ type:"燃烧", turns:2, power:Math.round(power * .18) }); result.popups.push({ type:"status debuff", text:"燃烧 2 回合", side: target.id }); result.text += " [状态施加] 目标获得燃烧2回合。"; }
+        if (card.mechanics?.includes("burn")) { const st = createStatusFromMechanic("burn", card, power); if (st) { target.statuses.push(st); result.popups.push({ type:"status debuff", text:"燃烧 2 回合", side: target.id }); result.text += " [状态施加] 目标获得燃烧2回合。"; } }
         if (card.mechanics?.includes("freeze")) { target.statuses.push({ type:"冻结", turns:1, power:0 }); result.popups.push({ type:"status control", text:"冻结 1 回合", side: target.id }); result.text += " [状态施加] 目标获得冻结1回合。"; }
-        if (card.mechanics?.includes("curse")) { target.statuses.push({ type:"诅咒", turns:3, power:Math.round(power * .12) }); result.popups.push({ type:"status debuff", text:"诅咒 3 回合", side: target.id }); result.text += " [状态施加] 目标获得诅咒3回合。"; }
-        if (card.mechanics?.includes("control")) { target.statuses.push({ type:"禁锢", turns:1, power:0 }); result.popups.push({ type:"status control", text:"禁锢 1 回合", side: target.id }); result.text += " [状态施加] 目标获得禁锢1回合。"; }
-        if (card.mechanics?.includes("summon")) { actor.statuses.push({ type:"召唤", turns:3, power:Math.round(power*.18) }); result.popups.push({ type:"status", text:"召唤 3 回合", side: actor.id }); result.text += " 召唤物加入战场。"; }
+        if (card.mechanics?.includes("curse")) { const st = createStatusFromMechanic("curse", card, power); if (st) { target.statuses.push(st); result.popups.push({ type:"status debuff", text:"诅咒 3 回合", side: target.id }); result.text += " [状态施加] 目标获得诅咒3回合。"; } }
+        if (card.mechanics?.includes("control")) { const st = createStatusFromMechanic("control", card, power); if (st) { target.statuses.push(st); result.popups.push({ type:"status control", text:"禁锢 1 回合", side: target.id }); result.text += " [状态施加] 目标获得禁锢1回合。"; } }
+        if (card.mechanics?.includes("summon")) { const st = createStatusFromMechanic("summon", card, power); if (st) { actor.statuses.push(st); result.popups.push({ type:"status", text:"召唤 3 回合", side: actor.id }); result.text += " 召唤物加入战场。"; } }
       } else if (["defense","shield"].includes(card.effectType)) {
         const shield = Math.round(power * actor.profile.defense);
         actor.shield += shield;
