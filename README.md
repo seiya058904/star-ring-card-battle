@@ -1,5 +1,11 @@
 # Star Ring Card Battle / 星环卡牌战场
 
+
+<img width="1491" height="1055" alt="ChatGPT Image 2026年6月22日 22_39_04" src="https://github.com/user-attachments/assets/86070e75-f73f-4499-8773-9099a992b20c" />
+
+
+
+
 A single-file HTML card battle prototype featuring a pixel-style fantasy interface, local assets, character selection, turn-based gameplay, skill effects, and element-themed visual particles.
 
 一个单文件 HTML 卡牌战斗原型，包含像素风幻想界面、本地素材、角色选择、回合制战斗、技能效果以及元素主题粒子特效。
