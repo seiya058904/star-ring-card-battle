@@ -6854,8 +6854,8 @@
         parts.push(`恢复 ${value} 点生命`);
       } else if (card.effectType === "draw") parts.push("抽 2 张牌");
       else if (card.effectType === "charge") parts.push("获得 2 点能量");
-      else if (card.effectType === "buff") parts.push("获得持续 2 回合的增益");
-      else if (card.effectType === "debuff") parts.push("使目标削弱 2 回合");
+      else if (card.effectType === "buff") parts.push("获得增幅 2 回合，造成的伤害提高");
+      else if (card.effectType === "debuff") parts.push("使目标虚弱 2 回合，受到的伤害提高");
 
       if (card.mechanics?.includes("lifesteal")) parts.push("吸取部分伤害转化为生命");
       if (card.mechanics?.includes("burn")) parts.push("附加燃烧，每回合开始受到持续伤害");
@@ -6867,6 +6867,7 @@
       if (card.mechanics?.includes("execute")) parts.push("目标生命低于 30% 时伤害提高 55%");
       if (card.mechanics?.includes("control")) parts.push("禁锢目标，下回合无法行动");
       if (card.mechanics?.includes("summon")) parts.push("召唤单位持续 3 回合，每回合协助攻击或防御");
+      if (card.mechanics?.includes("damageReduction")) parts.push("自身获得减伤，受到伤害降低");
       if (card.mechanics?.includes("fortify")) parts.push("若自己已有护盾，额外获得减伤");
       if (card.mechanics?.includes("drawOrEvade")) parts.push("获得轻灵状态，下一次受击减伤并抽牌");
       if (card.rankMode === "fixed") parts.push("固定规格技能");
@@ -7047,7 +7048,10 @@
       const visualTargets = getVisualTargets(actorSide, card);
       const result = { text:"", amount:0, kind:card.effectType, intent, element:card.element, tier:card.skillTier, actorId:actor.id, targetId:visualTargets.primary, visualTargets, popups:[] };
       const NEGATIVE_STATUS_TYPES = new Set(["燃烧","冻结","诅咒","破甲","虚弱","禁锢","中毒"]);
-      let power = Math.round(card.power * this.statusMultiplier(actor, target, card));
+      const statusMult = this.statusMultiplier(actor, target, card);
+      let power = Math.round(card.power * statusMult);
+      if (statusMult > 1.05) result.popups.push({ type:"status", text:`威力提升 ${Math.round((statusMult-1)*100)}%`, side: actor.id });
+      if (statusMult < .95) result.popups.push({ type:"status", text:`威力降低 ${Math.round((1-statusMult)*100)}%`, side: target.id });
       const elem = elementMultiplier(card.element, target);
       if (intent === "hostile-damage") power = Math.round(power * elem.multiplier);
       if (intent === "hostile-damage" && elem.text) result.popups.push({ type:"element", text: elem.multiplier > 1 ? "元素克制" : "元素抵抗", side: target.id });
