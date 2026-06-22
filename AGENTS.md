@@ -2,82 +2,66 @@
 
 ## Project Overview
 
-This repository is a static, browser-only HTML5 card battle game named `星环卡牌战场`. The game is implemented in a single `index.html` file with embedded HTML, CSS, and JavaScript. There is no backend, package manager manifest, build system, test runner, CI configuration, or deployment configuration in the current tree.
+`星环卡牌战场` is a static, browser-only HTML5 card battle game. The app is one `index.html` file with embedded HTML, CSS, vanilla JavaScript, and local assets under `assets/`. No backend API, package manifest, build system, test runner, lint/format/type-check config, CI, or deploy config was found.
 
-The main runtime entry is `index.html`. Open it directly in a browser, or serve the folder with a simple static file server if browser security rules affect local asset loading. Game data and settings are saved in browser `localStorage`, which means they are local to the user's browser.
+The runtime entry is `index.html`. Open it directly, or serve the folder as static files if asset loading needs HTTP. Browser `localStorage` stores custom cards, the current deck, and settings.
 
 ## Project Structure & Module Organization
 
-- `index.html`: the full application. It contains page markup, stacked CSS overrides, and all JavaScript game logic.
-- `assets/`: image assets used by the game.
-- `assets/backgrounds/`, `cards/`, `skills/`, `summons/`, `units/`, `rarity/`: gameplay and visual assets grouped by purpose.
-- `assets/icons/elements/`, `icons/classes/`, `icons/races/`, `icons/status/`: icon sets used by card and battle UI.
-- `assets/raw/`: source sprite sheets.
-- `assets/ui/` and `assets/ui/sprites/`: battle UI atlas files, exported sprites, replacement notes, and sprite documentation.
-- `assets/asset-manifest.json` and `assets/sprite-atlas-map.json`: sprite crop metadata.
-- `.claude/settings.local.json`: local tool settings. Treat it as local configuration and do not copy its contents into documentation.
+- `index.html`: app shell, stacked CSS, game data, generators, persistence, battle engine, AI, effects, and rendering.
+- `assets/`: game imagery and UI resources.
+- `assets/backgrounds/`, `assets/cards/`, `assets/skills/`, `assets/summons/`, `assets/units/`, `assets/rarity/`: gameplay imagery.
+- `assets/icons/...`: element, class, race, and status icons.
+- `assets/ui/` and `assets/ui/sprites/`: battle UI atlas files, sprites, notes, and sprite documentation.
+- `assets/asset-manifest.json` and `assets/sprite-atlas-map.json`: asset and sprite crop metadata.
+- `README.md`: project overview and local run notes.
+- `.claude/settings.local.json`: ignored local tool configuration; do not read or copy its contents.
 
 ## Architecture Notes
 
-All core JavaScript modules live inside `index.html`: asset registries, lore and card data, seeded random helpers, card generation, deck building, `localStorage` persistence, turn-based battle logic, AI scoring, Canvas2D effects, and DOM rendering.
-
-The app boundary is the browser. There is no confirmed server API. Persistent user data is stored through `localStorage`. CSS has multiple later override blocks for battle layout and card visuals, so visual changes must check the latest matching selectors and `!important` rules before editing earlier styles.
-
-Architecture details beyond the single-file browser app should be treated as needing further confirmation.
+The browser is the app boundary. Core runtime objects live inside `index.html`, including `ASSETS`, `cardGenerator`, `deckBuilder`, `storageManager`, `gameEngine`, `effectsRenderer`, `uiRenderer`, and `aiController`. CSS has later overrides and frequent `!important`; inspect the latest matching selectors before visual edits.
 
 ## Build, Test & Development Commands
 
-No configured project commands were found because there is no `package.json`, build script, test config, or CI file.
-
-Useful local actions:
+No configured project scripts were found. Useful local action from `README.md`:
 
 ```bash
-# Open index.html in a browser, or serve the folder with any static file server.
+python -m http.server 8000
 ```
 
-Do not invent `npm`, build, lint, test, deploy, publish, migration, commit, push, or release commands for this project. Any deploy, publish, release, database write, commit, or push must first receive explicit user authorization.
+Then open `http://127.0.0.1:8000/`, or open `index.html` directly. Do not invent `npm`, build, lint, test, deploy, publish, migration, release, or database commands. Commit, push, tag, release, deploy, publish, migrations, and database writes require authorization.
 
 ## Coding Style & Naming Conventions
 
-Follow nearby code in `index.html`. Existing JavaScript uses `const` objects such as `DEFAULT_*`, camelCase functions and object methods, and browser APIs directly. The codebase mixes large data objects, rendering helpers, and engine objects in one script, so keep edits small and localized.
-
-Text shown to users is primarily Chinese. Preserve existing gameplay values, formulas, seeded random behavior, storage keys, and compatibility unless the requested change explicitly requires altering them.
+Follow nearby code in `index.html`. JavaScript uses `const` data objects, camelCase functions/methods, and browser APIs. User-facing text is primarily Chinese. Keep edits localized and preserve formulas, balance values, storage keys, seeded/random behavior, and compatibility unless requested.
 
 No formatter or linter configuration was found. Do not run whole-file formatting or automatic fixes.
 
 ## Testing & Verification
 
-No automated test framework was found. Minimum verification after changes is manual browser testing of the affected flow. For gameplay changes, check deck generation, battle start, card play, turn ending, win/loss behavior, and persistence where relevant. For UI or asset changes, check desktop and narrow screen layouts and verify images load from the expected `assets/` paths.
+No automated test framework was found. Minimum verification is manual browser testing of the affected flow. For gameplay, check deck generation, battle start, card play, turn ending, win/loss, and relevant `localStorage` persistence. For UI/assets, check desktop/narrow layouts and image loading.
 
-Before handing off, inspect the changed files and confirm no unexpected files, caches, logs, or generated outputs were created.
+For script edits, extracting embedded JavaScript and running `node --check` is useful when feasible; remove temporary files afterward. Before handoff, inspect `git status` and diff, and report checks not run.
 
 ## Commit & Pull Request Guidelines
 
-This directory is not currently a Git repository, so no commit history or existing commit convention could be confirmed. If Git is later initialized, use short, clear, single-purpose commit messages that describe the behavior changed. Pull request notes should include what changed, how it was verified, and screenshots for visible UI changes.
+Recent commits use short behavior-focused messages with prefixes such as `feat:`, `fix:`, and `balance:`. Keep commits single-purpose. Change notes should state behavior changed, verification, and screenshots for visible UI changes.
 
-Do not include build caches, local settings, secrets, unrelated edits, or generated files unless the user explicitly asks for them.
+Do not include build caches, local settings, secrets, generated files, or unrelated edits.
 
 ## Security & Configuration
 
-Do not commit environment files, API keys, tokens, passwords, private keys, database connection strings, cloud credentials, or production configuration. Do not expose server-side credentials in client code. Do not write secrets into documentation, chat replies, logs, examples, or commit messages.
-
-Do not commit local caches, build directories, logs, temporary files, or local tool settings. Before changing authentication, permissions, database behavior, signing, production configuration, or billing-related logic, explain the risk and get explicit authorization.
+Do not commit environment files, API keys, tokens, passwords, private keys, database connection strings, cloud credentials, production config, local caches, build directories, logs, or temporary files. Do not expose server-side credentials in client code or write secrets into docs, replies, logs, examples, or commit messages. Before changing auth, permissions, database behavior, signing, production config, or billing, explain the risk and get authorization.
 
 ## Agent-Specific Instructions
 
-Before editing, read the relevant files and state a brief plan. Prefer small, reviewable changes. Do not modify unrelated files or casually change existing behavior, rules, numeric values, storage keys, or compatibility.
-
-Do not invent commands, directories, APIs, or deployment flows. If uncertain, stop and explain the risk instead of guessing. Never overwrite user changes. Do not install dependencies, run auto-fixers, or format the whole repository without explicit permission.
-
-Do not commit, push, deploy, publish, create releases, or perform database operations unless explicitly authorized. If checks fail or were not run, report that honestly.
+Before editing, read relevant files and state a brief plan. Prefer small, reviewable changes. Do not modify unrelated files, invent commands/directories/APIs, overwrite user changes, install dependencies, run auto-fixers, or format the repo. If uncertain, stop and explain the risk. Never commit, push, tag, deploy, publish, release, or run database operations without authorization. Report failed or skipped checks honestly.
 
 ## Pre-Commit Checklist
 
-- Check repository status if Git is available.
-- Review the diff for the current task.
+- Check `git status --short`.
+- Review `git diff` and `git diff --stat`.
 - Confirm only task-related files changed.
-- Confirm no secrets or local configuration were added.
-- Confirm no debug logs, caches, or accidental generated files were added.
-- Run necessary manual or automated checks that exist.
-- Clearly state any checks that were not run.
+- Confirm no secrets, local config, debug logs, caches, or generated artifacts were added.
+- Run relevant manual or static checks and state any checks not run.
 - Confirm commit or push authorization before doing either.
