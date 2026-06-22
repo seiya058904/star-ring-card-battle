@@ -7055,11 +7055,32 @@
       const elem = elementMultiplier(card.element, target);
       if (intent === "hostile-damage") power = Math.round(power * elem.multiplier);
       if (intent === "hostile-damage" && elem.text) result.popups.push({ type:"element", text: elem.multiplier > 1 ? "元素克制" : "元素抵抗", side: target.id });
-      if (actor.race === "兽人族" && actor.hp / actor.maxHp < .5 && ["attack","burn","pierce","execute"].includes(card.effectType)) power = Math.round(power * 1.12);
-      if (actor.race === "恶魔" && ["attack","burn","curse","lifesteal"].includes(card.effectType)) card.mechanics = Array.from(new Set([...(card.mechanics || []), "lifesteal"]));
-      if (target.race === "龙族" && card.element !== "无") power = Math.round(power * .92);
-      if (target.race === "精灵族" && target.turnFlags?.firstHit && ["attack","burn","freeze","curse","execute","control","lifesteal","pierce"].includes(card.effectType)) { power = Math.round(power * .88); target.turnFlags.firstHit = false; }
-      if (target.race === "黑暗精灵") power = Math.round(power * 1.05);
+      if (actor.race === "兽人族" && actor.hp / actor.maxHp < .5 && ["attack","burn","pierce","execute"].includes(card.effectType)) {
+        power = Math.round(power * 1.12);
+        result.popups.push({ type:"talent", text:`[狂战血性] 伤害 +12%`, side: actor.id });
+        result.text += ` ${actor.talent?.name || "狂战血性"}触发，伤害提高。`;
+      }
+      if (actor.race === "恶魔" && ["attack","burn","curse","lifesteal"].includes(card.effectType)) {
+        card.mechanics = Array.from(new Set([...(card.mechanics || []), "lifesteal"]));
+        result.popups.push({ type:"talent", text:`[血契] 附加吸血`, side: actor.id });
+        result.text += ` 血契触发，附加吸血效果。`;
+      }
+      if (target.race === "龙族" && card.element !== "无") {
+        power = Math.round(power * .92);
+        if (!target.talentNotifiedDragon) { result.popups.push({ type:"talent", text:`[龙鳞] 元素伤害 -8%`, side: target.id }); target.talentNotifiedDragon = true; }
+      }
+      if (target.race === "精灵族" && target.turnFlags?.firstHit && ["attack","burn","freeze","curse","execute","control","lifesteal","pierce"].includes(card.effectType)) {
+        power = Math.round(power * .88);
+        target.turnFlags.firstHit = false;
+        result.popups.push({ type:"talent", text:`[灵巧步伐] 首次减伤 -12%`, side: target.id });
+      }
+      if (target.race === "黑暗精灵") {
+        power = Math.round(power * 1.05);
+        result.popups.push({ type:"talent", text:`[诅咒遗脉] 受伤 +5%`, side: target.id });
+      }
+      if (target.race === "神人" && ["buff","heal","shield"].includes(card.effectType) && rng() < .25) {
+        result.popups.push({ type:"talent", text:`[神血] 能量 -1`, side: actor.id });
+      }
 
       if (intent === "hostile-damage") {
         let damage = power;
@@ -7148,6 +7169,7 @@
         target.hp = Math.min(target.maxHp, target.hp + gain);
         target.shield += gain;
         target.talentUsed = true;
+        result.popups.push({ type:"talent", text:`[均衡意志] 恢复 +${formatNumber(gain)}`, side: target.id });
         this.log(`${target.name}触发种族天赋【${target.talent.name}】，恢复并获得 ${formatNumber(gain)} 护盾。`);
       }
       effectsRenderer.play(card, result);
@@ -7372,7 +7394,8 @@
           <div class="character-card">
           <h3>${deck.characterName}「${deck.characterTitle || deck.name}」</h3>
           <div class="title">${deck.originalRace || deck.race} · ${deck.originalProfession || deck.profession} · ${deck.level}级</div>
-            <div class="pill-list"><span class="pill">${deck.name}</span><span class="pill">${deck.cards.length} 张卡</span><span class="pill">天赋：${(RACE_TALENTS[deck.originalRace] || RACE_TALENTS[deck.race])?.name || "无"}</span></div>
+            <div class="pill-list"><span class="pill">${deck.name}</span><span class="pill">${deck.cards.length} 张卡</span></div>
+            <div style="font-size:12px;color:#b8a87a;margin-top:6px;line-height:1.4;">🎴 天赋【${(RACE_TALENTS[deck.originalRace] || RACE_TALENTS[deck.race])?.name || "无"}】<br>${(RACE_TALENTS[deck.originalRace] || RACE_TALENTS[deck.race])?.desc || ""}</div>
             <div class="skills">核心技能：${deck.cards.filter(c => c.category === "skill").slice(0,5).map(c => c.name).join("、")}</div>
           </div>`).join("");
       } else {
@@ -7697,6 +7720,7 @@
         <div class="fighter-card" data-symbol="${RACE_PROFILES[raceKey]?.symbols || "✦"}">
           <div class="fighter-name"><span>${fighter.name}${fighter.title ? `「${fighter.title}」` : ""}</span><span>Lv. ${fighter.level}</span></div>
           <p>${iconImg(raceIcon)}${fighter.race} · ${iconImg(classIcon)}${fighter.profession}</p>
+          <p class="mechanic-note" style="font-size:11px;color:#b8a87a;margin:2px 0 4px;">天赋【${fighter.talent?.name || "无"}】${fighter.talent?.desc || ""}</p>
           <div class="bar"><div class="bar-fill" style="width:${hpPct}%"></div><div class="bar-text">${formatNumber(fighter.hp)} / ${formatNumber(fighter.maxHp)}</div></div>
           <div class="energy-row">${Array.from({ length: fighter.maxEnergy }, (_, i) => `<span class="energy-dot ${i < fighter.energy ? "full" : ""}"></span>`).join("")}<span class="status">${fighter.energy}/${fighter.maxEnergy}</span></div>
           <div class="status-line">
