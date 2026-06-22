@@ -6003,6 +6003,7 @@
             setTimeout(() => text.remove(), drama.numbers);
           }
           this.showMechanicPopups(result, drama);
+          if (result.summonGuard?.amount > 0) this.showSummonGuardDamage(result.summonGuard);
           this.showTargetImpact(result, card, drama);
           if (settings.shake && result.visualTargets?.shake) {
             targetUnit?.classList.remove("hit");
@@ -6063,6 +6064,76 @@
         el.style.setProperty("--fx-color", this.color(card.element));
         field.appendChild(el);
         setTimeout(() => el.remove(), drama.tier === "ultimate" ? 1450 : drama.tier === "advanced" ? 1150 : 760);
+      },
+      showSummonGuardDamage(guardEvent) {
+        const field = document.getElementById("battlefield");
+        if (!field || !guardEvent?.amount) return;
+        const summonEl = field.querySelector(`[data-summon-id="${guardEvent.id}"]`);
+        const side = guardEvent.ownerId || "player";
+        const text = document.createElement("div");
+        text.className = "summon-float-text guard";
+        text.style.setProperty("--fx-x", side === "player" ? "38%" : "58%");
+        text.style.setProperty("--fx-y", side === "player" ? "56%" : "48%");
+        text.textContent = `-${formatNumber(guardEvent.amount)}`;
+        summonEl?.classList.add("guard-hit");
+        field.appendChild(text);
+        setTimeout(() => {
+          summonEl?.classList.remove("guard-hit");
+          text.remove();
+        }, 720);
+      },
+      showSummonAssistAttack(event) {
+        const field = document.getElementById("battlefield");
+        if (!field || !event?.summon || !event.amount) return;
+        const settings = uiRenderer?.settings || DEFAULT_GAME_SETTINGS;
+        const lowMotion = settings.animation === "low";
+        const summonEl = field.querySelector(`[data-summon-id="${event.summon.id}"]`);
+        const fromX = event.side === "player" ? "40%" : "58%";
+        const fromY = event.side === "player" ? "57%" : "48%";
+        const targetX = event.targetSide === "player" ? "28%" : "72%";
+        const targetY = event.targetSide === "player" ? "58%" : "50%";
+        summonEl?.classList.add("assist-attack");
+
+        const label = document.createElement("div");
+        label.className = "summon-assist-label";
+        label.style.setProperty("--fx-x", targetX);
+        label.style.setProperty("--fx-y", `calc(${targetY} - 48px)`);
+        label.textContent = `${event.summon.name} 协击`;
+        field.appendChild(label);
+
+        const number = document.createElement("div");
+        number.className = "summon-float-text attack";
+        number.style.setProperty("--fx-x", targetX);
+        number.style.setProperty("--fx-y", targetY);
+        number.textContent = `-${formatNumber(event.amount)}`;
+        field.appendChild(number);
+
+        let beam = null;
+        let impact = null;
+        if (!lowMotion) {
+          beam = document.createElement("div");
+          beam.className = "summon-assist-beam";
+          beam.style.setProperty("--from-x", fromX);
+          beam.style.setProperty("--from-y", fromY);
+          beam.style.setProperty("--to-x", targetX);
+          beam.style.setProperty("--to-y", targetY);
+          beam.style.setProperty("--beam-angle", event.side === "player" ? "-10deg" : "170deg");
+          field.appendChild(beam);
+
+          impact = document.createElement("div");
+          impact.className = "summon-assist-impact";
+          impact.style.setProperty("--fx-x", targetX);
+          impact.style.setProperty("--fx-y", targetY);
+          field.appendChild(impact);
+        }
+
+        setTimeout(() => {
+          summonEl?.classList.remove("assist-attack");
+          label.remove();
+          number.remove();
+          beam?.remove();
+          impact?.remove();
+        }, lowMotion ? 520 : 760);
       },
       textColor(effectType, element) {
         if (["heal", "revive"].includes(effectType)) return "#7dff9b";
@@ -6608,6 +6679,7 @@
             const hpPct = clamp((summon.hp / summon.maxHp) * 100, 0, 100);
             const el = document.createElement("div");
             el.className = `summon-unit ${side}-summon`;
+            el.dataset.summonId = summon.id;
             el.style.setProperty("--summon-x", `${index * 42}px`);
             el.style.setProperty("--summon-y", `${index * 12}px`);
             el.title = `召唤单位：${summon.name}\n当前生命值 ${formatNumber(summon.hp)} / ${formatNumber(summon.maxHp)}\n协助攻击伤害：${formatNumber(summon.power)}\n拥有者回合结束时协助攻击。\n拥有者受到真正伤害时，召唤物会分摊约一半伤害。\n生命值归零后消失。\n来源：${summon.source}`;
@@ -7392,6 +7464,7 @@
         target.hp = Math.max(0, target.hp - summon.power);
         summonAssistEvents.push({ summon, target, amount: summon.power });
         gameEngine.log(`[召唤攻击] ${summon.name} 对${target.name}造成 ${formatNumber(summon.power)} 伤害。`);
+        effectsRenderer.showSummonAssistAttack?.({ side: fighter.id, targetSide: target.id, summon, amount: summon.power });
         gameEngine.checkGameOver();
       }
       gameEngine.checkGameOver();
@@ -9460,6 +9533,127 @@
       line-height: 12px !important;
       text-align: center !important;
       text-shadow: 0 1px 3px #000 !important;
+    }
+
+    body.battle-mode .summon-unit.assist-attack {
+      animation: summonAssistLunge .62s ease-out !important;
+      filter: drop-shadow(0 12px 12px rgba(0,0,0,.45)) drop-shadow(0 0 18px rgba(255,225,118,.72)) !important;
+    }
+
+    body.battle-mode .summon-unit.guard-hit {
+      animation: summonGuardHit .42s ease-out !important;
+      filter: drop-shadow(0 12px 12px rgba(0,0,0,.45)) drop-shadow(0 0 14px rgba(109,210,255,.7)) !important;
+    }
+
+    body.battle-mode .summon-assist-beam {
+      position: absolute !important;
+      left: var(--from-x, 50%) !important;
+      top: var(--from-y, 50%) !important;
+      z-index: 26 !important;
+      width: 210px !important;
+      height: 5px !important;
+      transform-origin: left center !important;
+      transform: translate(0, -50%) rotate(var(--beam-angle, 0deg)) !important;
+      background: linear-gradient(90deg, rgba(255,245,162,0), rgba(255,235,126,.95), rgba(123,229,255,0)) !important;
+      box-shadow: 0 0 14px rgba(255,228,106,.78) !important;
+      pointer-events: none !important;
+      animation: summonBeamFlash .62s ease-out both !important;
+    }
+
+    body.battle-mode .summon-assist-impact {
+      position: absolute !important;
+      left: var(--fx-x, 50%) !important;
+      top: var(--fx-y, 50%) !important;
+      z-index: 27 !important;
+      width: 82px !important;
+      height: 82px !important;
+      border: 2px solid rgba(255,232,126,.76) !important;
+      border-radius: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      box-shadow: 0 0 22px rgba(255,219,84,.72), inset 0 0 18px rgba(255,255,255,.2) !important;
+      pointer-events: none !important;
+      animation: summonImpactPop .68s ease-out both !important;
+    }
+
+    body.battle-mode .summon-assist-label,
+    body.battle-mode .summon-float-text {
+      position: absolute !important;
+      left: var(--fx-x, 50%) !important;
+      top: var(--fx-y, 50%) !important;
+      z-index: 29 !important;
+      transform: translate(-50%, -50%) !important;
+      pointer-events: none !important;
+      text-align: center !important;
+      text-shadow: 0 2px 6px #000, 0 0 12px rgba(255,221,95,.65) !important;
+      white-space: nowrap !important;
+    }
+
+    body.battle-mode .summon-assist-label {
+      padding: 4px 10px !important;
+      border: 1px solid rgba(255,231,160,.58) !important;
+      background: rgba(5,8,8,.84) !important;
+      color: #ffe88f !important;
+      font-size: 12px !important;
+      font-weight: 900 !important;
+      animation: summonLabelRise .72s ease-out both !important;
+    }
+
+    body.battle-mode .summon-float-text {
+      color: #ffe15e !important;
+      font-size: 20px !important;
+      font-weight: 950 !important;
+      animation: summonNumberRise .72s ease-out both !important;
+    }
+
+    body.battle-mode .summon-float-text.guard {
+      color: #7ed9ff !important;
+      font-size: 17px !important;
+    }
+
+    body[data-anim="low"].battle-mode .summon-unit.assist-attack,
+    body[data-anim="low"].battle-mode .summon-unit.guard-hit {
+      animation: none !important;
+    }
+
+    body[data-anim="low"].battle-mode .summon-assist-beam,
+    body[data-anim="low"].battle-mode .summon-assist-impact {
+      display: none !important;
+    }
+
+    @keyframes summonAssistLunge {
+      0% { transform: translateX(0) scale(1); }
+      42% { transform: translateX(16px) scale(1.06); }
+      100% { transform: translateX(0) scale(1); }
+    }
+
+    @keyframes summonGuardHit {
+      0% { transform: translateX(0) scale(1); }
+      45% { transform: translateX(-8px) scale(.96); }
+      100% { transform: translateX(0) scale(1); }
+    }
+
+    @keyframes summonBeamFlash {
+      0% { opacity: 0; clip-path: inset(0 100% 0 0); }
+      28% { opacity: 1; clip-path: inset(0 0 0 0); }
+      100% { opacity: 0; clip-path: inset(0 0 0 100%); }
+    }
+
+    @keyframes summonImpactPop {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(.45); }
+      42% { opacity: .95; transform: translate(-50%, -50%) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.35); }
+    }
+
+    @keyframes summonLabelRise {
+      0% { opacity: 0; transform: translate(-50%, -38%); }
+      22% { opacity: 1; }
+      100% { opacity: 0; transform: translate(-50%, -82%); }
+    }
+
+    @keyframes summonNumberRise {
+      0% { opacity: 0; transform: translate(-50%, -30%) scale(.82); }
+      20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -110%) scale(1.04); }
     }
 
     body.battle-mode .mechanic-popup {
