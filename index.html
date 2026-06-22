@@ -7046,6 +7046,18 @@
       "黑暗精灵": "暗属性与诅咒效果更强，但受击时伤害额外提高 5%。"
     };
 
+    function elementDescriptionFor(fighter) {
+      const el = fighter.element || "无";
+      if (el === "无") return "无属性，无元素克制关系。";
+      const strongAgainst = ELEMENT_COUNTER[el];
+      const weakTo = Object.keys(ELEMENT_COUNTER).find(k => ELEMENT_COUNTER[k] === el) || "";
+      let parts = el + "属性";
+      if (strongAgainst) parts += "\n克制：" + strongAgainst;
+      if (weakTo) parts += "\n被克制：" + weakTo;
+      parts += "\n同属性减伤 10%";
+      return parts;
+    }
+
     function elementMultiplier(attackElement, defender) {
       const defendElement = defender.element || primaryElement(defender);
       if (!attackElement || attackElement === "无" || !defendElement || defendElement === "无") return { multiplier: 1, text: "" };
@@ -7678,7 +7690,7 @@
       document.getElementById(id).innerHTML = `
         <div class="fighter-card" data-symbol="${RACE_PROFILES[raceKey]?.symbols || "✦"}">
           <div class="fighter-name"><span>${fighter.name}${fighter.title ? `「${fighter.title}」` : ""}</span><span>Lv. ${fighter.level}</span></div>
-          <p>${iconImg(raceIcon)}${fighter.race} · ${iconImg(classIcon)}${fighter.profession}</p>
+          <p title="${elementDescriptionFor(fighter)}">${iconImg(raceIcon)}${fighter.race} · ${iconImg(classIcon)}${fighter.profession} · ${fighter.element}</p>
           <div class="bar"><div class="bar-fill" style="width:${hpPct}%"></div><div class="bar-text">${formatNumber(fighter.hp)} / ${formatNumber(fighter.maxHp)}</div></div>
           <div class="energy-row">${Array.from({ length: fighter.maxEnergy }, (_, i) => `<span class="energy-dot ${i < fighter.energy ? "full" : ""}"></span>`).join("")}<span class="status">${fighter.energy}/${fighter.maxEnergy}</span></div>
           <div class="status-line">
@@ -7798,7 +7810,7 @@
       document.getElementById(id).innerHTML = `
         <div class="fighter-card" data-symbol="${RACE_PROFILES[raceKey]?.symbols || "✦"}">
           <div class="fighter-name"><span>${fighter.name}${fighter.title ? `「${fighter.title}」` : ""}</span><span>Lv. ${fighter.level}</span></div>
-          <p>${iconImg(raceIcon)}${fighter.race} · ${iconImg(classIcon)}${fighter.profession}</p>
+          <p title="${elementDescriptionFor(fighter)}">${iconImg(raceIcon)}${fighter.race} · ${iconImg(classIcon)}${fighter.profession} · ${fighter.element}</p>
           <p class="mechanic-note" style="font-size:11px;color:#b8a87a;margin:2px 0 4px;" title="${TALENT_DETAILS[fighter.race] || fighter.talent?.desc || ""}">天赋【${fighter.talent?.name || "无"}】${fighter.talent?.desc || ""}</p>
           <div class="bar"><div class="bar-fill" style="width:${hpPct}%"></div><div class="bar-text">${formatNumber(fighter.hp)} / ${formatNumber(fighter.maxHp)}</div></div>
           <div class="energy-row">${Array.from({ length: fighter.maxEnergy }, (_, i) => `<span class="energy-dot ${i < fighter.energy ? "full" : ""}"></span>`).join("")}<span class="status">${fighter.energy}/${fighter.maxEnergy}</span></div>
