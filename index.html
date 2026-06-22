@@ -7074,6 +7074,8 @@
       const intent = getCardActionIntent(card);
       const visualTargets = getVisualTargets(actorSide, card);
       const result = { text:"", amount:0, kind:card.effectType, intent, element:card.element, tier:card.skillTier, actorId:actor.id, targetId:visualTargets.primary, visualTargets, popups:[] };
+      // 确保 mechanics 存在——与 mechanicDescription 共用同一来源
+      if (!Array.isArray(card.mechanics)) card.mechanics = mechanicsForCard(card.name || "", card.effectType || "attack", card.element || "无", card.skillTier);
       const NEGATIVE_STATUS_TYPES = new Set(["燃烧","冻结","诅咒","破甲","虚弱","禁锢","中毒"]);
       const statusMult = this.statusMultiplier(actor, target, card);
       let power = Math.round(card.power * statusMult);
