@@ -4966,17 +4966,6 @@
       ].join(";");
     }
 
-    function atlasCropVars(prefix, name, targetW, targetH) {
-      const sprite = UI_ATLAS.sprites[name];
-      if (!sprite || !targetW || !targetH) return "";
-      const scaleX = targetW / sprite.w;
-      const scaleY = targetH / sprite.h;
-      return [
-        `--${prefix}-image:url('${UI_ATLAS.src}')`,
-        `--${prefix}-size:${UI_ATLAS.width * scaleX}px ${UI_ATLAS.height * scaleY}px`,
-        `--${prefix}-position:${-sprite.x * scaleX}px ${-sprite.y * scaleY}px`
-      ].join(";");
-    }
 
     function cardFrameSprite(card) {
       if (card?.skillTier === "special") return "cardFrameSpecial";
@@ -5246,61 +5235,6 @@
       }
     };
 
-    const SPRITE_ATLAS_MAP = [
-      ["element_fire","elements","assets/icons/elements/element_fire.png",48,20,112,126,41.89],
-      ["element_ice","elements","assets/icons/elements/element_ice.png",198,18,114,128,47.19],
-      ["element_wind","elements","assets/icons/elements/element_wind.png",354,18,114,128,45.13],
-      ["element_earth","elements","assets/icons/elements/element_earth.png",508,18,114,128,37.9],
-      ["element_lightning","elements","assets/icons/elements/element_lightning.png",662,18,116,128,43.01],
-      ["element_light","elements","assets/icons/elements/element_light.png",820,18,116,128,43.85],
-      ["element_dark","elements","assets/icons/elements/element_dark.png",972,18,116,128,43.06],
-      ["element_neutral","elements","assets/icons/elements/element_neutral.png",1126,18,116,128,42.05],
-      ["status_burn","status","assets/icons/status/status_burn.png",48,158,104,112,36.37],
-      ["status_freeze","status","assets/icons/status/status_freeze.png",164,148,112,126,48.52],
-      ["status_shield","status","assets/icons/status/status_shield.png",286,158,102,112,39.39],
-      ["status_curse","status","assets/icons/status/status_curse.png",406,158,110,112,42.69],
-      ["status_poison","status","assets/icons/status/status_poison.png",528,158,110,112,48.5],
-      ["status_bind","status","assets/icons/status/status_bind.png",652,158,124,112,34.35],
-      ["status_buff_attack","status","assets/icons/status/status_buff_attack.png",784,158,106,112,42.62],
-      ["status_debuff_defense","status","assets/icons/status/status_debuff_defense.png",912,158,106,112,43.5],
-      ["status_heal","status","assets/icons/status/status_heal.png",1026,158,112,112,49.66],
-      ["status_summon","status","assets/icons/status/status_summon.png",1158,158,100,112,45.74],
-      ["race_human","races","assets/icons/races/race_human.png",30,292,220,178,39.16],
-      ["race_elf","races","assets/icons/races/race_elf.png",260,292,220,178,45.04],
-      ["race_orc","races","assets/icons/races/race_orc.png",500,288,210,180,39.04],
-      ["race_dragon","races","assets/icons/races/race_dragon.png",770,292,230,178,38.54],
-      ["race_demon","races","assets/icons/races/race_demon.png",1020,286,232,186,41.1],
-      ["class_mage","classes","assets/icons/classes/class_mage.png",48,522,112,130,43.8],
-      ["class_warrior","classes","assets/icons/classes/class_warrior.png",158,522,118,130,43.2],
-      ["class_archer","classes","assets/icons/classes/class_archer.png",286,522,122,130,40.33],
-      ["card_back_base","cards","assets/cards/card_back_base.png",406,456,210,286,12.26],
-      ["card_back_skill","cards","assets/cards/card_back_skill.png",622,456,210,286,14.87],
-      ["rarity_common","rarity","assets/rarity/rarity_common.png",846,528,88,112,54.22],
-      ["rarity_rare","rarity","assets/rarity/rarity_rare.png",946,524,98,118,52.91],
-      ["rarity_legendary","rarity","assets/rarity/rarity_legendary.png",1050,522,104,120,51.67],
-      ["rarity_mythic","rarity","assets/rarity/rarity_mythic.png",1156,522,104,120,46.65],
-      ["unit_elf_archer","units","assets/units/unit_elf_archer.png",40,704,180,178,52.47],
-      ["unit_human_knight","units","assets/units/unit_human_knight.png",216,704,190,178,48.51],
-      ["unit_human_mage","units","assets/units/unit_human_mage.png",412,704,180,178,55.89],
-      ["unit_orc_warrior","units","assets/units/unit_orc_warrior.png",590,704,206,184,44.2],
-      ["unit_demon_warrior","units","assets/units/unit_demon_warrior.png",800,704,230,192,46.04],
-      ["unit_young_dragon","units","assets/units/unit_young_dragon.png",1028,704,226,196,50.67],
-      ["summon_holy_guard","summons","assets/summons/summon_holy_guard.png",28,878,270,226,45.86],
-      ["summon_wind_hunter","summons","assets/summons/summon_wind_hunter.jpg",298,884,284,220,52.44],
-      ["summon_fire_lord","summons","assets/summons/summon_fire_lord.png",632,878,250,230,47.05],
-      ["summon_dark_lord","summons","assets/summons/summon_dark_lord.png",900,878,278,230,49.59],
-      ["skill_slash","skills","assets/skills/skill_slash.png",48,1116,112,124,44.63],
-      ["skill_arrows","skills","assets/skills/skill_arrows.png",198,1118,116,122,49.22],
-      ["skill_shield","skills","assets/skills/skill_shield.png",348,1118,120,122,49.95],
-      ["skill_heal_light","skills","assets/skills/skill_heal_light.png",502,1118,120,122,51.83],
-      ["skill_explosion","skills","assets/skills/skill_explosion.png",654,1116,124,124,43.46],
-      ["skill_lightning","skills","assets/skills/skill_lightning.png",808,1116,124,124,49.53],
-      ["skill_magic_circle","skills","assets/skills/skill_magic_circle.png",964,1116,128,124,42.62],
-      ["skill_black_mist","skills","assets/skills/skill_black_mist.png",1120,1116,128,124,41.03]
-    ].map(([name, category, outputPath, x, y, width, height, transparentPercent]) => ({
-      name, category, outputPath, x, y, width, height, transparentPercent,
-      source: "assets/raw/core-spritesheet.png"
-    }));
 
     const ELEMENTS = ["火", "冰", "风", "土", "雷", "光", "暗", "无"];
     const PROFESSIONS = ["魔法师", "战士", "弓箭手"];
@@ -6592,18 +6526,6 @@
       return ASSETS.skills[card.effectType] || ASSETS.elements[card.element] || ASSETS.skills.attack;
     }
 
-    function unitPalette(race, isPlayer) {
-      const palettes = {
-        "人族": ["#e2b15f", isPlayer ? "#1f6f5e" : "#793528"],
-        "精灵族": ["#8fd474", isPlayer ? "#1f6f5e" : "#5f7a34"],
-        "兽人族": ["#c58d4a", "#7b3b26"],
-        "龙族": ["#d0bd79", "#4e5f75"],
-        "恶魔": ["#d46b55", "#51223b"],
-        "神人": ["#f3d585", "#6f5a8c"],
-        "黑暗精灵": ["#a88fd4", "#372348"]
-      };
-      return palettes[race] || palettes["人族"];
-    }
 
     function renderCard(card, unplayable) {
       const [c1, c2] = cardColors(card);
@@ -7282,7 +7204,6 @@
         </div>`;
     };
 
-    const originalRenderCardStandard = renderCard;
     renderCard = function(card, unplayable) {
       const [c1, c2] = cardColors(card);
       const icon = skillIconFor(card);
@@ -7339,7 +7260,6 @@
       `;
     }
 
-    const battleLayoutRenderCard = renderCard;
     renderCard = function(card, unplayable) {
       const [c1, c2] = cardColors(card);
       const icon = skillIconFor(card);
@@ -7362,7 +7282,6 @@
         </div>`;
     };
 
-    const originalCardColorsBattleV3 = cardColors;
     cardColors = function(card) {
       const elementMap = {
         火: ["#7d2019", "#d3561e"],
@@ -7414,7 +7333,6 @@
 
 
     /* Battle layout v4 behavior: reference-style HUD + preview + no-overlap */
-    const renderFighterBattleLayoutV4 = uiRenderer.renderFighter;
     uiRenderer.renderFighter = function(id, fighter, isPlayer) {
       const hpPct = clamp((fighter.hp / fighter.maxHp) * 100, 0, 100);
       const raceKey = fighter.normalizedRace || normalizeRace(fighter.race);
@@ -7441,7 +7359,6 @@
         </div>`;
     };
 
-    const renderCardBattleLayoutV4 = renderCard;
     renderCard = function(card, unplayable) {
       const [c1, c2] = cardColors(card);
       const icon = skillIconFor(card);
