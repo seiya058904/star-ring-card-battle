@@ -1,0 +1,556 @@
+{
+  "raw": {
+    "core_spritesheet": "assets/raw/core-spritesheet.png",
+    "battle_backgrounds": "assets/raw/battle-backgrounds.png"
+  },
+  "backgrounds": {
+    "bg_plains_ruins": {
+      "path": "assets/backgrounds/bg_plains_ruins.png",
+      "source": "assets/raw/battle-backgrounds.png",
+      "x": 0,
+      "y": 0,
+      "width": 1774,
+      "height": 296,
+      "note": "bg plains ruins asset, manually cropped from atlas"
+    },
+    "bg_dark_forest": {
+      "path": "assets/backgrounds/bg_dark_forest.png",
+      "source": "assets/raw/battle-backgrounds.png",
+      "x": 0,
+      "y": 296,
+      "width": 1774,
+      "height": 295,
+      "note": "bg dark forest asset, manually cropped from atlas"
+    },
+    "bg_ash_lava": {
+      "path": "assets/backgrounds/bg_ash_lava.png",
+      "source": "assets/raw/battle-backgrounds.png",
+      "x": 0,
+      "y": 591,
+      "width": 1774,
+      "height": 296,
+      "note": "bg ash lava asset, manually cropped from atlas"
+    }
+  },
+  "icons": {
+    "elements": {
+      "element_fire": {
+        "outputPath": "assets/icons/elements/element_fire.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 48,
+        "y": 20,
+        "width": 112,
+        "height": 126,
+        "transparentPercent": 41.89,
+        "note": "element fire asset, manually cropped from atlas"
+      },
+      "element_ice": {
+        "outputPath": "assets/icons/elements/element_ice.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 198,
+        "y": 18,
+        "width": 114,
+        "height": 128,
+        "transparentPercent": 44.46,
+        "note": "element ice asset, manually cropped from atlas"
+      },
+      "element_wind": {
+        "outputPath": "assets/icons/elements/element_wind.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 354,
+        "y": 18,
+        "width": 114,
+        "height": 128,
+        "transparentPercent": 38.25,
+        "note": "element wind asset, manually cropped from atlas"
+      },
+      "element_earth": {
+        "outputPath": "assets/icons/elements/element_earth.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 508,
+        "y": 18,
+        "width": 114,
+        "height": 128,
+        "transparentPercent": 36.11,
+        "note": "element earth asset, manually cropped from atlas"
+      },
+      "element_lightning": {
+        "outputPath": "assets/icons/elements/element_lightning.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 662,
+        "y": 18,
+        "width": 116,
+        "height": 128,
+        "transparentPercent": 44.12,
+        "note": "element lightning asset, manually cropped from atlas"
+      },
+      "element_light": {
+        "outputPath": "assets/icons/elements/element_light.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 820,
+        "y": 18,
+        "width": 116,
+        "height": 128,
+        "transparentPercent": 47.42,
+        "note": "element light asset, manually cropped from atlas"
+      },
+      "element_dark": {
+        "outputPath": "assets/icons/elements/element_dark.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 972,
+        "y": 18,
+        "width": 116,
+        "height": 128,
+        "transparentPercent": 43.67,
+        "note": "element dark asset, manually cropped from atlas"
+      },
+      "element_neutral": {
+        "outputPath": "assets/icons/elements/element_neutral.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 1126,
+        "y": 18,
+        "width": 116,
+        "height": 128,
+        "transparentPercent": 51.83,
+        "note": "element neutral asset, manually cropped from atlas"
+      }
+    },
+    "status": {
+      "status_burn": {
+        "outputPath": "assets/icons/status/status_burn.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 48,
+        "y": 158,
+        "width": 104,
+        "height": 112,
+        "transparentPercent": 46.89,
+        "note": "status burn asset, manually cropped from atlas"
+      },
+      "status_freeze": {
+        "outputPath": "assets/icons/status/status_freeze.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 164,
+        "y": 148,
+        "width": 112,
+        "height": 126,
+        "transparentPercent": 62.53,
+        "note": "status freeze asset, manually cropped from atlas"
+      },
+      "status_shield": {
+        "outputPath": "assets/icons/status/status_shield.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 286,
+        "y": 158,
+        "width": 102,
+        "height": 112,
+        "transparentPercent": 41.05,
+        "note": "status shield asset, manually cropped from atlas"
+      },
+      "status_curse": {
+        "outputPath": "assets/icons/status/status_curse.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 406,
+        "y": 158,
+        "width": 110,
+        "height": 112,
+        "transparentPercent": 46.63,
+        "note": "status curse asset, manually cropped from atlas"
+      },
+      "status_poison": {
+        "outputPath": "assets/icons/status/status_poison.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 528,
+        "y": 158,
+        "width": 110,
+        "height": 112,
+        "transparentPercent": 51.22,
+        "note": "status poison asset, manually cropped from atlas"
+      },
+      "status_bind": {
+        "outputPath": "assets/icons/status/status_bind.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 652,
+        "y": 158,
+        "width": 124,
+        "height": 112,
+        "transparentPercent": 52.45,
+        "note": "status bind asset, manually cropped from atlas"
+      },
+      "status_buff_attack": {
+        "outputPath": "assets/icons/status/status_buff_attack.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 784,
+        "y": 158,
+        "width": 106,
+        "height": 112,
+        "transparentPercent": 45.01,
+        "note": "status buff attack asset, manually cropped from atlas"
+      },
+      "status_debuff_defense": {
+        "outputPath": "assets/icons/status/status_debuff_defense.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 912,
+        "y": 158,
+        "width": 106,
+        "height": 112,
+        "transparentPercent": 50.98,
+        "note": "status debuff defense asset, manually cropped from atlas"
+      },
+      "status_heal": {
+        "outputPath": "assets/icons/status/status_heal.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 1026,
+        "y": 158,
+        "width": 112,
+        "height": 112,
+        "transparentPercent": 50.37,
+        "note": "status heal asset, manually cropped from atlas"
+      },
+      "status_summon": {
+        "outputPath": "assets/icons/status/status_summon.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 1158,
+        "y": 158,
+        "width": 100,
+        "height": 112,
+        "transparentPercent": 59.45,
+        "note": "status summon asset, manually cropped from atlas"
+      }
+    },
+    "races": {
+      "race_human": {
+        "outputPath": "assets/icons/races/race_human.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 30,
+        "y": 292,
+        "width": 220,
+        "height": 178,
+        "transparentPercent": 44.14,
+        "note": "race human asset, manually cropped from atlas"
+      },
+      "race_elf": {
+        "outputPath": "assets/icons/races/race_elf.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 260,
+        "y": 292,
+        "width": 220,
+        "height": 178,
+        "transparentPercent": 54.89,
+        "note": "race elf asset, manually cropped from atlas"
+      },
+      "race_orc": {
+        "outputPath": "assets/icons/races/race_orc.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 500,
+        "y": 288,
+        "width": 210,
+        "height": 180,
+        "transparentPercent": 52.1,
+        "note": "race orc asset, manually cropped from atlas"
+      },
+      "race_dragon": {
+        "outputPath": "assets/icons/races/race_dragon.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 770,
+        "y": 292,
+        "width": 230,
+        "height": 178,
+        "transparentPercent": 52.48,
+        "note": "race dragon asset, manually cropped from atlas"
+      },
+      "race_demon": {
+        "outputPath": "assets/icons/races/race_demon.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 1020,
+        "y": 286,
+        "width": 232,
+        "height": 186,
+        "transparentPercent": 55.04,
+        "note": "race demon asset, manually cropped from atlas"
+      }
+    },
+    "classes": {
+      "class_mage": {
+        "outputPath": "assets/icons/classes/class_mage.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 48,
+        "y": 522,
+        "width": 112,
+        "height": 130,
+        "transparentPercent": 49.16,
+        "note": "class mage asset, manually cropped from atlas"
+      },
+      "class_warrior": {
+        "outputPath": "assets/icons/classes/class_warrior.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 158,
+        "y": 522,
+        "width": 118,
+        "height": 130,
+        "transparentPercent": 54.12,
+        "note": "class warrior asset, manually cropped from atlas"
+      },
+      "class_archer": {
+        "outputPath": "assets/icons/classes/class_archer.png",
+        "source": "assets/raw/core-spritesheet.png",
+        "x": 286,
+        "y": 522,
+        "width": 122,
+        "height": 130,
+        "transparentPercent": 53.93,
+        "note": "class archer asset, manually cropped from atlas"
+      }
+    }
+  },
+  "cards": {
+    "card_back_base": {
+      "outputPath": "assets/cards/card_back_base.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 406,
+      "y": 456,
+      "width": 210,
+      "height": 286,
+      "transparentPercent": 22.14,
+      "note": "card back base asset, manually cropped from atlas"
+    },
+    "card_back_skill": {
+      "outputPath": "assets/cards/card_back_skill.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 622,
+      "y": 456,
+      "width": 210,
+      "height": 286,
+      "transparentPercent": 22.85,
+      "note": "card back skill asset, manually cropped from atlas"
+    }
+  },
+  "units": {
+    "unit_elf_archer": {
+      "outputPath": "assets/units/unit_elf_archer.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 40,
+      "y": 704,
+      "width": 180,
+      "height": 178,
+      "transparentPercent": 61.12,
+      "note": "unit elf archer asset, manually cropped from atlas"
+    },
+    "unit_human_knight": {
+      "outputPath": "assets/units/unit_human_knight.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 216,
+      "y": 704,
+      "width": 190,
+      "height": 178,
+      "transparentPercent": 45.12,
+      "note": "unit human knight asset, manually cropped from atlas"
+    },
+    "unit_human_mage": {
+      "outputPath": "assets/units/unit_human_mage.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 412,
+      "y": 704,
+      "width": 180,
+      "height": 178,
+      "transparentPercent": 47.72,
+      "note": "unit human mage asset, manually cropped from atlas"
+    },
+    "unit_orc_warrior": {
+      "outputPath": "assets/units/unit_orc_warrior.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 590,
+      "y": 704,
+      "width": 206,
+      "height": 184,
+      "transparentPercent": 38.85,
+      "note": "unit orc warrior asset, manually cropped from atlas"
+    },
+    "unit_demon_warrior": {
+      "outputPath": "assets/units/unit_demon_warrior.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 800,
+      "y": 704,
+      "width": 230,
+      "height": 192,
+      "transparentPercent": 42.81,
+      "note": "unit demon warrior asset, manually cropped from atlas"
+    },
+    "unit_young_dragon": {
+      "outputPath": "assets/units/unit_young_dragon.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 1028,
+      "y": 704,
+      "width": 226,
+      "height": 196,
+      "transparentPercent": 60.66,
+      "note": "unit young dragon asset, manually cropped from atlas"
+    }
+  },
+  "summons": {
+    "summon_holy_guard": {
+      "outputPath": "assets/summons/summon_holy_guard.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 28,
+      "y": 878,
+      "width": 270,
+      "height": 226,
+      "transparentPercent": 48.08,
+      "note": "summon holy guard asset, manually cropped from atlas"
+    },
+    "summon_wind_hunter": {
+      "outputPath": "assets/summons/summon_wind_hunter.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 298,
+      "y": 884,
+      "width": 284,
+      "height": 220,
+      "transparentPercent": 58.48,
+      "note": "summon wind hunter asset, manually cropped from atlas"
+    },
+    "summon_fire_lord": {
+      "outputPath": "assets/summons/summon_fire_lord.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 632,
+      "y": 878,
+      "width": 250,
+      "height": 230,
+      "transparentPercent": 41.47,
+      "note": "summon fire lord asset, manually cropped from atlas"
+    },
+    "summon_dark_lord": {
+      "outputPath": "assets/summons/summon_dark_lord.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 900,
+      "y": 878,
+      "width": 278,
+      "height": 230,
+      "transparentPercent": 46.21,
+      "note": "summon dark lord asset, manually cropped from atlas"
+    }
+  },
+  "skills": {
+    "skill_slash": {
+      "outputPath": "assets/skills/skill_slash.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 48,
+      "y": 1116,
+      "width": 112,
+      "height": 124,
+      "transparentPercent": 28.34,
+      "note": "skill slash asset, manually cropped from atlas"
+    },
+    "skill_arrows": {
+      "outputPath": "assets/skills/skill_arrows.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 198,
+      "y": 1118,
+      "width": 116,
+      "height": 122,
+      "transparentPercent": 28.09,
+      "note": "skill arrows asset, manually cropped from atlas"
+    },
+    "skill_shield": {
+      "outputPath": "assets/skills/skill_shield.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 348,
+      "y": 1118,
+      "width": 120,
+      "height": 122,
+      "transparentPercent": 37.73,
+      "note": "skill shield asset, manually cropped from atlas"
+    },
+    "skill_heal_light": {
+      "outputPath": "assets/skills/skill_heal_light.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 502,
+      "y": 1118,
+      "width": 120,
+      "height": 122,
+      "transparentPercent": 33.72,
+      "note": "skill heal light asset, manually cropped from atlas"
+    },
+    "skill_explosion": {
+      "outputPath": "assets/skills/skill_explosion.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 654,
+      "y": 1116,
+      "width": 124,
+      "height": 124,
+      "transparentPercent": 31.95,
+      "note": "skill explosion asset, manually cropped from atlas"
+    },
+    "skill_lightning": {
+      "outputPath": "assets/skills/skill_lightning.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 808,
+      "y": 1116,
+      "width": 124,
+      "height": 124,
+      "transparentPercent": 37.99,
+      "note": "skill lightning asset, manually cropped from atlas"
+    },
+    "skill_magic_circle": {
+      "outputPath": "assets/skills/skill_magic_circle.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 964,
+      "y": 1116,
+      "width": 128,
+      "height": 124,
+      "transparentPercent": 44.5,
+      "note": "skill magic circle asset, manually cropped from atlas"
+    },
+    "skill_black_mist": {
+      "outputPath": "assets/skills/skill_black_mist.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 1120,
+      "y": 1116,
+      "width": 128,
+      "height": 124,
+      "transparentPercent": 45.95,
+      "note": "skill black mist asset, manually cropped from atlas"
+    }
+  },
+  "rarity": {
+    "rarity_common": {
+      "outputPath": "assets/rarity/rarity_common.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 846,
+      "y": 528,
+      "width": 88,
+      "height": 112,
+      "transparentPercent": 57.16,
+      "note": "rarity common asset, manually cropped from atlas"
+    },
+    "rarity_rare": {
+      "outputPath": "assets/rarity/rarity_rare.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 946,
+      "y": 524,
+      "width": 98,
+      "height": 118,
+      "transparentPercent": 50.37,
+      "note": "rarity rare asset, manually cropped from atlas"
+    },
+    "rarity_legendary": {
+      "outputPath": "assets/rarity/rarity_legendary.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 1050,
+      "y": 522,
+      "width": 104,
+      "height": 120,
+      "transparentPercent": 45.5,
+      "note": "rarity legendary asset, manually cropped from atlas"
+    },
+    "rarity_mythic": {
+      "outputPath": "assets/rarity/rarity_mythic.png",
+      "source": "assets/raw/core-spritesheet.png",
+      "x": 1156,
+      "y": 522,
+      "width": 104,
+      "height": 120,
+      "transparentPercent": 46.21,
+      "note": "rarity mythic asset, manually cropped from atlas"
+    }
+  },
+  "atlas": "assets/sprite-atlas-map.json"
+}

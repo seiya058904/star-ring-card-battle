@@ -1,0 +1,15 @@
+node_modules/
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+*.backup
+*_backup.*
+*_broken*.html
+screenshots/
+test-results/
+.playwright/
+.cache/
+_temp_*.js
+recovered/
+.claude/settings.local.json
