@@ -7009,6 +7009,43 @@
       return null;
     }
 
+    /* 状态 tooltip 说明生成器 */
+    function describeStatus(type, turns, power, source) {
+      const map = {
+        "增幅": { label:"增益", desc: p => `造成伤害提高 ${Math.round((p||0.25)*100)}%` },
+        "虚弱": { label:"减益", desc: p => `造成伤害降低 ${Math.round((p||0.2)*100)}%` },
+        "削弱": { label:"减益", desc: p => `受到伤害提高 ${Math.round((p||0.2)*100)}%` },
+        "破甲": { label:"减益", desc: p => `受到伤害提高 ${Math.round((p||0.2)*100)}%` },
+        "减伤": { label:"增益", desc: p => `受到伤害降低 ${Math.round((p||0.18)*100)}%` },
+        "闪避": { label:"增益", desc: p => `受到伤害降低 ${Math.round((p||0.35)*100)}%` },
+        "蓄力": { label:"增益", desc: p => `下一次攻击/燃烧/穿透/斩杀伤害提高 ${Math.round((p||0.25)*100)}%` },
+        "禁锢": { label:"控制", desc: () => "本回合无法行动，不能出牌" },
+        "冻结": { label:"控制", desc: () => "本回合能量恢复降低" },
+        "燃烧": { label:"持续伤害", desc: p => `每回合开始受到 ${formatNumber(p||0)} 点火属性持续伤害` },
+        "诅咒": { label:"持续伤害", desc: p => `每回合开始受到 ${formatNumber(p||0)} 点暗属性持续伤害` },
+        "中毒": { label:"持续伤害", desc: p => `每回合开始受到 ${formatNumber(p||0)} 点持续伤害` },
+        "召唤": { label:"特殊", desc: () => "召唤物每回合协助攻击或防御" },
+        "护盾": { label:"增益", desc: () => "优先抵扣受到的伤害" }
+      };
+      const entry = map[type];
+      if (!entry) return type + (turns != null ? "（剩余 " + turns + " 回合）" : "");
+      let text = "[" + entry.label + "] " + entry.desc(power);
+      if (turns != null) text += "（剩余 " + turns + " 回合）";
+      if (source) text += "\n来源：" + source;
+      return text;
+    }
+
+    /* 种族天赋详细说明 */
+    const TALENT_DETAILS = {
+      "人族": "首次生命低于 35% 时触发，立即恢复 8% 最大生命并获得等量护盾。仅触发一次。",
+      "精灵族": "每回合首次受击获得 12% 减伤；抽牌类技能额外多抽 1 张。",
+      "兽人族": "生命低于 50% 时，攻击/燃烧/穿透/斩杀伤害提高 12%。",
+      "龙族": "受到元素伤害降低 8%；最大生命更高。",
+      "恶魔": "攻击/燃烧/诅咒/吸血技能附加吸血效果，按实际伤害的 28% 回复生命。",
+      "神人": "增益/治疗/护盾技能有 25% 概率消耗-1；低于 35% 生命时触发均衡意志回复。",
+      "黑暗精灵": "暗属性与诅咒效果更强，但受击时伤害额外提高 5%。"
+    };
+
     function elementMultiplier(attackElement, defender) {
       const defendElement = defender.element || primaryElement(defender);
       if (!attackElement || attackElement === "无" || !defendElement || defendElement === "无") return { multiplier: 1, text: "" };
@@ -7762,12 +7799,12 @@
         <div class="fighter-card" data-symbol="${RACE_PROFILES[raceKey]?.symbols || "✦"}">
           <div class="fighter-name"><span>${fighter.name}${fighter.title ? `「${fighter.title}」` : ""}</span><span>Lv. ${fighter.level}</span></div>
           <p>${iconImg(raceIcon)}${fighter.race} · ${iconImg(classIcon)}${fighter.profession}</p>
-          <p class="mechanic-note" style="font-size:11px;color:#b8a87a;margin:2px 0 4px;">天赋【${fighter.talent?.name || "无"}】${fighter.talent?.desc || ""}</p>
+          <p class="mechanic-note" style="font-size:11px;color:#b8a87a;margin:2px 0 4px;" title="${TALENT_DETAILS[fighter.race] || fighter.talent?.desc || ""}">天赋【${fighter.talent?.name || "无"}】${fighter.talent?.desc || ""}</p>
           <div class="bar"><div class="bar-fill" style="width:${hpPct}%"></div><div class="bar-text">${formatNumber(fighter.hp)} / ${formatNumber(fighter.maxHp)}</div></div>
           <div class="energy-row">${Array.from({ length: fighter.maxEnergy }, (_, i) => `<span class="energy-dot ${i < fighter.energy ? "full" : ""}"></span>`).join("")}<span class="status">${fighter.energy}/${fighter.maxEnergy}</span></div>
           <div class="status-line">
-            <span class="status">${atlasStatusIcon("shield")}护盾 ${formatNumber(fighter.shield)}</span>
-            ${fighter.statuses.map(s => `<span class="status">${atlasStatusIcon(s.type)}${s.type} ${s.turns}</span>`).join("")}
+            <span class="status" title="优先抵扣受到的伤害">${atlasStatusIcon("shield")}护盾 ${formatNumber(fighter.shield)}</span>
+            ${fighter.statuses.map(s => `<span class="status" title="${describeStatus(s.type, s.turns, s.power, s.source)}">${atlasStatusIcon(s.type)}${s.type} ${s.turns}</span>`).join("")}
           </div>
           ${enemyHandHtml}
         </div>`;
