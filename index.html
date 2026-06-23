@@ -7415,11 +7415,14 @@
         cards.push(cardGenerator.cardFromName(name, { category, skillTier:tier, level: character.level, elementBias, profile, id:`${character.id}-supplement-${supplementIndex}` }));
         supplementIndex += 1;
       }
-      // Process cards through validation pipeline (element + level + downgrade)
+      // Process cards through validation pipeline (element + level + downgrade) with duplicate cap
       const processedCards = [];
+      const maxSameCard = 3;
       for (let i = 0; i < cards.length && processedCards.length < 24; i++) {
         const result = validateCardForCharacter(cards[i], character, i);
-        if (result) processedCards.push(result);
+        if (result && processedCards.filter(c => c.name === result.name).length < maxSameCard) {
+          processedCards.push(result);
+        }
       }
       // If still short on valid cards, generate more from element-filtered pool
       if (processedCards.length < 24) {
@@ -7435,7 +7438,9 @@
           const tier = cat === "base" ? "none" : skillTierFromName(name, "normal");
           const newCard = cardGenerator.cardFromName(name, { category:cat, skillTier:tier, level: character.level, elementBias, profile, id:`${character.id}-refill-${extraIdx}` });
           const result = validateCardForCharacter(newCard, character, processedCards.length + extraIdx);
-          if (result) processedCards.push(result);
+          if (result && processedCards.filter(c => c.name === result.name).length < maxSameCard) {
+            processedCards.push(result);
+          }
           extraIdx++;
         }
       }
