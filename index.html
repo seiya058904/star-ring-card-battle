@@ -4683,7 +4683,7 @@
       <div class="top-actions">
         <button class="ghost" data-nav="home">首页</button>
         <button class="ghost" data-open-battle-prep="true">开始战斗</button>
-        <button class="ghost" data-nav="deck">角色图鉴</button>
+        <button class="ghost" data-nav="deck">游戏攻略</button>
         <button class="ghost" data-open-settings="true">系统设置</button>
       </div>
     </header>
@@ -4702,7 +4702,7 @@
           </div>
           <div class="menu-actions main-actions">
             <button class="main-menu-btn" data-open-battle-prep="true"><span>开始战斗</span><small>选择卡组并进入对战</small></button>
-            <button class="main-menu-btn" data-nav="deck"><span>角色图鉴</span><small>查看角色、卡组与卡牌说明</small></button>
+            <button class="main-menu-btn" data-nav="deck"><span>游戏攻略</span><small>查看角色、卡组与卡牌说明</small></button>
             <button class="main-menu-btn" data-open-settings="true"><span>系统设置</span><small>动画、日志与显示选项</small></button>
           </div>
           <p class="title-footnote">提示：本版本采用固定角色、固定卡组与标准卡池，便于平衡与长期打磨。</p>
@@ -4810,8 +4810,8 @@
     <section class="screen" id="screen-deck">
       <div class="section-grid">
         <aside class="panel">
-          <h2>角色 / 卡牌图鉴</h2>
-          <p class="small-note" style="margin:8px 0 14px;">本版本采用固定角色、固定卡组与标准卡池。这里用于查看资料，不提供自定义编辑。</p>
+          <h2>游戏攻略</h2>
+          <p class="small-note" style="margin:8px 0 14px;">集中查看角色图鉴、角色固定卡组、所有卡牌图鉴、元素规则和状态机制说明。</p>
           <div class="pill-list">
             <span class="pill">固定角色</span>
             <span class="pill">固定卡组</span>
@@ -4821,7 +4821,7 @@
           <p class="small-note" style="margin-top:14px;">战斗从首页“开始战斗”进入。电脑会从资料库里选择等级接近的角色。</p>
         </aside>
         <div class="panel">
-          <h2>图鉴内容</h2>
+          <h2>攻略内容</h2>
           <div class="pill-list" id="currentDeckMeta"></div>
           <div class="deck-list" id="currentDeckCards" style="margin-top:12px;"></div>
         </div>
@@ -7724,37 +7724,90 @@
       list.innerHTML = this.defaultDecks.map(deck => this.renderPrepCharacterCard(deck)).join("");
     };
 
-    uiRenderer.renderDeckManager = function(mode = this.codexMode || "characters") {
+    uiRenderer.renderDeckManager = function(mode = this.codexMode || "guide", characterId = this.codexCharacterId || "") {
       this.codexMode = mode;
+      this.codexCharacterId = characterId;
       const meta = document.getElementById("currentDeckMeta");
       const list = document.getElementById("currentDeckCards");
       if (!meta || !list) return;
+      const active = name => mode === name ? "selected" : "";
       meta.innerHTML = `
-        <button class="ghost ${mode === "characters" ? "selected" : ""}" data-codex-mode="characters">角色图鉴</button>
-        <button class="ghost ${mode === "cards" ? "selected" : ""}" data-codex-mode="cards">卡牌图鉴</button>
+        <button class="ghost ${active("guide")}" data-codex-mode="guide">游戏攻略</button>
+        <button class="ghost ${active("characters")}" data-codex-mode="characters">角色图鉴</button>
+        <button class="ghost ${active("cards")}" data-codex-mode="cards">所有卡牌图鉴</button>
+        <button class="ghost ${active("elements")}" data-codex-mode="elements">元素克制</button>
+        <button class="ghost ${active("statuses")}" data-codex-mode="statuses">状态机制</button>
       `;
       meta.querySelectorAll("[data-codex-mode]").forEach(btn => btn.addEventListener("click", () => this.renderDeckManager(btn.dataset.codexMode)));
-      if (mode === "characters") {
+      if (mode === "guide") {
+        list.className = "codex-grid";
+        list.innerHTML = `
+          <button class="modal-choice" data-codex-mode="characters"><h3>角色图鉴</h3><p class="small-note">查看全部固定角色，并进入角色自己的固定卡组页面。</p></button>
+          <button class="modal-choice" data-codex-mode="cards"><h3>所有卡牌图鉴</h3><p class="small-note">查看当前全卡池，不和角色固定卡组混在一起。</p></button>
+          <button class="modal-choice" data-codex-mode="elements"><h3>基础元素克制</h3><p class="small-note">查看卡牌元素如何克制目标主元素。</p></button>
+          <button class="modal-choice" data-codex-mode="statuses"><h3>状态机制说明</h3><p class="small-note">查看 buff、debuff、持续伤害、控制和召唤规则。</p></button>
+        `;
+        list.querySelectorAll("[data-codex-mode]").forEach(btn => btn.addEventListener("click", () => this.renderDeckManager(btn.dataset.codexMode)));
+      } else if (mode === "characters") {
         list.className = "character-grid";
         list.innerHTML = this.defaultDecks.map(deck => `
           <div class="character-card">
-          <h3>${deck.characterName}「${deck.characterTitle || deck.name}」</h3>
-          <div class="title">${deck.originalRace || deck.race} · ${deck.originalProfession || deck.profession} · ${deck.level}级</div>
-            <div class="pill-list"><span class="pill">${deck.name}</span><span class="pill">${deck.cards.length} 张卡</span></div>
+            <h3>${deck.characterName}「${deck.characterTitle || deck.name}」</h3>
+            <div class="title">${deck.originalRace || deck.race} · ${deck.originalProfession || deck.profession} · ${deck.level}级</div>
+            <div class="pill-list"><span class="pill">主元素 ${deck.element || "无"}</span><span class="pill">掌握元素 ${(deck.elements || [deck.element]).join("、")}</span><span class="pill">${deck.cards.length} 张卡</span></div>
             <div style="font-size:12px;color:#b8a87a;margin-top:6px;line-height:1.4;">🎴 天赋【${(RACE_TALENTS[deck.originalRace] || RACE_TALENTS[deck.race])?.name || "无"}】<br>${(RACE_TALENTS[deck.originalRace] || RACE_TALENTS[deck.race])?.desc || ""}</div>
             <div class="skills">核心技能：${deck.cards.filter(c => c.category === "skill").slice(0,5).map(c => c.name).join("、")}</div>
+            <div class="button-row" style="margin-top:10px;"><button class="secondary" data-codex-character="${deck.characterId}" type="button">查看卡组</button></div>
           </div>`).join("");
+        list.querySelectorAll("[data-codex-character]").forEach(btn => btn.addEventListener("click", () => this.renderDeckManager("characterDeck", btn.dataset.codexCharacter)));
+      } else if (mode === "characterDeck") {
+        const deck = this.defaultDecks.find(d => d.characterId === characterId) || this.defaultDecks[0];
+        const talent = RACE_TALENTS[deck.originalRace] || RACE_TALENTS[deck.race] || RACE_TALENTS["人族"];
+        list.className = "deck-list";
+        list.innerHTML = `
+          <div class="panel" style="margin-bottom:12px;">
+            <div class="button-row" style="margin-bottom:10px;"><button class="ghost" data-codex-mode="characters" type="button">返回角色图鉴</button></div>
+            <h3>${deck.characterName}「${deck.characterTitle || deck.name}」</h3>
+            <p class="small-note">${deck.originalRace || deck.race} · ${deck.originalProfession || deck.profession} · ${deck.level}级</p>
+            <div class="pill-list"><span class="pill">主元素 ${deck.element || "无"}</span><span class="pill">掌握元素 ${(deck.elements || [deck.element]).join("、")}</span><span class="pill">固定卡组 ${deck.cards.length} 张</span></div>
+            <p class="small-note" style="margin-top:8px;">天赋【${talent.name}】：${talent.desc}</p>
+          </div>
+          ${deck.cards.map(card => `
+            <div class="deck-card">
+              <h3>${card.mark || "•"} ${card.name}</h3>
+              <p class="small-note">${card.cost} 能量 · ${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</p>
+              <div class="pill-list"><span class="pill">${card.category === "base" ? "基础卡" : "技能卡"}</span><span class="pill">${DEFAULT_RARITIES[card.rarity] || card.rarity}</span></div>
+              <div class="desc">${card.description}</div>
+            </div>`).join("")}
+        `;
+        list.querySelector("[data-codex-mode='characters']")?.addEventListener("click", () => this.renderDeckManager("characters"));
       } else {
         list.className = "codex-grid";
         const cards = [];
         this.defaultDecks.forEach(deck => deck.cards.forEach(card => { if (!cards.some(c => c.name === card.name)) cards.push(card); }));
-        list.innerHTML = cards.map(card => `
-          <div class="codex-card">
-            <h3>${card.mark || "•"} ${card.name}</h3>
-            <p class="small-note">${card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能"} · ${card.skillRank || (card.rankMode === "fixed" ? "固定规格" : "无等级")} · ${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType} · ${card.cost}能量</p>
-            <div class="pill-list">${(card.keywords || []).map(k => `<span class="pill">${k}</span>`).join("")}</div>
-            <div class="desc">${card.description}</div>
-          </div>`).join("");
+        if (mode === "cards") {
+          list.innerHTML = cards.map(card => `
+            <div class="codex-card">
+              <h3>${card.mark || "•"} ${card.name}</h3>
+              <p class="small-note">${card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能"} · ${card.skillRank || (card.rankMode === "fixed" ? "固定规格" : "无等级")} · ${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType} · ${card.cost}能量</p>
+              <div class="pill-list">${(card.keywords || []).map(k => `<span class="pill">${k}</span>`).join("")}</div>
+              <div class="desc">${card.description}</div>
+            </div>`).join("");
+        } else if (mode === "elements") {
+          list.innerHTML = `
+            <div class="codex-card"><h3>元素克制</h3><div class="desc">火克制冰，冰克制风，风克制土，土克制雷，雷克制光，光克制暗，暗克制火。</div></div>
+            <div class="codex-card"><h3>伤害卡规则</h3><div class="desc">造成伤害的卡牌使用卡牌自身元素判断克制；治疗、防御、护盾、抽牌、充能和纯增益不参与克制。</div></div>
+            <div class="codex-card"><h3>龙族规则</h3><div class="desc">龙族可使用所有元素卡牌。龙族没有主元素，因此不会被元素克制。</div></div>
+          `;
+        } else if (mode === "statuses") {
+          list.innerHTML = `
+            <div class="codex-card"><h3>燃烧</h3><div class="desc">每回合开始受到持续伤害。</div></div>
+            <div class="codex-card"><h3>禁锢</h3><div class="desc">下一回合无法行动。</div></div>
+            <div class="codex-card"><h3>吸血</h3><div class="desc">根据实际造成的伤害回复生命。</div></div>
+            <div class="codex-card"><h3>召唤</h3><div class="desc">召唤护卫单位，回合结束协击并分摊伤害。</div></div>
+            <div class="codex-card"><h3>增益 / 减益</h3><div class="desc">增益提升自身效果；减益削弱目标或让目标受到更多伤害。</div></div>
+          `;
+        }
       }
     };
 
@@ -7769,7 +7822,7 @@
       if (screen === "setup") { this.openBattlePrep(); return; }
       if (screen === "custom") { this.nav("deck"); return; }
       originalNavStandard.call(this, screen);
-      if (screen === "deck") this.renderDeckManager(this.codexMode || "characters");
+      if (screen === "deck") this.renderDeckManager(this.codexMode || "guide");
     };
 
     const originalRenderFighterStandard = uiRenderer.renderFighter;
