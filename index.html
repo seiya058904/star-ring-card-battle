@@ -4724,7 +4724,7 @@
     <section class="screen active" id="screen-home">
       <div class="home-title-screen">
         <div class="home-title-art" aria-label="星环卡牌战场首页">
-          <img src="assets/backgrounds/home-title-screen.png" alt="星环卡牌战场首页" class="home-title-image" id="homeTitleImage">
+          <img src="assets/backgrounds/home-title-screen.png" alt="星环卡牌战场首页" class="home-title-image" id="homeTitleImage" draggable="false">
           <!-- Desktop hotspot buttons — positioned over image button regions -->
           <button class="home-hotspot home-hotspot-start"     data-open-battle-prep="true" aria-label="开始战斗"></button>
           <button class="home-hotspot home-hotspot-characters" data-open-codex="characters" aria-label="角色图鉴"></button>
@@ -10449,14 +10449,15 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
+    pointer-events: none;
     user-select: none;
     -webkit-user-drag: none;
   }
   /* ── Hotspot buttons (desktop/landscape) — transparent clickable areas ── */
   .home-title-screen .home-hotspot {
     position: absolute !important;
-    left: 37.8%;
-    width: 24.5%;
+    left: 39.0%;
+    width: 22.1%;
     height: 7.5%;
     display: block !important;
     padding: 0 !important;
@@ -10513,9 +10514,9 @@
   }
   .home-hotspot-start     { top: 39.8%; }
   .home-hotspot-characters { top: 50.0%; }
-  .home-hotspot-cards      { top: 60.2%; }
-  .home-hotspot-guide      { top: 70.4%; }
-  .home-hotspot-settings   { top: 80.6%; }
+  .home-hotspot-cards      { top: 59.8%; }
+  .home-hotspot-guide      { top: 69.6%; }
+  .home-hotspot-settings   { top: 79.5%; }
   /* ── Mobile / fallback real-button menu ── */
   .home-mobile-menu {
     display: none;
