@@ -5114,6 +5114,18 @@
       { id: "dragon-yemosu", name: "耶莫稣", title: "元祖龙神", race: "龙族", role: "", level: 100, profession: "龙神", elements: ["全系"], skills: ["龙神意志", "起死回生", "统治Ⅲ", "雷光铠甲Ⅲ", "元素圣体Ⅲ", "时间禁锢"], notes: "" }
     ];
 
+    const ALL_DAMAGE_ELEMENTS = ["火", "冰", "风", "土", "雷", "光", "暗"];
+    DEFAULT_CHARACTER_TEMPLATES.forEach(character => {
+      if (character.race === "龙族" || character.elements?.includes("全系")) {
+        character.primaryElement = "";
+        character.allowedElements = ALL_DAMAGE_ELEMENTS.slice();
+      } else {
+        const elements = (character.elements || []).filter(element => element && element !== "全系");
+        character.primaryElement = elements[0] || "无";
+        character.allowedElements = elements.length ? elements : [character.primaryElement];
+      }
+    });
+
     const DEFAULT_SKILL_NAMES = {
       advanced: "火焰领主Ⅲ、炎天噬地Ⅲ、炎龙凤燃、真火吞Ⅲ、烈焰护体、元素庇护、绝对冰冻Ⅲ、冰王斩Ⅲ、终·冰元素、超大冰暴Ⅲ、真王冰甲Ⅲ、绝对重力Ⅲ、沙王领主Ⅲ、超大土暴Ⅲ、天崩地裂、磐石装甲、终·元素贯穿、真王穿刺Ⅲ、混沌铠甲、雷光真闪Ⅲ、雷龙缠绕Ⅲ、雷光铠甲Ⅲ、超位雷斩、雷神剑、最终一击·雷霆、飓风笼罩Ⅲ、次元斩Ⅲ、次元隧道、次元屏障Ⅲ、超超级海啸、圣光庇护Ⅲ、圣光之音Ⅲ、祝福之光Ⅲ、魔法极致化、防御极致化、伤害真实化、光明圣剑Ⅲ、光明之主Ⅲ、雷霆审判、终·六翼大天使、神圣庇护Ⅲ、黑暗吞噬Ⅲ、耶梦加得凝视、噩梦Ⅲ、暗黑魔甲Ⅲ、至暗洗礼Ⅲ、暗光箭矢、幽暗庇护Ⅲ、暗黑领主Ⅲ、暗之闪Ⅲ、龙神意志、至尊炎火Ⅲ、灭世之威、雷霆王座Ⅲ、圣裁天幕Ⅲ、霜星坠落Ⅲ、风王猎场Ⅲ、灰烬魔域Ⅲ、日蚀之刃Ⅲ、终·万雷归一Ⅲ、天穹之门、极寒神殿Ⅲ、终·烈日焚天Ⅲ、虚空风暴Ⅲ、大地君王Ⅲ".split("、"),
       special: "死亡支配者Ⅲ、元素圣体Ⅲ、太阳神的祝福、灵魂吞噬Ⅲ、死亡注视Ⅲ、超级虚弱Ⅲ、死亡审判Ⅲ、统治Ⅲ、绝对死亡Ⅲ、时间禁锢、时间回溯、恶魔契约、天使羽、陨星灭地、九重神斩、斩魔剑、锁龙Ⅲ、冰火重天Ⅲ、风雷天暴Ⅲ、递种、五元素诛神斩、起死回生、灵魂烙印Ⅲ、不灭魔躯、星界放逐Ⅲ、神威降临Ⅲ".split("、"),
@@ -6969,9 +6981,47 @@
     }
 
     function primaryElement(characterOrDeck) {
+      if (Object.prototype.hasOwnProperty.call(characterOrDeck, "primaryElement")) return characterOrDeck.primaryElement || "";
       const elements = characterOrDeck.elements || [characterOrDeck.element || "无"];
       const first = elements.find(e => e && e !== "全系") || characterOrDeck.element || "无";
       return first === "全系" ? "无" : first;
+    }
+
+    const DIRECT_DAMAGE_EFFECT_TYPES = new Set(["attack", "burn", "freeze", "curse", "execute", "lifesteal", "pierce"]);
+    const ELEMENT_REQUIRED_EFFECT_TYPES = new Set([...DIRECT_DAMAGE_EFFECT_TYPES, "summon"]);
+
+    function cardRequiresElement(card) {
+      return ELEMENT_REQUIRED_EFFECT_TYPES.has(card?.effectType);
+    }
+
+    function allowedElementsFor(characterOrDeck) {
+      if (Array.isArray(characterOrDeck.allowedElements) && characterOrDeck.allowedElements.length) return characterOrDeck.allowedElements;
+      if (characterOrDeck.race === "龙族" || characterOrDeck.originalRace === "龙族" || characterOrDeck.elements?.includes("全系")) return ALL_DAMAGE_ELEMENTS.slice();
+      const elements = (characterOrDeck.elements || [characterOrDeck.element]).filter(element => element && element !== "全系" && element !== "无");
+      return elements.length ? elements : [primaryElement(characterOrDeck)].filter(Boolean);
+    }
+
+    function preferredCardElement(name, currentElement, allowedElements, primary, index = 0) {
+      if (currentElement && allowedElements.includes(currentElement)) return currentElement;
+      const nameElement = inferElement(name || "", "");
+      if (nameElement && allowedElements.includes(nameElement)) return nameElement;
+      if (primary && allowedElements.includes(primary)) return primary;
+      return allowedElements[index % allowedElements.length] || "无";
+    }
+
+    function alignCardElementToCharacter(card, character, index = 0) {
+      if (!cardRequiresElement(card)) return card;
+      const allowedElements = allowedElementsFor(character);
+      const primary = primaryElement(character);
+      const element = preferredCardElement(card.name, card.element, allowedElements, primary, index);
+      if (card.element !== element) {
+        card.element = element;
+        card.mechanics = mechanicsForCard(card.name || "", card.effectType || "attack", card.element || "无", card.skillTier);
+        card.keywords = keywordsForMechanics(card.mechanics);
+        card.tags = [card.element, card.effectType, card.skillTier].filter(Boolean);
+        card.description = mechanicDescription(card);
+      }
+      return card;
     }
 
     function parseSkillRank(name) {
@@ -7124,6 +7174,8 @@
       const race = normalizeRace(character.race);
       const profession = normalizeProfession(character.profession);
       const element = primaryElement(character);
+      const allowedElements = allowedElementsFor(character);
+      const elementBias = element || allowedElements[0] || "火";
       const profile = combinedProfile(race, profession);
       const basePool = (DEFAULT_BASE_CARD_NAMES.common.concat(DEFAULT_BASE_CARD_NAMES[race] || [])).filter(Boolean);
       const styleBias = (RACE_PROFILES[race]?.tags || []).concat(PROFESSION_PROFILES[profession]?.baseTags || []);
@@ -7142,18 +7194,35 @@
       if (character.level >= 85) for (let i = 0; skillNames.filter(n => skillTierFromName(n)==="special").length < (character.level >= 95 ? 2 : 1) && i < allSpecial.length; i++) skillNames.push(allSpecial[i]);
 
       const cards = [];
-      chosenBase.forEach((name, i) => cards.push(cardGenerator.cardFromName(name, { category:"base", level: character.level, elementBias: element, profile, id:`${character.id}-base-${i}` })));
+      chosenBase.forEach((name, i) => cards.push(cardGenerator.cardFromName(name, { category:"base", level: character.level, elementBias, profile, id:`${character.id}-base-${i}` })));
       skillNames.slice(0, 10).forEach((name, i) => {
         const tier = skillTierFromName(name, DEFAULT_SKILL_NAMES.normal.includes(name) ? "normal" : "advanced");
-        cards.push(cardGenerator.cardFromName(name, { category:"skill", skillTier:tier, level: character.level, elementBias: element, profile, id:`${character.id}-skill-${i}` }));
+        cards.push(cardGenerator.cardFromName(name, { category:"skill", skillTier:tier, level: character.level, elementBias, profile, id:`${character.id}-skill-${i}` }));
       });
+      const supplementNames = [
+        "普通攻击", "防御", "治疗", "蓄力", "护盾", "精准一击", "战术调整", "破甲",
+        ...(character.skills || []),
+        ...DEFAULT_SKILL_NAMES.normal.filter(name => allowedElements.includes(inferElement(name, elementBias)) || stableEffectType(name) === "heal"),
+        ...DEFAULT_SKILL_NAMES.advanced.filter(name => allowedElements.includes(inferElement(name, elementBias)) || /庇护|铠甲|护体/.test(name))
+      ];
+      let supplementIndex = 0;
+      while (cards.length < 24 && supplementIndex < supplementNames.length + 24) {
+        const name = supplementNames[supplementIndex % supplementNames.length] || "普通攻击";
+        const category = DEFAULT_BASE_CARD_NAMES.common.concat(DEFAULT_BASE_CARD_NAMES[race] || []).includes(name) ? "base" : "skill";
+        const tier = category === "base" ? "none" : skillTierFromName(name, DEFAULT_SKILL_NAMES.normal.includes(name) ? "normal" : "advanced");
+        cards.push(cardGenerator.cardFromName(name, { category, skillTier:tier, level: character.level, elementBias, profile, id:`${character.id}-supplement-${supplementIndex}` }));
+        supplementIndex += 1;
+      }
+      const fixedCards = cards
+        .slice(0, 24)
+        .map((card, index) => alignCardElementToCharacter(card, character, index));
       const deck = {
         id: `deck-${character.id}`,
         name: CHARACTER_DECK_NAME_OVERRIDES[character.id] || `${character.title || character.name}卡组`,
         race, originalRace: character.race, profession, originalProfession: character.profession,
-        level: character.level, element, elements: character.elements, characterId: character.id,
+        level: character.level, element, elements: character.elements, primaryElement: character.primaryElement, allowedElements: character.allowedElements, characterId: character.id,
         characterName: character.name, characterTitle: character.title, style: `${character.race} · ${character.profession} · ${character.skills.slice(0,3).join("、")}`,
-        cards: cards.slice(0, 25)
+        cards: fixedCards
       };
       FIXED_CHARACTER_DECKS.set(character.id, deck);
       return JSON.parse(JSON.stringify(deck));
