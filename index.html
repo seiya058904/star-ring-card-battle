@@ -1119,6 +1119,21 @@
     }
     .card-name { line-height: 1.15; }
     .card-meta { display: flex; gap: 4px; flex-wrap: wrap; font-size: 11px; }
+    .element-advantage-hint {
+      position: relative;
+      z-index: 1;
+      align-self: flex-start;
+      width: fit-content;
+      padding: 3px 7px;
+      border: 1px solid rgba(255,222,119,.72);
+      border-radius: 4px;
+      background: rgba(71, 39, 8, .72);
+      color: #ffe78b;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1;
+      box-shadow: 0 0 12px rgba(255,198,76,.18);
+    }
     .card-desc { position: relative; z-index: 1; font-size: 12px; line-height: 1.38; color: rgba(255,250,232,.95); }
     .card-power { font-weight: 900; color: #fff5bd; }
 
@@ -6642,7 +6657,7 @@
         this.renderDuelUnit("playerUnit", gameEngine.state.player, true);
         this.renderSummons();
         this.renderOpponentHand();
-        document.getElementById("playerHand").innerHTML = gameEngine.state.player.hand.map(card => renderCard(card, card.cost > gameEngine.state.player.energy)).join("");
+        document.getElementById("playerHand").innerHTML = gameEngine.state.player.hand.map(card => renderCard(card, card.cost > gameEngine.state.player.energy, gameEngine.state.enemy)).join("");
         const playerEnergy = gameEngine.state.player.energy;
         const playerMaxEnergy = gameEngine.state.player.maxEnergy;
         document.getElementById("playerDeckCounters").innerHTML = `<span class="energy-badge">能量 ${playerEnergy}/${playerMaxEnergy}</span>`;
@@ -6994,6 +7009,36 @@
       return ELEMENT_REQUIRED_EFFECT_TYPES.has(card?.effectType);
     }
 
+    function isDirectDamageCard(card) {
+      return DIRECT_DAMAGE_EFFECT_TYPES.has(card?.effectType);
+    }
+
+    function cardAdvantageTarget(card) {
+      if (!isDirectDamageCard(card) || !card?.element || card.element === "无") return "";
+      return ELEMENT_COUNTER[card.element] || "";
+    }
+
+    function primaryTargetElement(target) {
+      if (!target) return "";
+      if (Object.prototype.hasOwnProperty.call(target, "primaryElement")) return target.primaryElement || "";
+      if (target.race === "龙族" || target.originalRace === "龙族" || target.elements?.includes("全系")) return "";
+      return target.element || primaryElement(target);
+    }
+
+    function cardHasAdvantageAgainst(card, target) {
+      const defendElement = primaryTargetElement(target);
+      return !!defendElement && cardAdvantageTarget(card) === defendElement;
+    }
+
+    function staticAdvantageText(card) {
+      const target = cardAdvantageTarget(card);
+      return target ? `克制：${target}` : "";
+    }
+
+    function currentAdvantageText(card, target) {
+      return cardHasAdvantageAgainst(card, target) ? "对当前敌人：克制，伤害 +20%" : "";
+    }
+
     function allowedElementsFor(characterOrDeck) {
       if (Array.isArray(characterOrDeck.allowedElements) && characterOrDeck.allowedElements.length) return characterOrDeck.allowedElements;
       if (characterOrDeck.race === "龙族" || characterOrDeck.originalRace === "龙族" || characterOrDeck.elements?.includes("全系")) return ALL_DAMAGE_ELEMENTS.slice();
@@ -7328,13 +7373,12 @@
     }
 
     function elementMultiplier(attackElement, defender) {
-      const defendElement = defender.element || primaryElement(defender);
+      const defendElement = primaryTargetElement(defender);
       if (!attackElement || attackElement === "无" || !defendElement || defendElement === "无") return { multiplier: 1, text: "" };
       if (ELEMENT_COUNTER[attackElement] === defendElement) {
-        const value = defender.race === "龙族" ? 1.10 : 1.20;
-        return { multiplier: value, text: `[元素克制] 目标被${attackElement}克制，伤害提高。` };
+        return { multiplier: 1.20, text: `[元素克制] ${attackElement}克制${defendElement}，伤害提高20%。` };
       }
-      if (ELEMENT_COUNTER[defendElement] === attackElement) return { multiplier: .85, text: "[元素抵抗] 目标抵抗${attackElement}，伤害降低。" };
+      if (ELEMENT_COUNTER[defendElement] === attackElement) return { multiplier: .85, text: `[元素抵抗] ${defendElement}抵抗${attackElement}，伤害降低。` };
       if (attackElement === defendElement) return { multiplier: .90, text: "[同属性抵抗] 目标与攻击同属性，伤害略降。" };
       return { multiplier: 1, text: "" };
     }
@@ -7845,7 +7889,7 @@
             <div class="deck-card">
               <h3>${card.mark || "•"} ${card.name}</h3>
               <p class="small-note">${card.cost} 能量 · ${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</p>
-              <div class="pill-list"><span class="pill">${card.category === "base" ? "基础卡" : "技能卡"}</span><span class="pill">${DEFAULT_RARITIES[card.rarity] || card.rarity}</span></div>
+              <div class="pill-list"><span class="pill">${card.category === "base" ? "基础卡" : "技能卡"}</span><span class="pill">${DEFAULT_RARITIES[card.rarity] || card.rarity}</span>${staticAdvantageText(card) ? `<span class="pill">${staticAdvantageText(card)}</span>` : ""}</div>
               <div class="desc">${card.description}</div>
             </div>`).join("")}
         `;
@@ -7859,7 +7903,7 @@
             <div class="codex-card">
               <h3>${card.mark || "•"} ${card.name}</h3>
               <p class="small-note">${card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能"} · ${card.skillRank || (card.rankMode === "fixed" ? "固定规格" : "无等级")} · ${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType} · ${card.cost}能量</p>
-              <div class="pill-list">${(card.keywords || []).map(k => `<span class="pill">${k}</span>`).join("")}</div>
+              <div class="pill-list">${(card.keywords || []).map(k => `<span class="pill">${k}</span>`).join("")}${staticAdvantageText(card) ? `<span class="pill">${staticAdvantageText(card)}</span>` : ""}</div>
               <div class="desc">${card.description}</div>
             </div>`).join("");
         } else if (mode === "elements") {
@@ -8202,7 +8246,7 @@
         </div>`;
     };
 
-    renderCard = function(card, unplayable) {
+    renderCard = function(card, unplayable, currentTarget = null) {
       const [c1, c2] = cardColors(card);
       const typeName = card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能";
       const rankText = card.skillRank || (card.rankMode === "fixed" ? "固定规格" : card.rankMode === "ultimate" ? "终极" : "");
@@ -8211,6 +8255,7 @@
       const costSprite = card.cost >= 1 && card.cost <= 10 ? `cost${card.cost}` : "";
       const costStyle = costSprite ? `--cost-sprite-img:url('assets/ui/sprites/${costSprite}.png')` : "";
       const artStyle = atlasBackgroundVars("atlas-art", cardArtSprite(card), 120, 82);
+      const advantageHint = cardHasAdvantageAgainst(card, currentTarget) ? `<div class="element-advantage-hint">克制 +20%</div>` : "";
       const orbitHtml = card.cost >= 8 ? `
         <div class="card-orbit-system" aria-hidden="true">
           <span class="orbit orbit-1"></span>${card.cost >= 9 ? '<span class="orbit orbit-2"></span>' : ''}${card.cost >= 10 ? '<span class="orbit orbit-3"></span>' : ''}
@@ -8226,6 +8271,7 @@
             <span class="pill">${card.element}</span>
             <span class="pill">${typeName}${rankText ? ` · ${rankText}` : ""}</span>
           </div>
+          ${advantageHint}
           <div class="card-art" style="${artStyle}"><img class="card-icon" src="${skillIconFor(card)}" alt=""></div>
           <div class="card-desc">${card.description}</div>
           <div class="card-power">${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType} · ${formatNumber(card.power)}</div>
@@ -8239,6 +8285,7 @@
       const target = card.effectType === "heal" || card.effectType === "defense" || card.effectType === "shield" || card.effectType === "buff" ? "自身" : "单体";
       const artStyle = atlasBackgroundVars("atlas-art", cardArtSprite(card), 120, 82);
       const costSprite = card.cost >= 1 && card.cost <= 10 ? `cost${card.cost}` : "";
+      const advantageLine = currentAdvantageText(card, gameEngine.state?.enemy);
       return `
         <div class="preview-card-title"><span>${card.name}</span><span>${costSprite ? `<span class="atlas-status-icon" style="--cost-sprite:url('assets/ui/sprites/${costSprite}.png')"></span>` : ""}${card.cost} 能量</span></div>
         <div class="preview-card-meta">
@@ -8246,6 +8293,7 @@
           <span class="pill">${typeName}${rankText ? ` · ${rankText}` : ""}</span>
           <span class="pill">${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</span>
         </div>
+        ${advantageLine ? `<div class="element-advantage-hint">${advantageLine}</div>` : ""}
         <div class="preview-art-row">
           <div class="preview-art-box" style="${artStyle}"><img class="card-icon" src="${skillIconFor(card)}" alt=""></div>
           <div class="preview-card-desc">${card.description}</div>
