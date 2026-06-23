@@ -7039,6 +7039,10 @@
       return ELEMENT_REQUIRED_EFFECT_TYPES.has(card?.effectType);
     }
 
+    function cardHasRestrictedElement(card) {
+      return ALL_DAMAGE_ELEMENTS.includes(card?.element);
+    }
+
     function isDirectDamageCard(card) {
       return DIRECT_DAMAGE_EFFECT_TYPES.has(card?.effectType);
     }
@@ -7103,7 +7107,7 @@
     }
 
     function alignCardElementToCharacter(card, character, index = 0) {
-      if (!cardRequiresElement(card)) return card;
+      if (!cardRequiresElement(card) && !cardHasRestrictedElement(card)) return card;
       const allowedElements = allowedElementsFor(character);
       const primary = primaryElement(character);
       const element = preferredCardElement(card.name, card.element, allowedElements, primary, index);
