@@ -7306,29 +7306,48 @@
       const chosenBase = [];
       const preferred = basePool.filter(n => styleBias.some(tag => n.includes(tag)) || character.elements?.some(e => e !== "全系" && n.includes(e)));
       const baseSource = preferred.length >= 8 ? preferred.concat(basePool) : basePool.concat(preferred);
-      for (let i = 0; i < 15; i++) chosenBase.push(baseSource[i % baseSource.length]);
+      const isMageLike = /法|魔|祭司|导/.test(profession);
+      const isWarriorLike = /战|剑|骑/.test(profession);
+      const baseTarget = isMageLike ? 9 : isWarriorLike ? 11 : 10;
+      for (let i = 0; i < baseTarget; i++) chosenBase.push(baseSource[i % baseSource.length]);
 
       const skillNames = [];
-      character.skills.forEach(s => skillNames.push(s));
+      const pushSkillName = name => {
+        if (name && !skillNames.includes(name)) skillNames.push(name);
+      };
+      character.skills.forEach(pushSkillName);
+      const coveragePool = DEFAULT_SKILL_NAMES.advanced.concat(DEFAULT_SKILL_NAMES.normal, DEFAULT_SKILL_NAMES.special);
+      allowedElements.forEach(elementName => {
+        const coverageName = coveragePool.find(name => {
+          const effectType = stableEffectType(name);
+          return inferElement(name, "") === elementName && cardRequiresElement({ effectType }) && !skillNames.includes(name);
+        });
+        pushSkillName(coverageName);
+      });
       const allNormal = DEFAULT_SKILL_NAMES.normal.filter(n => character.elements?.some(e => e !== "全系" && inferElement(n, "无") === e) || n.includes(character.title) || stableEffectType(n) === "heal");
       const allAdvanced = DEFAULT_SKILL_NAMES.advanced.filter(n => character.elements?.some(e => e === "全系" || inferElement(n, "无") === e) || /庇护|领主|之主|王座|审判|雷霆|冰|暗|光|火|风|土/.test(n));
       const allSpecial = DEFAULT_SKILL_NAMES.special.filter(n => character.level >= 80 && (character.elements?.some(e => e === "全系" || inferElement(n, "无") === e) || /死亡|时间|元素|龙|神|灵魂|不灭|天使/.test(n)));
-      for (let i = 0; skillNames.length < 8 && i < allNormal.length; i++) skillNames.push(allNormal[i]);
-      if (character.level >= 70) for (let i = 0; skillNames.filter(n => skillTierFromName(n)==="advanced").length < Math.min(4, character.level >= 90 ? 4 : 2) && i < allAdvanced.length; i++) skillNames.push(allAdvanced[i]);
-      if (character.level >= 85) for (let i = 0; skillNames.filter(n => skillTierFromName(n)==="special").length < (character.level >= 95 ? 2 : 1) && i < allSpecial.length; i++) skillNames.push(allSpecial[i]);
+      for (let i = 0; skillNames.length < 10 && i < allNormal.length; i++) pushSkillName(allNormal[i]);
+      if (character.level >= 70) for (let i = 0; skillNames.filter(n => skillTierFromName(n)==="advanced").length < Math.min(5, character.level >= 90 ? 5 : 3) && i < allAdvanced.length; i++) pushSkillName(allAdvanced[i]);
+      if (character.level >= 85) for (let i = 0; skillNames.filter(n => skillTierFromName(n)==="special").length < (character.level >= 95 ? 3 : 1) && i < allSpecial.length; i++) pushSkillName(allSpecial[i]);
 
       const cards = [];
       chosenBase.forEach((name, i) => cards.push(cardGenerator.cardFromName(name, { category:"base", level: character.level, elementBias, profile, id:`${character.id}-base-${i}` })));
-      skillNames.slice(0, 10).forEach((name, i) => {
+      const skillLimit = Math.max(10, 24 - chosenBase.length);
+      skillNames.slice(0, skillLimit).forEach((name, i) => {
         const tier = skillTierFromName(name, DEFAULT_SKILL_NAMES.normal.includes(name) ? "normal" : "advanced");
         cards.push(cardGenerator.cardFromName(name, { category:"skill", skillTier:tier, level: character.level, elementBias, profile, id:`${character.id}-skill-${i}` }));
       });
-      const supplementNames = [
-        "普通攻击", "防御", "治疗", "蓄力", "护盾", "精准一击", "战术调整", "破甲",
+      const supplementNames = Array.from(new Set([
         ...(character.skills || []),
-        ...DEFAULT_SKILL_NAMES.normal.filter(name => allowedElements.includes(inferElement(name, elementBias)) || stableEffectType(name) === "heal"),
-        ...DEFAULT_SKILL_NAMES.advanced.filter(name => allowedElements.includes(inferElement(name, elementBias)) || /庇护|铠甲|护体/.test(name))
-      ];
+        ...allSpecial,
+        ...allAdvanced,
+        ...allNormal,
+        ...DEFAULT_SKILL_NAMES.normal.filter(name => allowedElements.includes(inferElement(name, ""))),
+        ...DEFAULT_SKILL_NAMES.advanced.filter(name => allowedElements.includes(inferElement(name, ""))),
+        "防御", "治疗", "蓄力", "护盾", "战术调整", "破甲",
+        "精准一击", "普通攻击"
+      ]));
       let supplementIndex = 0;
       while (cards.length < 24 && supplementIndex < supplementNames.length + 24) {
         const name = supplementNames[supplementIndex % supplementNames.length] || "普通攻击";
