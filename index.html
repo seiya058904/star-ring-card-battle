@@ -7039,6 +7039,24 @@
       return cardHasAdvantageAgainst(card, target) ? "对当前敌人：克制，伤害 +20%" : "";
     }
 
+    function combatModifierNotes(actor, target, card, statusMult, elementResult) {
+      const notes = [];
+      actor.statuses.forEach(status => {
+        if (status.type === "增幅") notes.push(`增幅 +${Math.round(status.power * 100)}%`);
+        if (status.type === "蓄力" && ["attack","burn","pierce","execute"].includes(card.effectType)) notes.push(`蓄力 +${Math.round(status.power * 100)}%`);
+      });
+      target.statuses.forEach(status => {
+        if (status.type === "虚弱" || status.type === "削弱" || status.type === "破甲") notes.push(`${status.type} +${Math.round(status.power * 100)}%`);
+        if (status.type === "诅咒" && card.element === "暗") notes.push("诅咒暗伤 +12%");
+        if (status.type === "减伤") notes.push(`减伤 -${Math.round(status.power * 100)}%`);
+        if (status.type === "闪避") notes.push(`闪避 -${Math.round(status.power * 100)}%`);
+      });
+      if (elementResult?.multiplier > 1) notes.push("元素克制 +20%");
+      if (elementResult?.multiplier < 1) notes.push(`元素修正 ${Math.round((elementResult.multiplier - 1) * 100)}%`);
+      if (notes.length) return `[加成来源] ${notes.join("、")}；不同来源可叠加，最终状态倍率 ${statusMult.toFixed(2)}。`;
+      return "";
+    }
+
     function allowedElementsFor(characterOrDeck) {
       if (Array.isArray(characterOrDeck.allowedElements) && characterOrDeck.allowedElements.length) return characterOrDeck.allowedElements;
       if (characterOrDeck.race === "龙族" || characterOrDeck.originalRace === "龙族" || characterOrDeck.elements?.includes("全系")) return ALL_DAMAGE_ELEMENTS.slice();
@@ -7476,6 +7494,7 @@
       const elem = elementMultiplier(card.element, target);
       if (intent === "hostile-damage") power = Math.round(power * elem.multiplier);
       if (intent === "hostile-damage" && elem.text) result.popups.push({ type:"element", text: elem.multiplier > 1 ? "元素克制" : "元素抵抗", side: target.id });
+      const modifierNote = intent === "hostile-damage" ? combatModifierNotes(actor, target, card, statusMult, elem) : "";
       if (actor.race === "兽人族" && actor.hp / actor.maxHp < .5 && ["attack","burn","pierce","execute"].includes(card.effectType)) {
         power = Math.round(power * 1.12);
         result.popups.push({ type:"talent", text:`[狂战血性] 伤害 +12%`, side: actor.id });
@@ -7522,7 +7541,7 @@
         result.amount = shared.ownerDamage;
         result.totalDamage = damage;
         result.summonGuard = shared.guard ? { id: shared.guard.id, name: shared.guard.name, amount: shared.summonDamage, ownerId: target.id } : null;
-        result.text = `${actor.name}使用「${card.name}」。\n[伤害] 造成 ${formatNumber(damage)} 点${card.element}属性伤害。${elem.text ? "\n" + elem.text : ""}`;
+        result.text = `${actor.name}使用「${card.name}」。\n[伤害] 造成 ${formatNumber(damage)} 点${card.element}属性伤害。${elem.text ? "\n" + elem.text : ""}${modifierNote ? "\n" + modifierNote : ""}`;
         if (card.mechanics?.includes("lifesteal")) {
           const heal = Math.round(Math.max(1, damage) * .28);
           actor.hp = Math.min(actor.maxHp, actor.hp + heal);
@@ -7594,7 +7613,8 @@
         if (card.effectType === "buff") { actor.statuses.push({ type:"增幅", turns:2, power:.25 }); result.targetId = actor.id; result.popups.push({ type:"status", text:"增幅 2 回合", side: actor.id }); }
         else { target.statuses.push({ type:"虚弱", turns:2, power:.2 }); result.targetId = target.id; result.popups.push({ type:"status debuff", text:"虚弱 2 回合", side: target.id }); }
         result.text = `${actor.name}使用「${card.name}」。
-[状态施加] ${card.effectType === "buff" ? "自身获得「增幅」2回合，伤害提高25%" : "目标获得「虚弱」2回合，伤害降低20%"}。`;
+[状态施加] ${card.effectType === "buff" ? "自身获得「增幅」2回合，伤害提高25%" : "目标获得「虚弱」2回合，伤害降低20%"}。
+[叠加规则] 不同来源可叠加；同名状态按当前持续回合与最终倍率上限结算。`;
       } else if (card.effectType === "summon") {
         const summonResult = upsertSummonEntity(actor, card, power);
         const summon = summonResult.summon;
