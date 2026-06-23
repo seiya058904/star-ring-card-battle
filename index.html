@@ -1134,6 +1134,24 @@
       line-height: 1;
       box-shadow: 0 0 12px rgba(255,198,76,.18);
     }
+    .card-advantage-badge {
+      position: absolute;
+      z-index: 5;
+      left: 14px;
+      top: 76px;
+      width: fit-content;
+      max-width: 86px;
+      padding: 3px 7px;
+      border: 1px solid rgba(255,222,119,.72);
+      border-radius: 4px;
+      background: rgba(71, 39, 8, .82);
+      color: #ffe78b;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1;
+      box-shadow: 0 0 12px rgba(255,198,76,.18);
+      pointer-events: none;
+    }
     .card-desc { position: relative; z-index: 1; font-size: 12px; line-height: 1.38; color: rgba(255,250,232,.95); }
     .card-power { font-weight: 900; color: #fff5bd; }
 
@@ -5771,10 +5789,14 @@
         actor.energy -= card.cost;
         actor.hand.splice(index, 1);
         actor.discardPile.push(card);
-        this.applyCard(actor, target, card);
         this.state.actionLocked = true;
+        this.applyCard(actor, target, card);
+        uiRenderer.render();
         setTimeout(() => {
-          if (this.state) this.state.actionLocked = false;
+          if (this.state) {
+            this.state.actionLocked = false;
+            uiRenderer.render();
+          }
         }, dramaTimingForCard(card).totalMin);
         this.checkGameOver();
         return true;
@@ -6670,6 +6692,10 @@
           event.preventDefault();
           event.stopPropagation();
           if (gameEngine.state.turn !== "player" || gameEngine.state.gameOver || el.classList.contains("unplayable")) return;
+          if (gameEngine.state.actionLocked) {
+            uiRenderer.showToast("上一张卡正在结算，请稍等");
+            return;
+          }
           if (gameEngine.state.player.skipAction) {
             gameEngine.log("[控制] 你被禁锢，本回合无法出牌。");
             uiRenderer.showToast("被禁锢，无法行动！");
@@ -6677,7 +6703,11 @@
           }
           resetBattleViewTransform();
           el.classList.add("playing");
-          gameEngine.resolveAction({ type: "playCard", side: "player", cardInstanceId: el.dataset.instanceId });
+          const played = gameEngine.resolveAction({ type: "playCard", side: "player", cardInstanceId: el.dataset.instanceId });
+          if (!played) {
+            el.classList.remove("playing");
+            uiRenderer.render();
+          }
           resetBattleViewTransform();
         }, { passive: false }));
         this.renderLog();
@@ -8302,7 +8332,7 @@
       const costSprite = card.cost >= 1 && card.cost <= 10 ? `cost${card.cost}` : "";
       const costStyle = costSprite ? `--cost-sprite-img:url('assets/ui/sprites/${costSprite}.png')` : "";
       const artStyle = atlasBackgroundVars("atlas-art", cardArtSprite(card), 120, 82);
-      const advantageHint = cardHasAdvantageAgainst(card, currentTarget) ? `<div class="element-advantage-hint">克制 +20%</div>` : "";
+      const advantageHint = cardHasAdvantageAgainst(card, currentTarget) ? `<div class="card-advantage-badge">克制 +20%</div>` : "";
       const orbitHtml = card.cost >= 8 ? `
         <div class="card-orbit-system" aria-hidden="true">
           <span class="orbit orbit-1"></span>${card.cost >= 9 ? '<span class="orbit orbit-2"></span>' : ''}${card.cost >= 10 ? '<span class="orbit orbit-3"></span>' : ''}
