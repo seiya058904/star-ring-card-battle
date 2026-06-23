@@ -5396,7 +5396,7 @@
     function inferElement(name, fallback = "无") {
       const map = [
         ["火", ["火", "炎", "焰", "烈日", "熔岩", "灰烬"]],
-        ["冰", ["冰", "霜", "寒", "极寒"]],
+        ["冰", ["冰", "霜", "寒", "极寒", "冻"]],
         ["风", ["风", "飓", "迅捷"]],
         ["土", ["土", "沙", "岩", "地", "重力", "磐石"]],
         ["雷", ["雷", "电", "霆"]],
@@ -7098,28 +7098,47 @@
       return elements.length ? elements : [primaryElement(characterOrDeck)].filter(Boolean);
     }
 
-    function preferredCardElement(name, currentElement, allowedElements, primary, index = 0) {
-      if (currentElement && allowedElements.includes(currentElement)) return currentElement;
-      const nameElement = inferElement(name || "", "");
-      if (nameElement && allowedElements.includes(nameElement)) return nameElement;
-      if (primary && allowedElements.includes(primary)) return primary;
-      return allowedElements[index % allowedElements.length] || "无";
+    function regenerateCardDerivedFields(card) {
+      card.mechanics = mechanicsForCard(card.name || "", card.effectType || "attack", card.element || "无", card.skillTier);
+      card.keywords = keywordsForMechanics(card.mechanics);
+      card.tags = [card.element, card.effectType, card.skillTier].filter(Boolean);
+      card.fullDescription = mechanicDescription(card);
+      card.description = shortMechanicDescription(card);
     }
 
-    function alignCardElementToCharacter(card, character, index = 0) {
-      if (!cardRequiresElement(card) && !cardHasRestrictedElement(card)) return card;
-      const allowedElements = allowedElementsFor(character);
+    function validateCardForCharacter(card, character, index = 0) {
+      const allowed = allowedElementsFor(character);
       const primary = primaryElement(character);
-      const element = preferredCardElement(card.name, card.element, allowedElements, primary, index);
-      if (card.element !== element) {
-        card.element = element;
-        card.mechanics = mechanicsForCard(card.name || "", card.effectType || "attack", card.element || "无", card.skillTier);
-        card.keywords = keywordsForMechanics(card.mechanics);
-        card.tags = [card.element, card.effectType, card.skillTier].filter(Boolean);
-        card.fullDescription = mechanicDescription(card);
-        card.description = shortMechanicDescription(card);
+      const name = card.name || "";
+      const nameElement = inferElement(name, "");
+
+      // Step 1: Element validation - card's semantic element must match character
+      if (nameElement && nameElement !== "") {
+        if (!allowed.includes(nameElement)) return null; // semantic mismatch → reject
+        if (card.element !== nameElement) {
+          card.element = nameElement;
+          regenerateCardDerivedFields(card);
+        }
+      } else if (cardRequiresElement(card) || cardHasRestrictedElement(card) || !card.element || card.element === "无") {
+        // No inherent element - assign from character
+        const newElement = allowed[index % allowed.length] || "无";
+        if (card.element !== newElement) {
+          card.element = newElement;
+          regenerateCardDerivedFields(card);
+        }
       }
-      return card;
+
+      // Step 2: Level validation
+      if (character.level >= getCardLevelRequirement(card)) return card;
+
+      // Step 3: Try downgrade if level requirement too high
+      const downgraded = tryDowngradeCard(card, character.level);
+      if (downgraded) {
+        downgraded.element = card.element; // preserve validated element
+        regenerateCardDerivedFields(downgraded);
+        return downgraded;
+      }
+      return null;
     }
 
     function parseSkillRank(name) {
@@ -7134,6 +7153,42 @@
       if (tier === "advanced") return {1:70, 2:80, 3:90}[rankValue || 1] || 90;
       if (tier === "special") return {1:80, 2:90, 3:95}[rankValue || 1] || 95;
       return 1;
+    }
+
+    function getCardLevelRequirement(card) {
+      const name = card.name || "";
+      const mark = card.mark || "";
+      if (mark === "★") {
+        if (name.includes("Ⅲ")) return 90;
+        if (name.includes("Ⅱ")) return 80;
+        return 70; // ★Ⅰ or ★ without numeral
+      }
+      if (mark === "♛") return 80;
+      if (name.includes("Ⅲ")) return 75;
+      if (name.includes("Ⅱ")) return 60;
+      if (name.includes("Ⅰ")) return 45;
+      return 1;
+    }
+
+    function tryDowngradeCard(card, characterLevel) {
+      const name = card.name || "";
+      const mark = card.mark || "";
+      const tier = card.skillTier || "normal";
+      if (mark === "★") {
+        if (name.includes("Ⅲ")) {
+          if (characterLevel >= 80) return cardGenerator.cardFromName(name.replace("Ⅲ", "Ⅱ"), { category:"skill", skillTier:tier, level:characterLevel, element:card.element });
+          if (characterLevel >= 70) return cardGenerator.cardFromName(name.replace("Ⅲ", "Ⅰ"), { category:"skill", skillTier:tier, level:characterLevel, element:card.element });
+        }
+        if (name.includes("Ⅱ") && characterLevel >= 70) return cardGenerator.cardFromName(name.replace("Ⅱ", "Ⅰ"), { category:"skill", skillTier:tier, level:characterLevel, element:card.element });
+        return null;
+      }
+      if (mark === "♛") return null;
+      if (name.includes("Ⅲ")) {
+        if (characterLevel >= 60) return cardGenerator.cardFromName(name.replace("Ⅲ", "Ⅱ"), { category:card.category, skillTier:tier, level:characterLevel, element:card.element });
+        if (characterLevel >= 45) return cardGenerator.cardFromName(name.replace("Ⅲ", "Ⅰ"), { category:card.category, skillTier:tier, level:characterLevel, element:card.element });
+      }
+      if (name.includes("Ⅱ") && characterLevel >= 45) return cardGenerator.cardFromName(name.replace("Ⅱ", "Ⅰ"), { category:card.category, skillTier:tier, level:characterLevel, element:card.element });
+      return null;
     }
 
     function skillTierFromName(name, fallback="normal") {
@@ -7325,7 +7380,11 @@
         pushSkillName(coverageName);
       });
       const allNormal = DEFAULT_SKILL_NAMES.normal.filter(n => character.elements?.some(e => e !== "全系" && inferElement(n, "无") === e) || n.includes(character.title) || stableEffectType(n) === "heal");
-      const allAdvanced = DEFAULT_SKILL_NAMES.advanced.filter(n => character.elements?.some(e => e === "全系" || inferElement(n, "无") === e) || /庇护|领主|之主|王座|审判|雷霆|冰|暗|光|火|风|土/.test(n));
+      const allAdvanced = DEFAULT_SKILL_NAMES.advanced.filter(n => {
+        const ne = inferElement(n, "");
+        if (ne && ne !== "" && !character.elements?.some(e => e === "全系" || ne === e)) return false;
+        return character.elements?.some(e => e === "全系" || inferElement(n, "无") === e) || /庇护|领主|之主|王座|审判|雷霆/.test(n);
+      });
       const allSpecial = DEFAULT_SKILL_NAMES.special.filter(n => character.level >= 80 && (character.elements?.some(e => e === "全系" || inferElement(n, "无") === e) || /死亡|时间|元素|龙|神|灵魂|不灭|天使/.test(n)));
       for (let i = 0; skillNames.length < 10 && i < allNormal.length; i++) pushSkillName(allNormal[i]);
       if (character.level >= 70) for (let i = 0; skillNames.filter(n => skillTierFromName(n)==="advanced").length < Math.min(5, character.level >= 90 ? 5 : 3) && i < allAdvanced.length; i++) pushSkillName(allAdvanced[i]);
@@ -7356,9 +7415,31 @@
         cards.push(cardGenerator.cardFromName(name, { category, skillTier:tier, level: character.level, elementBias, profile, id:`${character.id}-supplement-${supplementIndex}` }));
         supplementIndex += 1;
       }
-      const fixedCards = cards
-        .slice(0, 24)
-        .map((card, index) => alignCardElementToCharacter(card, character, index));
+      // Process cards through validation pipeline (element + level + downgrade)
+      const processedCards = [];
+      for (let i = 0; i < cards.length && processedCards.length < 24; i++) {
+        const result = validateCardForCharacter(cards[i], character, i);
+        if (result) processedCards.push(result);
+      }
+      // If still short on valid cards, generate more from element-filtered pool
+      if (processedCards.length < 24) {
+        const cleanPool = supplementNames.filter(name => {
+          const ne = inferElement(name, "");
+          return !ne || allowedElements.includes(ne);
+        });
+        if (!cleanPool.length) cleanPool.push("普通攻击", "防御", "蓄力", "护盾", "破甲");
+        let extraIdx = 0;
+        while (processedCards.length < 24 && extraIdx < 120) {
+          const name = cleanPool[extraIdx % cleanPool.length];
+          const cat = DEFAULT_BASE_CARD_NAMES.common.concat(DEFAULT_BASE_CARD_NAMES[race] || []).includes(name) ? "base" : "skill";
+          const tier = cat === "base" ? "none" : skillTierFromName(name, "normal");
+          const newCard = cardGenerator.cardFromName(name, { category:cat, skillTier:tier, level: character.level, elementBias, profile, id:`${character.id}-refill-${extraIdx}` });
+          const result = validateCardForCharacter(newCard, character, processedCards.length + extraIdx);
+          if (result) processedCards.push(result);
+          extraIdx++;
+        }
+      }
+      const fixedCards = processedCards.slice(0, 24);
       const deck = {
         id: `deck-${character.id}`,
         name: CHARACTER_DECK_NAME_OVERRIDES[character.id] || `${character.title || character.name}卡组`,
