@@ -148,6 +148,12 @@
 
     .subtitle { margin-top: 6px; opacity: .9; }
     .top-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    body:not(.battle-mode):not(.home-mode) .top-actions button {
+      padding: 5px 10px !important;
+      font-size: 13px !important;
+      min-height: 28px !important;
+      border-radius: 3px !important;
+    }
 
     .screen { display: none; animation: rise .32s ease both; }
     .screen.active { display: block; }
@@ -1778,6 +1784,83 @@
     .character-card h3 { color: #ffdc8a; margin-bottom: 4px; }
     .character-card .title { color: #cfa565; font-weight: 900; }
     .character-card .skills { margin-top: 8px; color: rgba(255,226,160,.72); font-size: 12px; line-height: 1.45; }
+
+    /* Guide page content styles */
+    .guide-content {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-top: 12px;
+    }
+    .guide-section {
+      background: linear-gradient(135deg, rgba(60, 38, 20, .72), rgba(10, 8, 6, .9));
+      border: 1px solid rgba(231, 172, 78, .26);
+      border-radius: 6px;
+      padding: 16px 18px;
+    }
+    .guide-section-title {
+      color: #ffdc8a;
+      font-size: 18px;
+      margin: 0 0 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(231, 172, 78, .26);
+    }
+    .guide-section-body {
+      color: rgba(255,232,180,.86);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .guide-section-body p { margin: 6px 0; }
+    .guide-section-body ul, .guide-section-body ol { margin: 6px 0; padding-left: 22px; }
+    .guide-section-body li { margin: 4px 0; }
+    .guide-element-chain {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      padding: 10px;
+      margin-top: 8px;
+      background: rgba(0,0,0,.3);
+      border-radius: 4px;
+      border: 1px solid rgba(231, 172, 78, .18);
+    }
+    .guide-chain-item { font-size: 13px; white-space: nowrap; }
+    .guide-chain-arrow { color: #b8a87a; font-size: 14px; }
+    .guide-status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 8px;
+    }
+    .guide-status-item {
+      padding: 8px 10px;
+      background: rgba(0,0,0,.3);
+      border-radius: 4px;
+      border: 1px solid rgba(231, 172, 78, .14);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .guide-status-item strong { color: #ffdc8a; display: block; margin-bottom: 2px; }
+    .guide-talent-table {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .guide-talent-row {
+      padding: 8px 10px;
+      background: rgba(0,0,0,.3);
+      border-radius: 4px;
+      border: 1px solid rgba(231, 172, 78, .14);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .guide-talent-row strong {
+      color: #ffdc8a;
+      display: inline-block;
+      min-width: 64px;
+      margin-right: 8px;
+    }
+
     .selected-badge {
       position: absolute;
       top: 8px;
@@ -4716,6 +4799,8 @@
       <div class="top-actions">
         <button class="ghost" data-nav="home">首页</button>
         <button class="ghost" data-open-battle-prep="true">开始战斗</button>
+        <button class="ghost" data-open-codex="characters">角色图鉴</button>
+        <button class="ghost" data-open-codex="cards">卡牌图鉴</button>
         <button class="ghost" data-nav="deck">游戏攻略</button>
         <button class="ghost" data-open-settings="true">系统设置</button>
       </div>
@@ -4830,18 +4915,18 @@
     <section class="screen" id="screen-deck">
       <div class="section-grid">
         <aside class="panel">
-          <h2>游戏攻略</h2>
-          <p class="small-note" style="margin:8px 0 14px;">集中查看角色图鉴、角色固定卡组、所有卡牌图鉴、元素规则和状态机制说明。</p>
+          <h2>📚 游戏攻略</h2>
+          <p class="small-note" style="margin:8px 0 14px;">游戏为固定角色卡组对战，每个角色有独立的固定卡池和天赋设定。</p>
           <div class="pill-list">
             <span class="pill">固定角色</span>
             <span class="pill">固定卡组</span>
             <span class="pill">标准卡池</span>
             <span class="pill">不可编辑</span>
           </div>
-          <p class="small-note" style="margin-top:14px;">战斗从首页“开始战斗”进入。电脑会从资料库里选择等级接近的角色。</p>
+          <p class="small-note" style="margin-top:14px;">攻略包含新手流程、角色与固定卡组、元素克制、状态机制、天赋、召唤和战斗技巧。</p>
         </aside>
         <div class="panel">
-          <h2>攻略内容</h2>
+          <h2>📖 攻略内容</h2>
           <div class="pill-list" id="currentDeckMeta"></div>
           <div class="deck-list" id="currentDeckCards" style="margin-top:12px;"></div>
         </div>
@@ -8031,20 +8116,12 @@
       meta.innerHTML = `
         <button class="ghost ${active("guide")}" data-codex-mode="guide">游戏攻略</button>
         <button class="ghost ${active("characters")}" data-codex-mode="characters">角色图鉴</button>
-        <button class="ghost ${active("cards")}" data-codex-mode="cards">所有卡牌图鉴</button>
-        <button class="ghost ${active("elements")}" data-codex-mode="elements">元素克制</button>
-        <button class="ghost ${active("statuses")}" data-codex-mode="statuses">状态机制</button>
+        <button class="ghost ${active("cards")}" data-codex-mode="cards">卡牌图鉴</button>
       `;
       meta.querySelectorAll("[data-codex-mode]").forEach(btn => btn.addEventListener("click", () => this.renderDeckManager(btn.dataset.codexMode)));
       if (mode === "guide") {
-        list.className = "codex-grid";
-        list.innerHTML = `
-          <button class="modal-choice" data-codex-mode="characters"><h3>角色图鉴</h3><p class="small-note">查看全部固定角色，并进入角色自己的固定卡组页面。</p></button>
-          <button class="modal-choice" data-codex-mode="cards"><h3>所有卡牌图鉴</h3><p class="small-note">查看当前全卡池，不和角色固定卡组混在一起。</p></button>
-          <button class="modal-choice" data-codex-mode="elements"><h3>基础元素克制</h3><p class="small-note">查看卡牌元素如何克制目标主元素。</p></button>
-          <button class="modal-choice" data-codex-mode="statuses"><h3>状态机制说明</h3><p class="small-note">查看 buff、debuff、持续伤害、控制和召唤规则。</p></button>
-        `;
-        list.querySelectorAll("[data-codex-mode]").forEach(btn => btn.addEventListener("click", () => this.renderDeckManager(btn.dataset.codexMode)));
+        list.className = "guide-content";
+        list.innerHTML = renderGuidePageContent();
       } else if (mode === "characters") {
         list.className = "character-grid";
         list.innerHTML = this.defaultDecks.map(deck => `
@@ -8078,35 +8155,181 @@
             </div>`).join("")}
         `;
         list.querySelector("[data-codex-mode='characters']")?.addEventListener("click", () => this.renderDeckManager("characters"));
-      } else {
+      } else if (mode === "cards") {
         list.className = "codex-grid";
         const cards = [];
         this.defaultDecks.forEach(deck => deck.cards.forEach(card => { if (!cards.some(c => c.name === card.name)) cards.push(card); }));
-        if (mode === "cards") {
-          list.innerHTML = cards.map(card => `
-            <div class="codex-card">
-              <h3>${card.mark || "•"} ${card.name}</h3>
-              <p class="small-note">${card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能"} · ${card.skillRank || (card.rankMode === "fixed" ? "固定规格" : "无等级")} · ${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType} · ${card.cost}能量</p>
-              <div class="pill-list">${(card.keywords || []).map(k => `<span class="pill">${k}</span>`).join("")}${staticAdvantageText(card) ? `<span class="pill">${staticAdvantageText(card)}</span>` : ""}</div>
-              <div class="desc">${card.fullDescription || card.description}</div>
-            </div>`).join("");
-        } else if (mode === "elements") {
-          list.innerHTML = `
-            <div class="codex-card"><h3>元素克制</h3><div class="desc">火克制冰，冰克制风，风克制土，土克制雷，雷克制光，光克制暗，暗克制火。</div></div>
-            <div class="codex-card"><h3>伤害卡规则</h3><div class="desc">造成伤害的卡牌使用卡牌自身元素判断克制；治疗、防御、护盾、抽牌、充能和纯增益不参与克制。</div></div>
-            <div class="codex-card"><h3>龙族规则</h3><div class="desc">龙族可使用所有元素卡牌。龙族没有主元素，因此不会被元素克制。</div></div>
-          `;
-        } else if (mode === "statuses") {
-          list.innerHTML = `
-            <div class="codex-card"><h3>燃烧</h3><div class="desc">每回合开始受到持续伤害。</div></div>
-            <div class="codex-card"><h3>禁锢</h3><div class="desc">下一回合无法行动。</div></div>
-            <div class="codex-card"><h3>吸血</h3><div class="desc">根据实际造成的伤害回复生命。</div></div>
-            <div class="codex-card"><h3>召唤</h3><div class="desc">召唤护卫单位，回合结束协击并分摊伤害。</div></div>
-            <div class="codex-card"><h3>增益 / 减益</h3><div class="desc">增益提升自身效果；减益削弱目标或让目标受到更多伤害。</div></div>
-          `;
-        }
+        list.innerHTML = cards.map(card => `
+          <div class="codex-card">
+            <h3>${card.mark || "•"} ${card.name}</h3>
+            <p class="small-note">${card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能"} · ${card.skillRank || (card.rankMode === "fixed" ? "固定规格" : "无等级")} · ${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType} · ${card.cost}能量</p>
+            <div class="pill-list">${(card.keywords || []).map(k => `<span class="pill">${k}</span>`).join("")}${staticAdvantageText(card) ? `<span class="pill">${staticAdvantageText(card)}</span>` : ""}</div>
+            <div class="desc">${card.fullDescription || card.description}</div>
+          </div>`).join("");
       }
     };
+
+    function renderGuidePageContent() {
+      return `
+        <div class="guide-section">
+          <h3 class="guide-section-title">新手流程</h3>
+          <div class="guide-section-body">
+            <ol>
+              <li>从首页点击<strong>「开始战斗」</strong>或使用顶部导航。</li>
+              <li>在战斗准备弹窗中选择一个<strong>固定角色</strong>——每个角色拥有专属固定卡组，不能自由编辑。</li>
+              <li>选好角色后点击<strong>「开始战斗」</strong>，电脑会从资料库中选择等级接近的对手。</li>
+              <li>战斗中每回合获得能量，使用能量打出手牌中的卡牌。</li>
+              <li>击败敌方角色即可获得胜利。</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <h3 class="guide-section-title">角色与固定卡组</h3>
+          <div class="guide-section-body">
+            <p>每个角色拥有<strong>固定卡组</strong>，玩家不能自由编辑或自定义。角色等级决定能使用什么阶级的卡牌。</p>
+            <ul>
+              <li>角色<strong>主元素</strong>决定其核心元素属性。</li>
+              <li><strong>掌握元素</strong>决定卡组中可以出现哪些元素的卡牌。</li>
+              <li>龙族可以使用全属性卡牌，但没有主元素，因此不会被元素克制。</li>
+              <li>使用顶部导航<strong>「角色图鉴」</strong>可查看全部角色及其固定卡组。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <h3 class="guide-section-title">卡牌等级与费用</h3>
+          <div class="guide-section-body">
+            <p>卡牌根据稀有度和等级分为多个阶级，角色等级不足时无法使用高阶卡牌：</p>
+            <ul>
+              <li><strong>普通卡</strong>：适合低等级角色，无特别准入限制。</li>
+              <li><strong>★Ⅰ</strong>：通常需要约 70 级才能使用。</li>
+              <li><strong>★Ⅱ</strong>：通常需要约 80 级。</li>
+              <li><strong>★Ⅲ</strong>：通常需要约 90 级。</li>
+              <li><strong>♛（特殊高级技能）</strong>：通常需要 80 级以上。</li>
+            </ul>
+            <p>如果卡牌等级超过角色等级，系统会优先尝试降级；不能合法降级时会被替换为其他合法卡牌。</p>
+            <p>卡牌消耗<strong>能量</strong>打出。每回合开始自动恢复能量，上限由角色决定。</p>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <h3 class="guide-section-title">元素克制</h3>
+          <div class="guide-section-body">
+            <p>元素克制由<strong>卡牌元素</strong>对<strong>目标主元素</strong>计算。克制时伤害提高 <strong>20%</strong>；被克制时伤害降低 <strong>15%</strong>。</p>
+            <div class="guide-element-chain">
+              <span class="guide-chain-item">🔥 火 → 克制冰</span>
+              <span class="guide-chain-arrow">→</span>
+              <span class="guide-chain-item">❄️ 冰 → 克制风</span>
+              <span class="guide-chain-arrow">→</span>
+              <span class="guide-chain-item">🌪️ 风 → 克制土</span>
+              <span class="guide-chain-arrow">→</span>
+              <span class="guide-chain-item">⛰️ 土 → 克制雷</span>
+              <span class="guide-chain-arrow">→</span>
+              <span class="guide-chain-item">⚡ 雷 → 克制光</span>
+              <span class="guide-chain-arrow">→</span>
+              <span class="guide-chain-item">☀️ 光 → 克制暗</span>
+              <span class="guide-chain-arrow">→</span>
+              <span class="guide-chain-item">🌑 暗 → 克制火</span>
+            </div>
+            <p style="margin-top:10px;"><strong>同属性减伤 10%</strong>：攻击与目标同属性时，伤害降低 10%。</p>
+            <p><strong>不参与克制的效果</strong>：治疗、护盾、抽牌、充能和纯增益类卡牌不会触发元素克制。</p>
+            <p><strong>龙族</strong>没有主元素，不会被元素克制。</p>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <h3 class="guide-section-title">状态机制</h3>
+          <div class="guide-section-body">
+            <div class="guide-status-grid">
+              <div class="guide-status-item">
+                <strong>🔥 燃烧</strong>
+                <span>每回合开始受到火属性持续伤害。持续 2 回合。</span>
+              </div>
+              <div class="guide-status-item">
+                <strong>🌑 诅咒</strong>
+                <span>每回合开始受到暗属性持续伤害。持续 3 回合。</span>
+              </div>
+              <div class="guide-status-item">
+                <strong>❄️ 冻结</strong>
+                <span>本回合能量恢复降低。持续 1 回合。</span>
+              </div>
+              <div class="guide-status-item">
+                <strong>⛓️ 禁锢</strong>
+                <span>下回合无法行动。持续 1 回合。</span>
+              </div>
+              <div class="guide-status-item">
+                <strong>⬆ 增幅</strong>
+                <span>攻击伤害提高 25%。持续 2 回合。</span>
+              </div>
+              <div class="guide-status-item">
+                <strong>⬇ 虚弱 / 削弱</strong>
+                <span>受到伤害提高 20%。持续 2 回合。</span>
+              </div>
+              <div class="guide-status-item">
+                <strong>🛡️ 减伤</strong>
+                <span>受到伤害降低 18%（护盾强化时 12%）。持续 1–2 回合。</span>
+              </div>
+              <div class="guide-status-item">
+                <strong>💨 闪避</strong>
+                <span>受到伤害降低 35%。持续 1 回合。</span>
+              </div>
+              <div class="guide-status-item">
+                <strong>⚡ 蓄力</strong>
+                <span>下一次攻击/燃烧/穿透/斩杀伤害提高 25%。同时获得 2 点能量。</span>
+              </div>
+            </div>
+            <p style="margin-top:10px;">状态在每回合结束减少 1 回合持续时间，回合数为 0 时解除。多个同类状态同时存在时叠加效果。</p>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <h3 class="guide-section-title">天赋机制</h3>
+          <div class="guide-section-body">
+            <p>每个种族拥有独特的天赋，在战斗中自动生效：</p>
+            <div class="guide-talent-table">
+              <div class="guide-talent-row"><strong>人族</strong>${TALENT_DETAILS["人族"]}</div>
+              <div class="guide-talent-row"><strong>神人</strong>${TALENT_DETAILS["神人"]}</div>
+              <div class="guide-talent-row"><strong>精灵族</strong>${TALENT_DETAILS["精灵族"]}</div>
+              <div class="guide-talent-row"><strong>黑暗精灵</strong>${TALENT_DETAILS["黑暗精灵"]}</div>
+              <div class="guide-talent-row"><strong>兽人族</strong>${TALENT_DETAILS["兽人族"]}</div>
+              <div class="guide-talent-row"><strong>龙族</strong>${TALENT_DETAILS["龙族"]}</div>
+              <div class="guide-talent-row"><strong>恶魔</strong>${TALENT_DETAILS["恶魔"]}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <h3 class="guide-section-title">召唤机制</h3>
+          <div class="guide-section-body">
+            <ul>
+              <li>召唤卡牌会生成独立的<strong>召唤单位</strong>。</li>
+              <li>每方最多同时存在 <strong>1 个</strong> 召唤物。</li>
+              <li>再次召唤会恢复召唤物生命，并强化下一次协击。</li>
+              <li>召唤物在拥有者回合结束时进行<strong>协击</strong>。</li>
+              <li>召唤物会分摊主人受到的<strong>部分伤害</strong>。</li>
+              <li>召唤物生命归零后消失。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <h3 class="guide-section-title">战斗技巧</h3>
+          <div class="guide-section-body">
+            <ul>
+              <li>先观察敌方<strong>主元素</strong>，再选择克制卡牌——克制 +20% 伤害非常可观。</li>
+              <li>低等级角色不要期待高阶卡牌——等级不够时高阶卡会被替换。</li>
+              <li><strong>治疗</strong>和<strong>护盾</strong>不会触发元素克制，适合用来防守。</li>
+              <li><strong>禁锢</strong>适合打断敌方关键行动。</li>
+              <li><strong>蓄力</strong>卡同时提供能量和伤害增幅，是连招核心。</li>
+              <li><strong>召唤物</strong>适合吸收伤害和提供稳定输出，但注意每方只允许一个。</li>
+              <li>低血量时注意对方种族天赋触发：<strong>兽人</strong>伤害提高、<strong>人族</strong>回血护盾、<strong>神人</strong>均衡意志。</li>
+              <li><strong>恶魔</strong>会从造成的伤害中吸血——高攻恶魔非常危险。</li>
+            </ul>
+          </div>
+        </div>
+      `;
+    }
 
     const originalBindStandard = uiRenderer.bind;
     uiRenderer.bind = function() {
