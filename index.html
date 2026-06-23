@@ -7064,7 +7064,8 @@
         card.mechanics = mechanicsForCard(card.name || "", card.effectType || "attack", card.element || "无", card.skillTier);
         card.keywords = keywordsForMechanics(card.mechanics);
         card.tags = [card.element, card.effectType, card.skillTier].filter(Boolean);
-        card.description = mechanicDescription(card);
+        card.fullDescription = mechanicDescription(card);
+        card.description = shortMechanicDescription(card);
       }
       return card;
     }
@@ -7140,7 +7141,7 @@
       const value = formatNumber(card.power);
       const parts = [];
       const e = card.element === "无" ? "" : `${card.element}属性`;
-      if (["attack","burn","freeze","curse","execute","control","lifesteal","pierce","summon"].includes(card.effectType)) {
+      if (isDirectDamageCard(card) || card.effectType === "freeze") {
         parts.push(`造成 ${value} ${e}伤害`);
       } else if (["shield","defense"].includes(card.effectType)) {
         parts.push(`获得 ${value} 点护盾`);
@@ -7151,7 +7152,9 @@
       else if (card.effectType === "buff") parts.push("获得增幅 2 回合，造成的伤害提高");
       else if (card.effectType === "debuff") parts.push("使目标虚弱 2 回合，受到的伤害提高");
 
-      if (card.mechanics?.includes("lifesteal")) parts.push("吸取部分伤害转化为生命");
+      if (card.effectType === "control") parts.push("禁锢目标，下一回合无法行动");
+      if (card.effectType === "summon") parts.push("召唤护卫单位，回合结束协击并分摊伤害");
+      if (card.mechanics?.includes("lifesteal")) parts.push("根据实际伤害回复生命");
       if (card.mechanics?.includes("burn")) parts.push("附加燃烧，每回合开始受到持续伤害");
       if (card.mechanics?.includes("freeze")) parts.push("附加冻结，本回合能量恢复降低");
       if (card.mechanics?.includes("curse")) parts.push("附加诅咒，每回合受到持续暗属性伤害");
@@ -7159,14 +7162,37 @@
       if (card.mechanics?.includes("cleanse")) parts.push("净化自身 1 个负面状态");
       if (card.mechanics?.includes("pierce")) parts.push("部分无视护盾");
       if (card.mechanics?.includes("execute")) parts.push("目标生命低于 30% 时伤害提高 55%");
-      if (card.mechanics?.includes("control")) parts.push("禁锢目标，下回合无法行动");
-      if (card.mechanics?.includes("summon")) parts.push("召唤一个单位协助作战，拥有独立生命值，会在拥有者回合结束时攻击并分摊部分伤害");
+      if (card.mechanics?.includes("control") && card.effectType !== "control") parts.push("附加禁锢，下一回合无法行动");
+      if (card.mechanics?.includes("summon") && card.effectType !== "summon") parts.push("召唤护卫单位，回合结束协击并分摊伤害");
       if (card.mechanics?.includes("damageReduction")) parts.push("自身获得减伤，受到伤害降低");
       if (card.mechanics?.includes("fortify")) parts.push("若自己已有护盾，额外获得减伤");
       if (card.mechanics?.includes("drawOrEvade")) parts.push("获得轻灵状态，下一次受击减伤并抽牌");
       if (card.rankMode === "fixed") parts.push("固定规格技能");
       if (card.rankMode === "ultimate") parts.push("终极技能，演出更长且效果更强");
       return parts.filter(Boolean).join("。") + "。";
+    }
+
+    function shortMechanicDescription(card) {
+      const value = formatNumber(card.power);
+      const e = card.element === "无" ? "" : `${card.element}属性`;
+      if (isDirectDamageCard(card) || card.effectType === "freeze") {
+        const extras = [];
+        if (card.effectType === "burn" || card.mechanics?.includes("burn")) extras.push("附加燃烧");
+        if (card.effectType === "curse" || card.mechanics?.includes("curse")) extras.push("附加诅咒");
+        if (card.effectType === "lifesteal" || card.mechanics?.includes("lifesteal")) extras.push("吸血");
+        if (card.effectType === "pierce" || card.mechanics?.includes("pierce")) extras.push("部分无视护盾");
+        if (card.effectType === "execute" || card.mechanics?.includes("execute")) extras.push("低血量增伤");
+        return `造成 ${value} ${e}伤害${extras.length ? "，" + extras.slice(0, 2).join("，") : ""}。`;
+      }
+      if (card.effectType === "summon") return "召唤护卫单位，回合结束协击并分摊伤害。";
+      if (card.effectType === "control") return "禁锢目标，下一回合无法行动。";
+      if (["shield","defense"].includes(card.effectType)) return `获得 ${value} 点护盾。`;
+      if (["heal","revive"].includes(card.effectType)) return `恢复 ${value} 点生命。`;
+      if (card.effectType === "draw") return "抽 2 张牌。";
+      if (card.effectType === "charge") return "获得 2 点能量并蓄力。";
+      if (card.effectType === "buff") return "获得增幅，提升伤害。";
+      if (card.effectType === "debuff") return "施加虚弱，降低目标伤害。";
+      return `产生 ${value} 点效果。`;
     }
 
     cardGenerator.cardFromName = function(name, options = {}) {
@@ -7199,7 +7225,8 @@
         skillTier, skillRank, rankMode, requiredLevel, effectType, element, level, cost, rarity, power,
         mechanics, keywords: keywordsForMechanics(mechanics), tags: [element, effectType, skillTier].filter(Boolean), mark
       };
-      card.description = options.description || mechanicDescription(card);
+      card.fullDescription = mechanicDescription(card);
+      card.description = options.description || shortMechanicDescription(card);
       return card;
     };
 
@@ -7890,7 +7917,7 @@
               <h3>${card.mark || "•"} ${card.name}</h3>
               <p class="small-note">${card.cost} 能量 · ${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</p>
               <div class="pill-list"><span class="pill">${card.category === "base" ? "基础卡" : "技能卡"}</span><span class="pill">${DEFAULT_RARITIES[card.rarity] || card.rarity}</span>${staticAdvantageText(card) ? `<span class="pill">${staticAdvantageText(card)}</span>` : ""}</div>
-              <div class="desc">${card.description}</div>
+              <div class="desc">${card.fullDescription || card.description}</div>
             </div>`).join("")}
         `;
         list.querySelector("[data-codex-mode='characters']")?.addEventListener("click", () => this.renderDeckManager("characters"));
@@ -7904,7 +7931,7 @@
               <h3>${card.mark || "•"} ${card.name}</h3>
               <p class="small-note">${card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能"} · ${card.skillRank || (card.rankMode === "fixed" ? "固定规格" : "无等级")} · ${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType} · ${card.cost}能量</p>
               <div class="pill-list">${(card.keywords || []).map(k => `<span class="pill">${k}</span>`).join("")}${staticAdvantageText(card) ? `<span class="pill">${staticAdvantageText(card)}</span>` : ""}</div>
-              <div class="desc">${card.description}</div>
+              <div class="desc">${card.fullDescription || card.description}</div>
             </div>`).join("");
         } else if (mode === "elements") {
           list.innerHTML = `
@@ -8194,7 +8221,7 @@
         <div class="codex-card mini-codex-card">
           <h3>${card.name}</h3>
           <p class="small-note">${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType} · ${card.cost} 能量</p>
-          <div class="desc">${card.description || "无说明"}</div>
+          <div class="desc">${card.fullDescription || card.description || "无说明"}</div>
         </div>
       `).join("");
       this.openModal("战斗图鉴", `
@@ -8296,7 +8323,7 @@
         ${advantageLine ? `<div class="element-advantage-hint">${advantageLine}</div>` : ""}
         <div class="preview-art-row">
           <div class="preview-art-box" style="${artStyle}"><img class="card-icon" src="${skillIconFor(card)}" alt=""></div>
-          <div class="preview-card-desc">${card.description}</div>
+          <div class="preview-card-desc">${card.fullDescription || card.description}</div>
         </div>
         <div class="preview-card-keywords">${(card.keywords || card.mechanics || []).slice(0, 7).map(k => `<span class="pill">${k}</span>`).join("")}</div>
         <div class="preview-card-power">威力${formatNumber(card.power)}</div>
