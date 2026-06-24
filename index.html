@@ -9001,11 +9001,31 @@
         </div>`;
     };
 
+    function inferVisualTier(card) {
+      if (!card) return "basic";
+      const mark = card.mark || "";
+      const rank = card.skillRank || "";
+      const skillTier = card.skillTier || "";
+      if (card.category === "base" || mark === "•") return "basic";
+      if (mark === "♛" || skillTier === "special") return "crown";
+      if (mark === "★" || skillTier === "advanced") {
+        if (/[Ⅲ]|III/.test(rank)) return "star-3";
+        if (/[Ⅱ]|II/.test(rank)) return "star-2";
+        return "star-1";
+      }
+      if (/[ⅧⅦ]|VIII|VII/.test(rank)) return "normal-elite";
+      if (/[ⅥⅤ]|VI|V/.test(rank)) return "normal-high";
+      if (/[ⅣⅢ]|IV|III/.test(rank)) return "normal-mid";
+      if (/[ⅡⅠ]|II|I/.test(rank)) return "normal-low";
+      return card.category === "skill" ? "normal-low" : "basic";
+    }
+
     renderCard = function(card, unplayable, currentTarget = null) {
       const [c1, c2] = cardColors(card);
       const typeName = card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能";
       const rankText = card.skillRank || (card.rankMode === "fixed" ? "固定规格" : card.rankMode === "ultimate" ? "终极" : "");
       const tier = tierNameFor(card);
+      const visualTier = inferVisualTier(card);
       const frameStyle = atlasBackgroundStyle(cardFrameSprite(card), 162, 286);
       const costSprite = card.cost >= 1 && card.cost <= 10 ? `cost${card.cost}` : "";
       const costStyle = costSprite ? `--cost-sprite-img:url('assets/ui/sprites/${costSprite}.png')` : "";
@@ -9016,7 +9036,7 @@
           <span class="orbit orbit-1"></span>${card.cost >= 9 ? '<span class="orbit orbit-2"></span>' : ''}${card.cost >= 10 ? '<span class="orbit orbit-3"></span>' : ''}
         </div>` : '';
       return `
-        <div class="card ${unplayable ? "unplayable" : ""}" data-instance-id="${card.instanceId || ""}" data-tier="${tier}" data-drama-tier="${dramaTierNameFor(card)}" data-cost="${card.cost}" data-element="${card.element}" data-effect="${card.effectType}" data-symbol="${card.mark || "✦"}" style="--c1:${c1};--c2:${c2};${frameStyle}">
+        <div class="card ${unplayable ? "unplayable" : ""} card-tier-${visualTier}" data-visual-tier="${visualTier}" data-instance-id="${card.instanceId || ""}" data-tier="${tier}" data-drama-tier="${dramaTierNameFor(card)}" data-cost="${card.cost}" data-element="${card.element}" data-effect="${card.effectType}" data-symbol="${card.mark || "✦"}" style="--c1:${c1};--c2:${c2};${frameStyle}">
           ${orbitHtml}
           <div class="card-top">
             <div class="card-name">${card.name}</div>
@@ -9040,8 +9060,9 @@
       const artStyle = cardArtBackgroundStyle(card);
       const costSprite = card.cost >= 1 && card.cost <= 10 ? `cost${card.cost}` : "";
       const advantageLine = currentAdvantageText(card, gameEngine.state?.enemy);
+      const visualTier = inferVisualTier(card);
       return `
-        <div class="preview-card-title"><span>${card.name}</span><span>${costSprite ? `<span class="atlas-status-icon" style="--cost-sprite:url('assets/ui/sprites/${costSprite}.png')"></span>` : ""}${card.cost} 能量</span></div>
+        <div class="preview-card-title" data-visual-tier="${visualTier}"><span>${card.name}</span><span>${costSprite ? `<span class="atlas-status-icon" style="--cost-sprite:url('assets/ui/sprites/${costSprite}.png')"></span>` : ""}${card.cost} 能量</span></div>
         <div class="preview-card-meta">
           <span class="pill">${card.element}</span>
           <span class="pill">${typeName}${rankText ? ` · ${rankText}` : ""}</span>
@@ -9050,7 +9071,7 @@
         <div class="preview-effectiveness-slot">${advantageLine ? `<div class="element-advantage-hint">${advantageLine}</div>` : ""}</div>
         <div class="preview-art-row">
           <div class="preview-art-box card-art-v2" style="${artStyle}"></div>
-          <div class="preview-card-desc">${card.fullDescription || card.description}</div>
+          <div class="preview-card-desc" data-visual-tier="${visualTier}">${card.fullDescription || card.description}</div>
         </div>
         <div class="preview-card-keywords">${(card.keywords || card.mechanics || []).slice(0, 7).map(k => `<span class="pill">${k}</span>`).join("")}</div>
         <div class="preview-card-power">威力${formatNumber(card.power)}</div>
@@ -9409,6 +9430,161 @@
     }
     body.battle-mode .preview-art-box[style*="--atlas-art-size:cover"] {
       background-size: contain !important;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       Card name & description tier colors
+       ════════════════════════════════════════════════════════════════ */
+    /* Base cards – warm platinum */
+    body.battle-mode .hand-dock-v3 .card-tier-basic .card-name {
+      color: #fff0bf !important;
+      text-shadow: 0 1px 3px rgba(80,60,20,.3) !important;
+    }
+    body.battle-mode .hand-dock-v3 .card-tier-basic .card-desc {
+      color: #e8d9aa !important;
+    }
+    body.battle-mode .preview-card-title[data-visual-tier="basic"] {
+      color: #ffe8a9 !important;
+    }
+    body.battle-mode .preview-card-desc[data-visual-tier="basic"] {
+      color: #e8d9aa !important;
+    }
+
+    /* Normal skill Ⅰ–Ⅱ – cool silver-blue */
+    body.battle-mode .hand-dock-v3 .card-tier-normal-low .card-name {
+      color: #d7e8ff !important;
+      text-shadow: 0 1px 3px rgba(40,80,140,.15) !important;
+    }
+    body.battle-mode .hand-dock-v3 .card-tier-normal-low .card-desc {
+      color: #c8d8e8 !important;
+    }
+    body.battle-mode .preview-card-title[data-visual-tier="normal-low"] {
+      color: #d7e8ff !important;
+    }
+    body.battle-mode .preview-card-desc[data-visual-tier="normal-low"] {
+      color: #c8d8e8 !important;
+    }
+
+    /* Normal skill Ⅲ–Ⅳ – cool cyan-blue */
+    body.battle-mode .hand-dock-v3 .card-tier-normal-mid .card-name {
+      color: #bff3ff !important;
+      text-shadow: 0 1px 4px rgba(40,180,220,.2) !important;
+    }
+    body.battle-mode .hand-dock-v3 .card-tier-normal-mid .card-desc {
+      color: #b7dde6 !important;
+    }
+    body.battle-mode .preview-card-title[data-visual-tier="normal-mid"] {
+      color: #bff3ff !important;
+    }
+    body.battle-mode .preview-card-desc[data-visual-tier="normal-mid"] {
+      color: #b7dde6 !important;
+    }
+
+    /* Normal skill Ⅴ–Ⅵ – silver-violet */
+    body.battle-mode .hand-dock-v3 .card-tier-normal-high .card-name {
+      color: #d8c4ff !important;
+      text-shadow: 0 1px 4px rgba(130,60,220,.18) !important;
+    }
+    body.battle-mode .hand-dock-v3 .card-tier-normal-high .card-desc {
+      color: #c9b7ee !important;
+    }
+    body.battle-mode .preview-card-title[data-visual-tier="normal-high"] {
+      color: #d8c4ff !important;
+    }
+    body.battle-mode .preview-card-desc[data-visual-tier="normal-high"] {
+      color: #c9b7ee !important;
+    }
+
+    /* Normal skill Ⅶ–Ⅷ – star-blue-violet static glow */
+    body.battle-mode .hand-dock-v3 .card-tier-normal-elite .card-name {
+      color: #b8a7ff !important;
+      text-shadow: 0 0 8px rgba(120,80,255,.32), 0 1px 5px rgba(80,40,200,.18) !important;
+    }
+    body.battle-mode .hand-dock-v3 .card-tier-normal-elite .card-desc {
+      color: #c6bfff !important;
+    }
+    body.battle-mode .preview-card-title[data-visual-tier="normal-elite"] {
+      color: #b8a7ff !important;
+    }
+    body.battle-mode .preview-card-desc[data-visual-tier="normal-elite"] {
+      color: #c6bfff !important;
+    }
+
+    /* Advanced skill ★Ⅰ – gold */
+    body.battle-mode .hand-dock-v3 .card-tier-star-1 .card-name {
+      color: #ffd76a !important;
+      text-shadow: 0 0 7px rgba(255,200,60,.25), 0 1px 5px rgba(180,120,20,.16) !important;
+    }
+    body.battle-mode .hand-dock-v3 .card-tier-star-1 .card-desc {
+      color: #ffe1a3 !important;
+    }
+    body.battle-mode .preview-card-title[data-visual-tier="star-1"] {
+      color: #ffd76a !important;
+    }
+    body.battle-mode .preview-card-desc[data-visual-tier="star-1"] {
+      color: #ffe1a3 !important;
+    }
+
+    /* Advanced skill ★Ⅱ – warm orange-gold */
+    body.battle-mode .hand-dock-v3 .card-tier-star-2 .card-name {
+      color: #ffbd5c !important;
+      text-shadow: 0 0 9px rgba(255,180,50,.3), 0 1px 5px rgba(180,100,20,.18) !important;
+    }
+    body.battle-mode .hand-dock-v3 .card-tier-star-2 .card-desc {
+      color: #ffd39a !important;
+    }
+    body.battle-mode .preview-card-title[data-visual-tier="star-2"] {
+      color: #ffbd5c !important;
+    }
+    body.battle-mode .preview-card-desc[data-visual-tier="star-2"] {
+      color: #ffd39a !important;
+    }
+
+    /* Advanced skill ★Ⅲ – deep orange-gold shimmer (8s) */
+    body.battle-mode .hand-dock-v3 .card-tier-star-3 .card-name {
+      background: linear-gradient(135deg, #ff9b4a 35%, #ffcc7a 50%, #ff9b4a 65%) !important;
+      background-size: 200% 100% !important;
+      -webkit-background-clip: text !important;
+      background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      animation: tierNameShimmer 8s ease-in-out infinite !important;
+    }
+    body.battle-mode .hand-dock-v3 .card-tier-star-3 .card-desc {
+      color: #ffc37a !important;
+    }
+    body.battle-mode .preview-card-title[data-visual-tier="star-3"] {
+      color: #ff9b4a !important;
+    }
+    body.battle-mode .preview-card-desc[data-visual-tier="star-3"] {
+      color: #ffc37a !important;
+    }
+
+    /* Special advanced skill ♛ – gold-violet gradient flow (10s) */
+    body.battle-mode .hand-dock-v3 .card-tier-crown .card-name {
+      background: linear-gradient(135deg, #ffd76a 25%, #e8a0ff 50%, #ffd76a 75%) !important;
+      background-size: 200% 100% !important;
+      -webkit-background-clip: text !important;
+      background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      animation: tierCrownFlow 10s ease-in-out infinite !important;
+    }
+    body.battle-mode .hand-dock-v3 .card-tier-crown .card-desc {
+      color: #ffe6a6 !important;
+    }
+    body.battle-mode .preview-card-title[data-visual-tier="crown"] {
+      color: #e8a0ff !important;
+    }
+    body.battle-mode .preview-card-desc[data-visual-tier="crown"] {
+      color: #ffe6a6 !important;
+    }
+
+    @keyframes tierNameShimmer {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    @keyframes tierCrownFlow {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
     }
 
     body.battle-mode .hand-dock-v3 .card-art::before,
