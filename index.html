@@ -5434,6 +5434,9 @@
       if (cardArtHasMechanic(card, ["lifesteal"])) return "cardart_dark_lifesteal_drain.png";
       // ═══ Priority 3: effectType-based mappings (element-agnostic) ═══
       // These are driven by the card's intrinsic effectType, not assigned element
+      // Note: draw/drawOrEvade is NOT here — it conflicts with wind-element cards
+      // that get drawOrEvade from mechanicsForCard, which would preempt
+      // wind control name patterns (e.g. 猎场/笼罩) checked in Priority 4.
       if (cardArtHasMechanic(card, ["charge", "buff"])) return "cardart_charge_buff_empower.png";
       if (cardArtHasMechanic(card, ["curse", "control", "execute"])) {
         if (cardArtHasMechanic(card, ["execute"]) && cardArtHasMechanic(card, ["curse", "control"])) return "cardart_curse_execute_hybrid.png";
@@ -5442,9 +5445,10 @@
         return elementKey === "dark" ? "cardart_dark_shadow_tentacle.png" : "cardart_dark_curse_control.png";
       }
       if (cardArtHasMechanic(card, ["pierce"])) return "cardart_pierce_break_armor.png";
-      if (cardArtHasMechanic(card, ["draw", "drawOrEvade"]) && (/(?:指挥|命令|战术|调度|号令)/.test(name) || /\bcommand\b|\btactical\b/i.test(name))) return "cardart_tactical_command.png";
-      if (cardArtHasMechanic(card, ["draw", "drawOrEvade"])) return "cardart_tactical_draw.png";
       // ═══ Priority 4: Element-aware mechanics ═══
+      // Note: draw/drawOrEvade is in Priority 4, not Priority 3, because
+      // mechanicsForCard gives all wind-element cards drawOrEvade, which would
+      // preempt wind control name patterns (猎场/笼罩).
       // Ice attack cards: prioritize blade storm for attack-oriented ice spells
       if (elementKey === "ice") {
         const controlName = /冻结|冰封|禁锢|囚|牢|绝对冰冻|控制/.test(name);
@@ -5456,6 +5460,9 @@
       }
       // Wind control/field cards: use spiral control art
       if (elementKey === "wind" && (cardArtHasMechanic(card, ["control"]) || /笼罩|猎场|风场|控制|领域|\bspiral\b|\bzone\b/i.test(name))) return "cardart_wind_spiral_control.png";
+      // Draw / tactical (after wind control to avoid drawOrEvade preempting name patterns)
+      if (cardArtHasMechanic(card, ["draw", "drawOrEvade"]) && (/(?:指挥|命令|战术|调度|号令)/.test(name) || /\bcommand\b|\btactical\b/i.test(name))) return "cardart_tactical_command.png";
+      if (cardArtHasMechanic(card, ["draw", "drawOrEvade"])) return "cardart_tactical_draw.png";
       // Ice freeze+control — requires BOTH freeze AND control, not either
       if (elementKey === "ice" && cardArtHasMechanic(card, ["freeze"]) && cardArtHasMechanic(card, ["control"])) return "cardart_ice_prison.png";
       if (cardArtHasMechanic(card, ["freeze"])) {
