@@ -5657,7 +5657,11 @@
       { id: "dragon-weike", name: "维克基", title: "圣金龙王", race: "龙族", role: "", level: 92, profession: "龙王", elements: ["全系"], skills: ["龙神意志", "天使羽"], notes: "" },
       { id: "dragon-baosi", name: "堡思维亚", title: "灾难龙王", race: "龙族", role: "始祖龙王的儿子", level: 94, profession: "龙王", elements: ["全系"], skills: ["龙神意志", "噩梦Ⅲ", "斩魔剑"], notes: "" },
       { id: "dragon-feiyu", name: "菲羽克", title: "自然龙王", race: "龙族", role: "", level: 96, profession: "龙王", elements: ["全系"], skills: ["龙神意志", "超位雷斩", "暗之闪Ⅲ", "陨星灭地"], notes: "" },
-      { id: "dragon-yemosu", name: "耶莫稣", title: "元祖龙神", race: "龙族", role: "", level: 100, profession: "龙神", elements: ["全系"], skills: ["龙神意志", "起死回生", "统治Ⅲ", "雷光铠甲Ⅲ", "元素圣体Ⅲ", "时间禁锢"], notes: "" }
+      { id: "dragon-yemosu", name: "耶莫稣", title: "元祖龙神", race: "龙族", role: "", level: 100, profession: "龙神", elements: ["全系"], skills: ["龙神意志", "起死回生", "统治Ⅲ", "雷光铠甲Ⅲ", "元素圣体Ⅲ", "时间禁锢"], notes: "" },
+      { id: "arcane-time-exile", name: "阿斯特拉·流亡", title: "时空放逐者", race: "人族", country: "裂隙边境", role: "时空术士", level: 95, profession: "魔法师", elements: ["风", "雷", "暗"], skills: ["时间回溯", "星界放逐Ⅲ", "天穹之门", "次元隧道", "次元斩Ⅲ", "次元屏障Ⅲ"], notes: "承载时间、放逐、次元主题高阶卡" },
+      { id: "demon-abyss-executor", name: "涅萨洛斯·断罪", title: "深渊处刑者", race: "恶魔", country: "深渊法庭", role: "处刑官", level: 95, profession: "战士", elements: ["暗"], skills: ["绝对死亡Ⅲ", "死亡审判Ⅲ", "灵魂吞噬Ⅲ", "超级虚弱Ⅲ", "恶魔契约"], notes: "承载死亡、审判、灵魂吞噬主题高阶卡" },
+      { id: "godkin-element-endbringer", name: "赛勒菲恩·终焉", title: "元素终焉者", race: "神人", country: "元素圣域", role: "终焉使徒", level: 100, profession: "魔法师", elements: ["全系"], primaryElement: "", skills: ["五元素诛神斩", "冰火重天Ⅲ", "风雷天暴Ⅲ", "终·万雷归一Ⅲ", "灭世之威", "神威降临Ⅲ"], notes: "承载全元素终局主题高阶卡" },
+      { id: "ice-archon", name: "艾瑟琳·霜冕", title: "极寒神殿主", race: "精灵族", country: "霜星神殿", role: "冰系统御者", level: 95, profession: "魔法师", elements: ["冰", "风"], skills: ["超大冰暴Ⅲ", "绝对冰冻Ⅲ", "极寒神殿Ⅲ", "霜星坠落Ⅲ", "真王冰甲Ⅲ", "终·冰元素"], notes: "承载 90+ 冰系高阶卡" }
     ];
 
     const ALL_DAMAGE_ELEMENTS = ["火", "冰", "风", "土", "雷", "光", "暗"];
@@ -8081,7 +8085,9 @@
       "darkelf-sterling":"暗黑大祭司秘典", "elf-eluxia":"寒风女王猎场", "orc-moluo":"雅典兽战团", "orc-xindi":"赫尔墨斯弓卫",
       "orc-flemo":"阿瑞斯暗刃军", "orc-saibo":"阿波罗光法卡组", "orc-sennuo":"忒弥斯炎牛军", "demon-heka":"灰烬魔王卡组",
       "dragon-shijiage":"毁灭龙王卡组", "dragon-moye":"绝望龙王卡组", "dragon-jieao":"贪恶龙王卡组", "dragon-weike":"圣金龙王卡组",
-      "dragon-baosi":"灾难龙王卡组", "dragon-feiyu":"自然龙王卡组", "dragon-yemosu":"元祖龙神卡组"
+      "dragon-baosi":"灾难龙王卡组", "dragon-feiyu":"自然龙王卡组", "dragon-yemosu":"元祖龙神卡组",
+      "arcane-time-exile":"时空放逐者卡组", "demon-abyss-executor":"深渊处刑者卡组",
+      "godkin-element-endbringer":"元素终焉者卡组", "ice-archon":"极寒神殿主卡组"
     };
 
     const FIXED_CHARACTER_DECKS = new Map();
@@ -8194,8 +8200,102 @@
       return JSON.parse(JSON.stringify(deck));
     };
 
+    function builtInCardDefinitions() {
+      const baseNames = Array.from(new Set(Object.values(DEFAULT_BASE_CARD_NAMES).filter(Array.isArray).flat()));
+      const skillNames = Array.from(new Set(DEFAULT_SKILL_NAMES.normal.concat(DEFAULT_SKILL_NAMES.advanced, DEFAULT_SKILL_NAMES.special)));
+      const bases = baseNames.map(name => cardGenerator.cardFromName(name, { category:"base" }));
+      const skills = skillNames.map(name => {
+        const fallback = DEFAULT_SKILL_NAMES.normal.includes(name) ? "normal" : DEFAULT_SKILL_NAMES.special.includes(name) ? "special" : "advanced";
+        const skillTier = skillTierFromName(name, fallback);
+        return cardGenerator.cardFromName(name, { category:"skill", skillTier });
+      });
+      return bases.concat(skills);
+    }
+
+    function sourceRaceForBaseCard(name) {
+      const raw = stripCardTaxonomyPrefix(name);
+      for (const [race, names] of Object.entries(DEFAULT_BASE_CARD_NAMES)) {
+        if (race !== "common" && Array.isArray(names) && names.includes(raw)) return race;
+      }
+      return "";
+    }
+
+    function replacementIndexForCoverage(deck, counts) {
+      const indexes = deck.cards
+        .map((card, index) => ({ card, index, duplicateCount: counts.get(card.name) || 0 }))
+        .filter(item => item.duplicateCount > 1);
+      indexes.sort((a, b) => {
+        const baseBias = (a.card.category === "base" ? 0 : 1) - (b.card.category === "base" ? 0 : 1);
+        if (baseBias) return baseBias;
+        return (a.card.requiredLevel || 1) - (b.card.requiredLevel || 1);
+      });
+      return indexes[0]?.index ?? -1;
+    }
+
+    function coverageFitScore(card, deck) {
+      const allowed = allowedElementsFor(deck);
+      const nameElement = inferElement(card.baseName || card.name, "");
+      if (nameElement && !allowed.includes(nameElement)) return -Infinity;
+      if ((card.requiredLevel || 1) > deck.level) return -Infinity;
+      let score = deck.level - (card.requiredLevel || 1);
+      if (card.category === "base") {
+        const sourceRace = sourceRaceForBaseCard(card.baseName || card.name);
+        if (sourceRace && sourceRace === deck.originalRace) score += 100;
+        if (!sourceRace) score += 20;
+      }
+      if (deck.elements?.includes("全系")) score += 60;
+      if (nameElement && allowed.includes(nameElement)) score += 40;
+      if (deck.style?.includes(stripCardTaxonomyPrefix(card.name))) score += 80;
+      if (card.skillTier === "special" && deck.level >= 95) score += 30;
+      return score;
+    }
+
+    function cardForCoverageDeck(definition, deck, offset = 0) {
+      const allowed = allowedElementsFor(deck);
+      const elementBias = deck.primaryElement || deck.element || allowed[offset % Math.max(1, allowed.length)] || "无";
+      const profile = combinedProfile(deck.race, deck.profession);
+      const card = cardGenerator.cardFromName(definition.baseName || definition.name, {
+        category: definition.category,
+        skillTier: definition.skillTier,
+        level: deck.level,
+        elementBias,
+        profile,
+        id: `${deck.characterId}-coverage-${deterministicId(stripCardTaxonomyPrefix(definition.name))}`
+      });
+      return validateCardForCharacter(card, deck, offset);
+    }
+
+    function ensureAllBuiltInCardsCovered(decks) {
+      const allCards = builtInCardDefinitions();
+      const counts = new Map();
+      decks.forEach(deck => deck.cards.forEach(card => counts.set(card.name, (counts.get(card.name) || 0) + 1)));
+
+      allCards.forEach(definition => {
+        if (counts.has(definition.name)) return;
+        let best = null;
+        decks.forEach(deck => {
+          const replacementIndex = replacementIndexForCoverage(deck, counts);
+          if (replacementIndex < 0) return;
+          const candidate = cardForCoverageDeck(definition, deck, replacementIndex);
+          if (!candidate || candidate.name !== definition.name) return;
+          const score = coverageFitScore(candidate, deck);
+          if (!best || score > best.score) best = { deck, replacementIndex, candidate, score };
+        });
+        if (!best) return;
+        const removed = best.deck.cards[best.replacementIndex];
+        counts.set(removed.name, Math.max(0, (counts.get(removed.name) || 1) - 1));
+        if (counts.get(removed.name) === 0) counts.delete(removed.name);
+        best.deck.cards[best.replacementIndex] = best.candidate;
+        counts.set(best.candidate.name, (counts.get(best.candidate.name) || 0) + 1);
+      });
+
+      decks.forEach(deck => FIXED_CHARACTER_DECKS.set(deck.characterId, JSON.parse(JSON.stringify(deck))));
+      return decks;
+    }
+
     deckBuilder.defaultDecks = function() {
-      return DEFAULT_CHARACTER_TEMPLATES.map(character => this.createCharacterDeck(character));
+      const decks = DEFAULT_CHARACTER_TEMPLATES.map(character => this.createCharacterDeck(character));
+      return ensureAllBuiltInCardsCovered(decks).map(deck => JSON.parse(JSON.stringify(deck)));
     };
 
     deckBuilder.pickEnemyFor = function(playerDeck) {
