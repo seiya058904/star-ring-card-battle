@@ -9360,18 +9360,24 @@
       min-height: 38px !important;
       padding: 3px 22px 2px !important;
       align-items: center !important;
-      background: linear-gradient(180deg, rgba(8,9,9,.72), rgba(9,7,4,.2) 74%, rgba(0,0,0,0)) !important;
+      background: linear-gradient(180deg, rgba(8,9,9,.35), rgba(9,7,4,.12) 74%, rgba(0,0,0,0)) !important;
       border: 0 !important;
       box-shadow: inset 0 -1px 0 rgba(229,170,70,.24) !important;
     }
 
-    body.battle-mode .hand-dock-v3 .card-name,
+    body.battle-mode .hand-dock-v3 .card-name {
+      font-size: 17px !important;
+      line-height: 1.12 !important;
+      text-align: center !important;
+      color: #ffedbd !important;
+      text-shadow: 0 1px 2px rgba(0,0,0,.5) !important;
+    }
     body.battle-mode .played-card-stage .card-name {
       font-size: 17px !important;
       line-height: 1.12 !important;
       text-align: center !important;
       color: #ffedbd !important;
-      text-shadow: 0 2px 5px #000 !important;
+      text-shadow: 0 1px 2px rgba(0,0,0,.55) !important;
     }
 
     body.battle-mode .hand-dock-v3 .card-cost,
@@ -9547,6 +9553,7 @@
       -webkit-background-clip: text !important;
       background-clip: text !important;
       -webkit-text-fill-color: transparent !important;
+      text-shadow: 0 0 6px rgba(255,155,74,.35) !important;
       animation: tierNameShimmer 8s ease-in-out infinite !important;
     }
     body.battle-mode .hand-dock-v3 .card-tier-star-3 .card-desc {
@@ -9566,6 +9573,7 @@
       -webkit-background-clip: text !important;
       background-clip: text !important;
       -webkit-text-fill-color: transparent !important;
+      text-shadow: 0 0 8px rgba(232,160,255,.28), 0 0 3px rgba(255,215,106,.2) !important;
       animation: tierCrownFlow 10s ease-in-out infinite !important;
     }
     body.battle-mode .hand-dock-v3 .card-tier-crown .card-desc {
@@ -9576,6 +9584,50 @@
     }
     body.battle-mode .preview-card-desc[data-visual-tier="crown"] {
       color: #ffe6a6 !important;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       Played card tier styles — static colors matching hand tiers
+       ════════════════════════════════════════════════════════════════ */
+    body.battle-mode .played-card-stage .card-tier-basic .card-name {
+      color: #fff0bf !important;
+    }
+    body.battle-mode .played-card-stage .card-tier-normal-low .card-name {
+      color: #d7e8ff !important;
+    }
+    body.battle-mode .played-card-stage .card-tier-normal-mid .card-name {
+      color: #bff3ff !important;
+    }
+    body.battle-mode .played-card-stage .card-tier-normal-high .card-name {
+      color: #d8c4ff !important;
+    }
+    body.battle-mode .played-card-stage .card-tier-normal-elite .card-name {
+      color: #b8a7ff !important;
+      text-shadow: 0 0 8px rgba(120,80,255,.32) !important;
+    }
+    body.battle-mode .played-card-stage .card-tier-star-1 .card-name {
+      color: #ffd76a !important;
+      text-shadow: 0 0 7px rgba(255,200,60,.25) !important;
+    }
+    body.battle-mode .played-card-stage .card-tier-star-2 .card-name {
+      color: #ffbd5c !important;
+      text-shadow: 0 0 9px rgba(255,180,50,.3) !important;
+    }
+    body.battle-mode .played-card-stage .card-tier-star-3 .card-name {
+      background: linear-gradient(135deg, #ff9b4a 35%, #ffcc7a 50%, #ff9b4a 65%) !important;
+      background-size: 200% 100% !important;
+      -webkit-background-clip: text !important;
+      background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      text-shadow: 0 0 6px rgba(255,155,74,.3) !important;
+    }
+    body.battle-mode .played-card-stage .card-tier-crown .card-name {
+      background: linear-gradient(135deg, #ffd76a 25%, #e8a0ff 50%, #ffd76a 75%) !important;
+      background-size: 200% 100% !important;
+      -webkit-background-clip: text !important;
+      background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      text-shadow: 0 0 8px rgba(232,160,255,.28), 0 0 3px rgba(255,215,106,.2) !important;
     }
 
     @keyframes tierNameShimmer {
