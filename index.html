@@ -8719,14 +8719,15 @@
             <div class="pill-list"><span class="pill">主元素 ${deck.element || "无"}</span><span class="pill">掌握元素 ${(deck.elements || [deck.element]).join("、")}</span><span class="pill">固定卡组 ${deck.cards.length} 张</span></div>
             <p class="small-note" style="margin-top:8px;">天赋【${talent.name}】：${talent.desc}</p>
           </div>
-          ${deck.cards.map(card => `
+          ${deck.cards.map((card, idx) => `
             <div class="deck-card">
-              <h3>${card.mark || "•"} ${card.name}</h3>
+              <h3>${card.mark || "•"} ${card.name}<button class="card-preview-btn" data-preview-deck-index="${idx}" type="button">预览</button></h3>
               <p class="small-note">${card.cost} 能量 · ${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</p>
               <div class="pill-list"><span class="pill">${card.category === "base" ? "基础卡" : "技能卡"}</span><span class="pill">${DEFAULT_RARITIES[card.rarity] || card.rarity}</span>${staticAdvantageText(card) ? `<span class="pill">${staticAdvantageText(card)}</span>` : ""}</div>
               <div class="desc">${card.fullDescription || card.description}</div>
             </div>`).join("")}
         `;
+        this._previewDeckCards = deck.cards;
         list.querySelector("[data-codex-mode='characters']")?.addEventListener("click", () => this.renderDeckManager("characters"));
       } else if (mode === "cards") {
         list.className = "codex-grid";
@@ -8773,10 +8774,8 @@
         </div>`;
     }
 
-    function openCardEncyclopediaPreview(index) {
-      const cards = uiRenderer._codexCards;
-      if (!cards || !cards[index]) return;
-      const card = cards[index];
+    function openCardEncyclopediaPreviewByCard(card) {
+      if (!card) return;
       const overlay = document.getElementById("cardEncyclopediaOverlay");
       const body = document.getElementById("cardEncyclopediaBody");
       if (!overlay || !body) return;
@@ -8790,6 +8789,12 @@
         if (e.key === "Escape") closeCardEncyclopediaPreview();
       };
       document.addEventListener("keydown", uiRenderer._previewEscHandler);
+    }
+
+    function openCardEncyclopediaPreview(index) {
+      const cards = uiRenderer._codexCards;
+      if (!cards || !cards[index]) return;
+      openCardEncyclopediaPreviewByCard(cards[index]);
     }
 
     function closeCardEncyclopediaPreview() {
@@ -8810,6 +8815,16 @@
         e.stopPropagation();
         const idx = parseInt(btn.dataset.previewIndex, 10);
         if (!isNaN(idx)) openCardEncyclopediaPreview(idx);
+        return;
+      }
+      /* Deck card preview button */
+      const deckBtn = e.target.closest(".card-preview-btn[data-preview-deck-index]");
+      if (deckBtn && deckBtn.closest(".deck-card")) {
+        e.stopPropagation();
+        const idx = parseInt(deckBtn.dataset.previewDeckIndex, 10);
+        if (!isNaN(idx) && uiRenderer._previewDeckCards && uiRenderer._previewDeckCards[idx]) {
+          openCardEncyclopediaPreviewByCard(uiRenderer._previewDeckCards[idx]);
+        }
         return;
       }
       if (e.target.closest("#cardEncyclopediaClose")) {
