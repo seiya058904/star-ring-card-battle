@@ -9381,8 +9381,8 @@
 
     body.battle-mode .hand-dock-v3 .card-art,
     body.battle-mode .played-card-stage .card-art {
-      height: 118px !important;
-      min-height: 118px !important;
+      height: 140px !important;
+      min-height: 140px !important;
       background-size: var(--atlas-art-size, cover) !important;
       background-position: var(--atlas-art-position, center) !important;
       background-repeat: no-repeat !important;
@@ -9394,6 +9394,21 @@
       background-image: var(--atlas-art-image, none) !important;
       background-color: transparent !important;
       box-shadow: inset 0 0 0 1px rgba(229,170,70,.16) !important;
+    }
+
+    /* v2 portrait art: taller card + grid to fit 130x170 v2 art without overflow */
+    body.battle-mode .hand-dock-v3 .card {
+      min-height: 324px !important;
+      height: 324px !important;
+      grid-template-rows: auto auto 144px 1fr auto !important;
+    }
+    /* v2 portrait images use contain to show full art without cropping */
+    body.battle-mode .hand-dock-v3 .card-art[style*="--atlas-art-size:cover"],
+    body.battle-mode .played-card-stage .card-art[style*="--atlas-art-size:cover"] {
+      background-size: contain !important;
+    }
+    body.battle-mode .preview-art-box[style*="--atlas-art-size:cover"] {
+      background-size: contain !important;
     }
 
     body.battle-mode .hand-dock-v3 .card-art::before,
@@ -10051,7 +10066,7 @@
     }
 
     body.battle-mode .card-preview-panel {
-      grid-template-rows: 34px 24px 18px 112px 22px 28px 30px !important;
+      grid-template-rows: 34px 24px 18px 134px 22px 28px 30px !important;
       gap: 6px !important;
     }
 
@@ -10080,7 +10095,7 @@
 
     body.battle-mode .preview-art-row {
       grid-row: 4 !important;
-      min-height: 112px !important;
+      min-height: 134px !important;
       grid-template-columns: 132px minmax(0, 1fr) !important;
       align-items: stretch !important;
       overflow: hidden !important;
@@ -10088,8 +10103,8 @@
 
     body.battle-mode .preview-art-box {
       width: 132px !important;
-      height: 112px !important;
-      min-height: 112px !important;
+      height: 134px !important;
+      min-height: 134px !important;
     }
 
     body.battle-mode .preview-art-box .card-icon,
@@ -10101,8 +10116,8 @@
     }
 
     body.battle-mode .preview-card-desc {
-      min-height: 112px !important;
-      max-height: 112px !important;
+      min-height: 134px !important;
+      max-height: 134px !important;
       box-sizing: border-box !important;
       overflow: hidden !important;
     }
