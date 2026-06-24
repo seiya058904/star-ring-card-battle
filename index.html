@@ -5366,7 +5366,7 @@
       },
       summons: {
         holyGuard: "assets/summons/summon_holy_guard.png",
-        windHunter: "assets/summons/summon_wind_hunter.png",
+        windHunter: "assets/summons/summon_wind_hunter.jpg",
         fireLord: "assets/summons/summon_fire_lord.png",
         darkLord: "assets/summons/summon_dark_lord.png"
       },
@@ -5394,6 +5394,182 @@
       }
     };
 
+
+    const PERF_LOG_PREFIX = "[perf]";
+    const preloadImagePromiseMap = new Map();
+    const preloadedImageSrcSet = new Set();
+    const slowPreloadImageMs = 900;
+
+    const battlePerfMonitor = {
+      battleStart: 0,
+      firstCardShown: false,
+      log(label, data = {}) {
+        try {
+          console.log(PERF_LOG_PREFIX, label, data);
+        } catch {}
+      },
+      markBattleStart() {
+        this.battleStart = performance.now();
+        this.firstCardShown = false;
+        this.log("battle-start", { atMs: Math.round(this.battleStart) });
+      },
+      markBattleRendered() {
+        if (!this.battleStart) return;
+        this.log("battle-rendered", { elapsedMs: Math.round(performance.now() - this.battleStart) });
+      },
+      markFirstCard(card) {
+        if (this.firstCardShown || !this.battleStart) return;
+        this.firstCardShown = true;
+        this.log("first-card-shown", {
+          elapsedSinceBattleStartMs: Math.round(performance.now() - this.battleStart),
+          card: card?.name || "",
+          effectType: card?.effectType || "",
+          element: card?.element || ""
+        });
+      }
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const elapsedMs = Math.round(performance.now());
+      battlePerfMonitor.log("dom-content-loaded", {
+        elapsedMs,
+        possibleBlocking: elapsedMs > 1500
+      });
+    });
+
+    window.addEventListener("load", () => {
+      const elapsedMs = Math.round(performance.now());
+      battlePerfMonitor.log("window-load", {
+        elapsedMs,
+        possibleBlocking: elapsedMs > 2500
+      });
+    });
+
+    function normalizeImageSrc(src) {
+      if (!src || typeof src !== "string") return "";
+      return src.trim().replace(/^url\((['"]?)(.*?)\1\)$/i, "$2");
+    }
+
+    function preloadImage(src, reason = "general") {
+      const normalizedSrc = normalizeImageSrc(src);
+      if (!normalizedSrc) return Promise.resolve(false);
+      if (preloadedImageSrcSet.has(normalizedSrc)) return preloadImagePromiseMap.get(normalizedSrc) || Promise.resolve(true);
+      if (preloadImagePromiseMap.has(normalizedSrc)) return preloadImagePromiseMap.get(normalizedSrc);
+
+      preloadedImageSrcSet.add(normalizedSrc);
+      const startedAt = performance.now();
+      const promise = new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => {
+          const finish = () => {
+            const elapsedMs = Math.round(performance.now() - startedAt);
+            if (elapsedMs > slowPreloadImageMs) {
+              console.log(PERF_LOG_PREFIX, `slow-image-preload ${normalizedSrc}`, { src: normalizedSrc, reason, elapsedMs });
+            } else {
+              console.debug(PERF_LOG_PREFIX, "image-preloaded", { src: normalizedSrc, reason, elapsedMs });
+            }
+            resolve(true);
+          };
+          if (typeof img.decode === "function") {
+            img.decode().then(finish).catch(() => {
+              console.debug(PERF_LOG_PREFIX, "image-decode-fallback", { src: normalizedSrc, reason });
+              finish();
+            });
+          } else {
+            finish();
+          }
+        };
+        img.onerror = () => {
+          console.log(PERF_LOG_PREFIX, `image-preload-failed ${normalizedSrc}`, { src: normalizedSrc, reason });
+          resolve(false);
+        };
+        img.src = normalizedSrc;
+      });
+      preloadImagePromiseMap.set(normalizedSrc, promise);
+      return promise;
+    }
+
+    function scheduleImagePreload(srcs, reason = "scheduled") {
+      const uniqueSrcs = [...new Set((srcs || []).map(normalizeImageSrc).filter(Boolean))];
+      if (!uniqueSrcs.length) return;
+      const batchSize = 8;
+      let index = 0;
+      const loadBatch = () => {
+        uniqueSrcs.slice(index, index + batchSize).forEach(src => preloadImage(src, reason));
+        index += batchSize;
+        if (index >= uniqueSrcs.length) return;
+        if ("requestIdleCallback" in window) {
+          requestIdleCallback(loadBatch, { timeout: 600 });
+        } else {
+          setTimeout(loadBatch, 16);
+        }
+      };
+      if ("requestIdleCallback" in window) {
+        requestIdleCallback(loadBatch, { timeout: 600 });
+      } else {
+        setTimeout(loadBatch, 0);
+      }
+    }
+
+    function collectImageSrcsFromObject(obj, out = new Set()) {
+      Object.values(obj || {}).forEach(value => {
+        if (typeof value === "string") out.add(value);
+        else if (value && typeof value === "object") collectImageSrcsFromObject(value, out);
+      });
+      return out;
+    }
+
+    function collectCssUrlImageSrcs() {
+      const srcs = new Set();
+      try {
+        document.querySelectorAll("style").forEach(style => {
+          const css = style.textContent || "";
+          const pattern = /url\((['"]?)(.*?)\1\)/g;
+          let match;
+          while ((match = pattern.exec(css))) {
+            const src = normalizeImageSrc(match[2]);
+            if (src && !src.startsWith("data:")) srcs.add(src);
+          }
+        });
+      } catch (error) {
+        console.debug(PERF_LOG_PREFIX, "css-url-scan-skipped", { message: error?.message || String(error) });
+      }
+      return srcs;
+    }
+
+    function collectCardVisualAssetSrcs(card, out = new Set()) {
+      if (!card) return out;
+      out.add(skillIconFor(card));
+      out.add(`assets/ui/sprites/${cardArtSprite(card)}.png`);
+      out.add(`assets/ui/sprites/${cardFrameSprite(card)}.png`);
+      if (card.cost >= 1 && card.cost <= 10) out.add(`assets/ui/sprites/cost${card.cost}.png`);
+      return out;
+    }
+
+    function preloadCardVisualAssets(card, reason = "card") {
+      scheduleImagePreload([...collectCardVisualAssetSrcs(card)], reason);
+    }
+
+    function collectBattleAssetSrcs(decks = []) {
+      const srcs = collectImageSrcsFromObject(ASSETS);
+      srcs.add(UI_ATLAS.src);
+      Object.keys(UI_ATLAS.sprites || {}).forEach(name => srcs.add(`assets/ui/sprites/${name}.png`));
+      collectCssUrlImageSrcs().forEach(src => srcs.add(src));
+      decks.filter(Boolean).forEach(deck => {
+        (deck.cards || []).forEach(card => collectCardVisualAssetSrcs(card, srcs));
+      });
+      return [...srcs].filter(Boolean);
+    }
+
+    function preloadBattleAssets(decks = [], reason = "battle-assets") {
+      const srcs = collectBattleAssetSrcs(Array.isArray(decks) ? decks : [decks]);
+      battlePerfMonitor.log("preload-scheduled", { reason, count: srcs.length });
+      scheduleImagePreload(srcs, reason);
+    }
+
+    function scheduleInitialBattleAssetPreload() {
+      preloadBattleAssets(uiRenderer?.defaultDecks || [], "initial-battle-assets");
+    }
 
     const ELEMENTS = ["火", "冰", "风", "土", "雷", "光", "暗", "无"];
     const PROFESSIONS = ["魔法师", "战士", "弓箭手"];
@@ -5862,6 +6038,7 @@
         actor.hand.splice(index, 1);
         actor.discardPile.push(card);
         this.state.actionLocked = true;
+        preloadCardVisualAssets(card, `play-card-${side}`);
         this.applyCard(actor, target, card);
         uiRenderer.render();
         setTimeout(() => {
@@ -7960,6 +8137,7 @@
           setTimeout(() => gameEngine.resolveAction({ type:"endTurn", side:"enemy" }), 650);
           return;
         }
+        preloadCardVisualAssets(card, "ai-before-card");
         uiRenderer.showAiDialogue(card.skillTier === "special" ? "beforeSpecial" : card.skillTier === "advanced" ? "beforeAdvanced" : "beforeCard");
         setTimeout(() => {
           gameEngine.resolveAction({ type:"playCard", side:"enemy", cardInstanceId: card.instanceId });
@@ -8031,6 +8209,7 @@
       this.renderHomePreview();
       this.renderDefaultDecks();
       this.renderDeckManager();
+      scheduleInitialBattleAssetPreload();
       this.showToast("标准角色卡池已锁定");
     };
 
@@ -8091,13 +8270,17 @@
     };
 
     uiRenderer.startBattle = function() {
+      battlePerfMonitor.markBattleStart();
       const playerDeck = JSON.parse(JSON.stringify(this.selectedDeck || this.defaultDecks[0]));
       const enemyDeck = deckBuilder.pickEnemyFor(playerDeck);
+      preloadBattleAssets([playerDeck, enemyDeck], "battle-start-decks");
       gameEngine.start(playerDeck, enemyDeck);
       document.getElementById("battlefield").style.setProperty("--battle-bg", `url("${battleBackgroundFor(playerDeck, enemyDeck)}")`);
+      preloadBattleAssets([playerDeck, enemyDeck], "battle-start-fighters");
       this.nav("battle");
       effectsRenderer.resize();
       this.render();
+      requestAnimationFrame(() => battlePerfMonitor.markBattleRendered());
     };
 
     uiRenderer.renderDefaultDecks = function() {
@@ -8400,6 +8583,8 @@
       if (banner) {
         banner.style.animationDuration = card.skillTier === "special" ? "2.5s" : card.skillTier === "advanced" ? "1.75s" : "1.1s";
       }
+      battlePerfMonitor.markFirstCard(card);
+      preloadCardVisualAssets(card, "played-card-stage");
       originalEffectsPlayStandard(card, result);
       const timing = dramaTimingForCard(card);
       setTimeout(() => { this._playLock = 0; }, timing.totalMin + 200);
