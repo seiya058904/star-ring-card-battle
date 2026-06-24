@@ -5429,7 +5429,7 @@
       }
       // Wind control/field cards: use spiral control art
       if (elementKey === "wind" && (cardArtHasMechanic(card, ["control"]) || /笼罩|猎场|风场|控制|领域|\bspiral\b|\bzone\b/i.test(name))) return "cardart_wind_spiral_control.png";
-      if (cardArtHasMechanic(card, ["freeze", "control"])) return "cardart_ice_prison.png";
+      if (elementKey === "ice" && cardArtHasMechanic(card, ["freeze", "control"])) return "cardart_ice_prison.png";
       if (cardArtHasMechanic(card, ["curse", "control", "execute"])) {
         if (cardArtHasMechanic(card, ["execute"]) && cardArtHasMechanic(card, ["curse", "control"])) return "cardart_curse_execute_hybrid.png";
         if (cardArtHasMechanic(card, ["execute"])) return "cardart_execute_death_slash.png";
@@ -6063,7 +6063,7 @@
         let skillTier = options.skillTier || "none";
         if (category === "skill" && skillTier === "none") {
           if (DEFAULT_SKILL_NAMES.special.includes(name) || /时间|死亡支配|元素圣体|起死回生|不灭魔躯|天使羽/.test(name)) skillTier = "special";
-          else if (DEFAULT_SKILL_NAMES.advanced.includes(name) || /终·|Ⅲ|王座|圣裁|魔域|之主|君王|领主/.test(name)) skillTier = "advanced";
+          else if (DEFAULT_SKILL_NAMES.advanced.includes(name) || /终·|Ⅲ|王座|圣裁|魔域|之主|君王|领主|超大冰暴/.test(name)) skillTier = "advanced";
           else skillTier = "normal";
         }
         const level = clamp(Number(options.level || 30), 1, 100);
@@ -7832,7 +7832,7 @@
 
     function skillTierFromName(name, fallback="normal") {
       if (DEFAULT_SKILL_NAMES.special.includes(name) || /时间|死亡支配|元素圣体|灵魂|绝对死亡|恶魔契约|天使羽|陨星|神威|不灭魔躯|起死回生|斩魔剑|五元素/.test(name)) return "special";
-      if (DEFAULT_SKILL_NAMES.advanced.includes(name) || /终·|王座|圣裁|魔域|之主|君王|领主|超位|龙神意志|噩梦|雷霆/.test(name)) return "advanced";
+      if (DEFAULT_SKILL_NAMES.advanced.includes(name) || /终·|王座|圣裁|魔域|之主|君王|领主|超位|龙神意志|噩梦|雷霆|超大冰暴/.test(name)) return "advanced";
       return fallback;
     }
 
