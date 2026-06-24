@@ -4883,6 +4883,7 @@
     .card-encyclopedia-card-wrap .card-art {
       height: 140px !important;
       min-height: 140px !important;
+      background-image: var(--atlas-art-image) !important;
       background-size: var(--atlas-art-size, cover) !important;
       background-position: var(--atlas-art-position, center) !important;
       background-repeat: no-repeat !important;
@@ -4893,6 +4894,8 @@
       margin: 0 !important;
     }
     .card-encyclopedia-card-wrap .card-name {
+      position: relative !important;
+      z-index: 10 !important;
       font-size: 17px !important;
       line-height: 1.15 !important;
     }
@@ -4923,7 +4926,7 @@
       display: grid !important;
       grid-template-columns: 1fr !important;
       min-height: 38px !important;
-      padding: 3px 22px 2px !important;
+      padding: 3px 22px 2px 56px !important;
       align-items: center !important;
       background: linear-gradient(180deg, rgba(8,9,9,.35), rgba(9,7,4,.12) 74%, rgba(0,0,0,0)) !important;
       border: 0 !important;
@@ -4965,6 +4968,10 @@
       .card-encyclopedia-card-wrap .card-art {
         height: 114px !important;
         min-height: 114px !important;
+        background-image: var(--atlas-art-image) !important;
+      }
+      .card-encyclopedia-card-wrap .card-top {
+        padding: 3px 14px 2px 48px !important;
       }
     }
 </style>
