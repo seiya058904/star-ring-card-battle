@@ -9027,9 +9027,8 @@
             <span class="pill">${typeName}${rankText ? ` · ${rankText}` : ""}</span>
           </div>
           ${advantageHint}
-          <div class="card-art" style="${artStyle}"><img class="card-icon" src="${skillIconFor(card)}" alt=""></div>
+          <div class="card-art card-art-v2" style="${artStyle}"></div>
           <div class="card-desc">${card.description}</div>
-          <div class="card-power">${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType} · ${formatNumber(card.power)}</div>
         </div>`;
     };
 
@@ -9050,7 +9049,7 @@
         </div>
         <div class="preview-effectiveness-slot">${advantageLine ? `<div class="element-advantage-hint">${advantageLine}</div>` : ""}</div>
         <div class="preview-art-row">
-          <div class="preview-art-box" style="${artStyle}"><img class="card-icon" src="${skillIconFor(card)}" alt=""></div>
+          <div class="preview-art-box card-art-v2" style="${artStyle}"></div>
           <div class="preview-card-desc">${card.fullDescription || card.description}</div>
         </div>
         <div class="preview-card-keywords">${(card.keywords || card.mechanics || []).slice(0, 7).map(k => `<span class="pill">${k}</span>`).join("")}</div>
@@ -9425,18 +9424,7 @@
 
     body.battle-mode .hand-dock-v3 .card-art > img.card-icon,
     body.battle-mode .played-card-stage .card-art > img.card-icon {
-      display: block !important;
-      width: 108px !important;
-      height: 108px !important;
-      max-width: 112px !important;
-      max-height: 112px !important;
-      background: transparent !important;
-      border: 0 !important;
-      outline: 0 !important;
-      box-shadow: none !important;
-      filter: none !important;
-      position: relative !important;
-      z-index: 2 !important;
+      display: none !important;
     }
 
 
