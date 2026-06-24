@@ -7497,7 +7497,7 @@
       if (isDirectDamageCard(card)) {
         return `威力${formatNumber(card.power)}`;
       }
-      if (card.effectType === "heal") {
+      if (card.effectType === "heal" || card.effectType === "revive") {
         return `治疗量${formatNumber(card.power)}`;
       }
       if (card.effectType === "shield" || card.effectType === "defense") {
