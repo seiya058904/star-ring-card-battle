@@ -8704,7 +8704,7 @@
           <span class="pill">${typeName}${rankText ? ` · ${rankText}` : ""}</span>
           <span class="pill">${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</span>
         </div>
-        ${advantageLine ? `<div class="element-advantage-hint">${advantageLine}</div>` : ""}
+        <div class="preview-effectiveness-slot">${advantageLine ? `<div class="element-advantage-hint">${advantageLine}</div>` : ""}</div>
         <div class="preview-art-row">
           <div class="preview-art-box" style="${artStyle}"><img class="card-icon" src="${skillIconFor(card)}" alt=""></div>
           <div class="preview-card-desc">${card.fullDescription || card.description}</div>
@@ -9716,6 +9716,78 @@
       background: rgba(3,4,4,.96) !important;
       border: 1px solid rgba(255,220,126,.18) !important;
       overflow: hidden !important;
+    }
+
+    body.battle-mode .card-preview-panel {
+      grid-template-rows: 34px 24px 18px 112px 22px 28px 30px !important;
+      gap: 6px !important;
+    }
+
+    body.battle-mode .preview-effectiveness-slot {
+      grid-row: 3 !important;
+      min-height: 18px !important;
+      max-height: 18px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      overflow: hidden !important;
+    }
+
+    body.battle-mode .preview-effectiveness-slot:empty {
+      visibility: hidden !important;
+    }
+
+    body.battle-mode .preview-effectiveness-slot .element-advantage-hint {
+      max-width: 100% !important;
+      padding: 3px 8px !important;
+      line-height: 1 !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    body.battle-mode .preview-art-row {
+      grid-row: 4 !important;
+      min-height: 112px !important;
+      grid-template-columns: 132px minmax(0, 1fr) !important;
+      align-items: stretch !important;
+      overflow: hidden !important;
+    }
+
+    body.battle-mode .preview-art-box {
+      width: 132px !important;
+      height: 112px !important;
+      min-height: 112px !important;
+    }
+
+    body.battle-mode .preview-art-box .card-icon,
+    body.battle-mode .preview-art-box > img.card-icon {
+      width: 104px !important;
+      height: 104px !important;
+      max-width: 108px !important;
+      max-height: 108px !important;
+    }
+
+    body.battle-mode .preview-card-desc {
+      min-height: 112px !important;
+      max-height: 112px !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+    }
+
+    body.battle-mode .preview-card-keywords {
+      grid-row: 5 !important;
+      min-height: 22px !important;
+      max-height: 22px !important;
+      overflow: hidden !important;
+    }
+
+    body.battle-mode .preview-card-power {
+      grid-row: 6 !important;
+    }
+
+    body.battle-mode .preview-detail-grid {
+      grid-row: 7 !important;
     }
 
     body.battle-mode .played-card-stage {
