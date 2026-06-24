@@ -8883,14 +8883,13 @@
 
     renderCard = function(card, unplayable) {
       const [c1, c2] = cardColors(card);
-      const icon = skillIconFor(card);
+      const artBg = cardArtBackgroundStyle(card);
       const typeName = card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能";
       const rankText = card.skillRank || (card.rankMode === "fixed" ? "固定规格" : card.rankMode === "ultimate" ? "终极" : "");
       const tier = tierNameFor(card);
       return `
-        <div class="card ${unplayable ? "unplayable" : ""}" data-instance-id="${card.instanceId || ""}" data-tier="${tier}" data-drama-tier="${dramaTierNameFor(card)}" data-cost="${card.cost}" data-element="${card.element}" data-effect="${card.effectType}" data-symbol="${card.mark || "•"}" style="--c1:${c1};--c2:${c2};">
+        <div class="card ${unplayable ? "unplayable" : ""}" data-instance-id="${card.instanceId || ""}" data-tier="${tier}" data-drama-tier="${dramaTierNameFor(card)}" data-cost="${card.cost}" data-element="${card.element}" data-effect="${card.effectType}" data-symbol="${card.mark || "•"}" style="--c1:${c1};--c2:${c2};${artBg}">
           <div class="card-top">
-            <img class="card-icon" src="${icon}" alt="">
             <div class="card-name">${card.name}</div>
             <div class="card-cost">${card.cost}</div>
           </div>
@@ -8898,7 +8897,7 @@
             <span class="pill">${iconImg(ASSETS.elements[card.element])}${card.element}</span>
             <span class="pill">${typeName}${rankText ? ` · ${rankText}` : ""}</span>
           </div>
-          <div class="card-art"><img src="${icon}" alt=""></div>
+          <div class="card-art"></div>
           <div class="card-desc">${card.description}</div>
           <div class="card-power">${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType} · ${formatNumber(card.power)}</div>
         </div>`;
@@ -8908,7 +8907,7 @@
       if (!card) return `<div class="preview-empty">悬停手牌查看完整说明</div>`;
       const typeName = card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能";
       const rankText = card.skillRank || (card.rankMode === "fixed" ? "固定规格" : card.rankMode === "ultimate" ? "终极" : "");
-      const icon = skillIconFor(card);
+      const artBg = cardArtBackgroundStyle(card);
       const target = card.effectType === "heal" || card.effectType === "defense" || card.effectType === "shield" || card.effectType === "buff" ? "自身" : "单体";
       return `
         <div class="preview-card-title"><span>${card.name}</span><span>${card.cost} 能量</span></div>
@@ -8918,7 +8917,7 @@
           <span class="pill">${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</span>
         </div>
         <div class="preview-art-row">
-          <div class="preview-art-box"><img src="${icon}" alt=""></div>
+          <div class="preview-art-box" style="${artBg}"></div>
           <div class="preview-card-desc">${card.description}</div>
         </div>
         <div class="preview-card-keywords">${(card.keywords || card.mechanics || []).slice(0, 7).map(k => `<span class="pill">${k}</span>`).join("")}</div>
