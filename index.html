@@ -5206,6 +5206,10 @@
 
       if (cardArtHasMechanic(card, ["revive"]) || /\u8d77\u6b7b\u56de\u751f|\u590d\u6d3b/.test(name)) return "cardart_light_revival.png";
       if (cardArtHasMechanic(card, ["heal", "cleanse"])) {
+        // Pure heal cards: name-based priority over cleanse mechanic
+        const healName = /治愈|治疗|回复|\bheal\b|\brestoration\b/i.test(name);
+        const cleanseName = /净化|\bcleanse\b|\bpuri/i.test(name);
+        if (healName && !cleanseName) return "cardart_heal_restoration.png";
         if (cardArtHasMechanic(card, ["cleanse"]) && (tier === "special" || elementKey === "light")) return "cardart_dual_light_heal_purify.png";
         if (cardArtHasMechanic(card, ["cleanse"])) return "cardart_purify_cleanse.png";
         return "cardart_heal_restoration.png";
@@ -5216,6 +5220,17 @@
         return "cardart_shield_protection.png";
       }
       if (cardArtHasMechanic(card, ["lifesteal"])) return "cardart_dark_lifesteal_drain.png";
+      // Ice attack cards: prioritize blade storm for attack-oriented ice spells
+      if (elementKey === "ice") {
+        const controlName = /冻结|冰封|禁锢|囚|牢|绝对冰冻|控制/.test(name);
+        if (!controlName && !cardArtHasMechanic(card, ["control"])) {
+          if (cardArtHasMechanic(card, ["attack"]) || /冰刺|冰锋|箭雨|霜星|冰锥|寒冰|冰风暴/.test(name)) {
+            return "cardart_ice_blade_storm.png";
+          }
+        }
+      }
+      // Wind control/field cards: use spiral control art
+      if (elementKey === "wind" && (cardArtHasMechanic(card, ["control"]) || /笼罩|猎场|风场|控制|领域|\bspiral\b|\bzone\b/i.test(name))) return "cardart_wind_spiral_control.png";
       if (cardArtHasMechanic(card, ["freeze", "control"])) return "cardart_ice_prison.png";
       if (cardArtHasMechanic(card, ["curse", "control", "execute"])) {
         if (cardArtHasMechanic(card, ["execute"]) && cardArtHasMechanic(card, ["curse", "control"])) return "cardart_curse_execute_hybrid.png";
@@ -5224,6 +5239,7 @@
         return elementKey === "dark" ? "cardart_dark_shadow_tentacle.png" : "cardart_dark_curse_control.png";
       }
       if (cardArtHasMechanic(card, ["pierce"])) return "cardart_pierce_break_armor.png";
+      if (cardArtHasMechanic(card, ["draw", "drawOrEvade"]) && (/(?:指挥|命令|战术|调度|号令)/.test(name) || /\bcommand\b|\btactical\b/i.test(name))) return "cardart_tactical_command.png";
       if (cardArtHasMechanic(card, ["draw", "drawOrEvade"])) return "cardart_tactical_draw.png";
       if (cardArtHasMechanic(card, ["charge", "buff"])) return "cardart_charge_buff_empower.png";
       if (cardArtHasMechanic(card, ["freeze"])) {
