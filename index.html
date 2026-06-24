@@ -5388,8 +5388,47 @@
       return names.some(name => type === name || mechanics.includes(name));
     }
 
+    const CARD_ART_SEMANTIC_OVERRIDES = {
+      "龙神意志": "cardart_charge_buff_empower.png",
+      "神威降临": "cardart_charge_buff_empower.png",
+      "统治": "cardart_charge_buff_empower.png",
+      "元素凝聚": "cardart_charge_buff_empower.png",
+      "黑暗视野": "cardart_dark_curse_control.png",
+      "死亡支配者": "cardart_curse_execute_hybrid.png",
+      "死之审判": "cardart_curse_execute_hybrid.png",
+      "真王穿刺": "cardart_pierce_break_armor.png",
+      "终·元素贯穿": "cardart_pierce_break_armor.png",
+      "超大冰暴": "cardart_ice_blade_storm.png",
+      "冰王斩": "cardart_ice_blade_storm.png",
+      "绝对冰冻": "cardart_ice_prison.png",
+      "冰刺": "cardart_ice_blade_storm.png",
+      "冰锋箭雨": "cardart_ice_blade_storm.png",
+      "起死回生": "cardart_light_revival.png",
+      "高级治愈": "cardart_heal_restoration.png",
+      "龙鳞防御": "cardart_shield_protection.png",
+      "圣光之音": "cardart_light_holy_strike.png",
+      "雷金斩": "cardart_thunder_spear.png",
+      "白雷突击": "cardart_thunder_spear.png",
+      "雷光真闪": "cardart_thunder_spear.png",
+      "最终一击·雷霆": "cardart_thunder_spear.png",
+      "超位雷斩": "cardart_thunder_spear.png",
+      "风暴冲击": "cardart_wind_slash.png",
+      "风王猎场": "cardart_wind_spiral_control.png",
+      "飓风笼罩": "cardart_wind_spiral_control.png"
+    };
+
+    function cardArtSemanticOverride(card) {
+      const name = `${card?.name || ""}`;
+      for (const [keyword, sprite] of Object.entries(CARD_ART_SEMANTIC_OVERRIDES)) {
+        if (name.includes(keyword)) return sprite;
+      }
+      return "";
+    }
+
     function cardArtV2Sprite(card) {
       if (!card) return "";
+      const semanticSprite = cardArtSemanticOverride(card);
+      if (semanticSprite) return semanticSprite;
       const name = `${card.name || ""}`;
       const elementKey = getCardArtKey(card);
       const tier = `${card.skillTier || ""}`;
