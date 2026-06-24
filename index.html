@@ -1898,6 +1898,25 @@
     }
     .codex-card h3 { color: #ffdc8a; }
     .codex-card .desc { color: rgba(255,226,160,.72); margin-top: 6px; line-height: 1.45; font-size: 12px; }
+    .card-preview-btn {
+      display: inline-block;
+      padding: 2px 9px;
+      margin-left: 6px;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #ffdc8a;
+      background: rgba(0,0,0,.4);
+      border: 1px solid rgba(231,172,78,.35);
+      border-radius: 3px;
+      cursor: pointer;
+      vertical-align: middle;
+      transition: background .15s, border-color .15s;
+      font-family: inherit;
+    }
+    .card-preview-btn:hover {
+      background: rgba(60,38,20,.6);
+      border-color: rgba(255,218,122,.7);
+    }
 
     .ai-dialogue {
       position: absolute;
@@ -7473,6 +7492,21 @@
       return DIRECT_DAMAGE_EFFECT_TYPES.has(card?.effectType);
     }
 
+    function getCardPowerLabel(card) {
+      if (!card) return "";
+      if (isDirectDamageCard(card)) {
+        return `威力${formatNumber(card.power)}`;
+      }
+      if (card.effectType === "heal") {
+        return `治疗量${formatNumber(card.power)}`;
+      }
+      if (card.effectType === "shield" || card.effectType === "defense") {
+        return `护盾${formatNumber(card.power)}`;
+      }
+      const label = EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType;
+      return `效果 ${label}`;
+    }
+
     function cardAdvantageTarget(card) {
       if (!isDirectDamageCard(card) || !card?.element || card.element === "无") return "";
       return ELEMENT_COUNTER[card.element] || "";
@@ -8793,7 +8827,7 @@
         </div>
         <div class="preview-card-desc">${card.description}</div>
         <div class="preview-card-keywords">${(card.keywords || card.mechanics || []).slice(0, 6).map(k => `<span class="pill">${k}</span>`).join("")}</div>
-        <div class="preview-card-power">威力${formatNumber(card.power)}</div>
+        <div class="preview-card-power">${getCardPowerLabel(card)}</div>
       `;
     }
 
@@ -8936,7 +8970,7 @@
           <div class="preview-card-desc">${card.description}</div>
         </div>
         <div class="preview-card-keywords">${(card.keywords || card.mechanics || []).slice(0, 7).map(k => `<span class="pill">${k}</span>`).join("")}</div>
-        <div class="preview-card-power">威力${formatNumber(card.power)}</div>
+        <div class="preview-card-power">${getCardPowerLabel(card)}</div>
         <div class="preview-detail-grid"><span class="pill">类型 ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</span><span class="pill">目标 ${target}</span><span class="pill">冷却 </span></div>
       `;
     };
@@ -9090,7 +9124,7 @@
           <div class="preview-card-desc" data-visual-tier="${visualTier}">${card.fullDescription || card.description}</div>
         </div>
         <div class="preview-card-keywords">${(card.keywords || card.mechanics || []).slice(0, 7).map(k => `<span class="pill">${k}</span>`).join("")}</div>
-        <div class="preview-card-power">威力${formatNumber(card.power)}</div>
+        <div class="preview-card-power">${getCardPowerLabel(card)}</div>
         <div class="preview-detail-grid"><span class="pill">类型 ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</span><span class="pill">目标 ${target}</span><span class="pill">冷却 </span></div>
       `;
     };
