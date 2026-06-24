@@ -5638,7 +5638,7 @@
       { id: "human-green", name: "格林·奥瑞弗", title: "矮人王", race: "人族", subrace: "矮人", country: "伏林帝国", role: "国王", level: 59, profession: "锻造圣、战圣", elements: ["火"], skills: ["熔岩剑Ⅴ"], notes: "52级火系锻造圣，59级火系战圣" },
       { id: "human-quick", name: "奎克", title: "死亡大法师", race: "人族", country: "斯连教国", role: "罪孽教团团长", level: 53, profession: "圣魔导师", elements: ["暗", "土"], skills: ["死之审判Ⅴ"], notes: "" },
       { id: "godkin-star", name: "闪耀星光", title: "神人", race: "神人", country: "斯连教国", role: "救赎教团团员", level: 84, profession: "战士", elements: ["冰", "火", "土"], skills: ["冰王斩Ⅱ", "超大冰暴Ⅱ", "沙王领主Ⅱ", "冰刺Ⅷ"], notes: "" },
-      { id: "godkin-su", name: "苏", title: "神人", race: "神人", country: "", role: "前人族最强冒险队“神圣审判”队长", level: 93, profession: "战士", elements: ["暗", "光", "雷"], skills: ["雷光真闪Ⅲ", "圣光庇护Ⅲ", "光明之主Ⅲ", "暗之闪Ⅲ", "暗黑精灵Ⅸ", "高级治愈Ⅸ"], notes: "" },
+      { id: "godkin-su", name: "苏", title: "神人", race: "神人", country: "", role: "前人族最强冒险队“神圣审判”队长", level: 93, profession: "战士", elements: ["暗", "光", "雷"], skills: ["雷光真闪Ⅲ", "圣光庇护Ⅲ", "光明之主Ⅲ", "暗之闪Ⅲ", "暗黑精灵Ⅷ", "高级治愈Ⅷ"], notes: "" },
       { id: "elf-queen", name: "百丽耶塔·卡佩恩", title: "精灵女王", race: "精灵族", role: "", level: 59, profession: "弓箭圣", elements: ["冰", "风", "雷"], skills: ["冰锋箭雨Ⅴ"], notes: "" },
       { id: "elf-bushi", name: "布施·勋尔瓦", title: "护花公爵", race: "精灵族", role: "精灵族公爵", level: 52, profession: "剑圣", elements: ["光", "火", "雷"], skills: ["光剑护体Ⅴ"], notes: "" },
       { id: "elf-enbolu", name: "恩伯鲁·卡佩恩", title: "战斗王者", race: "精灵族", role: "精灵族公爵", level: 49, profession: "战王", elements: ["暗", "风", "火"], skills: ["黑暗视野Ⅳ"], notes: "" },
@@ -5675,7 +5675,7 @@
     const DEFAULT_SKILL_NAMES = {
       advanced: "火焰领主Ⅲ、炎天噬地Ⅲ、炎龙凤燃、真火吞Ⅲ、烈焰护体、元素庇护、绝对冰冻Ⅲ、冰王斩Ⅲ、终·冰元素、超大冰暴Ⅲ、真王冰甲Ⅲ、绝对重力Ⅲ、沙王领主Ⅲ、超大土暴Ⅲ、天崩地裂、磐石装甲、终·元素贯穿、真王穿刺Ⅲ、混沌铠甲、雷光真闪Ⅲ、雷龙缠绕Ⅲ、雷光铠甲Ⅲ、超位雷斩、雷神剑、最终一击·雷霆、飓风笼罩Ⅲ、次元斩Ⅲ、次元隧道、次元屏障Ⅲ、超超级海啸、圣光庇护Ⅲ、圣光之音Ⅲ、祝福之光Ⅲ、魔法极致化、防御极致化、伤害真实化、光明圣剑Ⅲ、光明之主Ⅲ、雷霆审判、终·六翼大天使、神圣庇护Ⅲ、黑暗吞噬Ⅲ、耶梦加得凝视、噩梦Ⅲ、暗黑魔甲Ⅲ、至暗洗礼Ⅲ、暗光箭矢、幽暗庇护Ⅲ、暗黑领主Ⅲ、暗之闪Ⅲ、龙神意志、至尊炎火Ⅲ、灭世之威、雷霆王座Ⅲ、圣裁天幕Ⅲ、霜星坠落Ⅲ、风王猎场Ⅲ、灰烬魔域Ⅲ、日蚀之刃Ⅲ、终·万雷归一Ⅲ、天穹之门、极寒神殿Ⅲ、终·烈日焚天Ⅲ、虚空风暴Ⅲ、大地君王Ⅲ".split("、"),
       special: "死亡支配者Ⅲ、元素圣体Ⅲ、太阳神的祝福、灵魂吞噬Ⅲ、死亡注视Ⅲ、超级虚弱Ⅲ、死亡审判Ⅲ、统治Ⅲ、绝对死亡Ⅲ、时间禁锢、时间回溯、恶魔契约、天使羽、陨星灭地、九重神斩、斩魔剑、锁龙Ⅲ、冰火重天Ⅲ、风雷天暴Ⅲ、递种、五元素诛神斩、起死回生、灵魂烙印Ⅲ、不灭魔躯、星界放逐Ⅲ、神威降临Ⅲ".split("、"),
-      normal: "高级治愈Ⅵ、黑暗吞噬Ⅵ、雷电缠绕Ⅵ、熔岩剑Ⅴ、死之审判Ⅴ、冰刺Ⅷ、暗黑精灵Ⅸ、高级治愈Ⅸ、冰锋箭雨Ⅴ、光剑护体Ⅴ、黑暗视野Ⅳ、光明治愈Ⅴ、黑暗笼罩Ⅵ、风暴冲击Ⅵ、光剑雨Ⅴ、暗之手Ⅴ、光宇Ⅴ、大火球Ⅵ、纵火Ⅵ".split("、")
+      normal: "高级治愈Ⅵ、高级治愈Ⅶ、高级治愈Ⅷ、黑暗吞噬Ⅵ、黑暗吞噬Ⅶ、雷电缠绕Ⅵ、雷电缠绕Ⅶ、熔岩剑Ⅴ、死之审判Ⅴ、冰刺Ⅷ、暗黑精灵Ⅷ、冰锋箭雨Ⅴ、光剑护体Ⅴ、黑暗视野Ⅳ、光明治愈Ⅴ、黑暗笼罩Ⅵ、风暴冲击Ⅵ、风暴冲击Ⅶ、光剑雨Ⅴ、暗之手Ⅴ、光宇Ⅴ、大火球Ⅵ、大火球Ⅶ、纵火Ⅵ、纵火Ⅶ".split("、")
     };
 
     const DEFAULT_NAME_RULES = {
@@ -7847,58 +7847,87 @@
     }
 
     function parseSkillRank(name) {
-      const found = ROMANS.find(r => name.includes(r));
+      const prefixRank = `${name || ""}`.match(/^(?:普通技能|高级技能|特殊技能)([ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ])?·/);
+      if (prefixRank?.[1]) return { roman: prefixRank[1], value: ROMAN_VALUE[prefixRank[1]] };
+      const found = ROMANS.find(r => `${name || ""}`.includes(r));
       return found ? { roman: found, value: ROMAN_VALUE[found] } : { roman: null, value: 0 };
+    }
+
+    const SKILL_TIER_LABELS = { normal: "普通技能", advanced: "高级技能", special: "特殊技能" };
+    const SKILL_TIER_FROM_LABEL = { "普通技能": "normal", "高级技能": "advanced", "特殊技能": "special" };
+
+    function stripCardTaxonomyPrefix(name) {
+      return `${name || ""}`.replace(/^基础·/, "").replace(/^(普通技能|高级技能|特殊技能)([ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ])?·/, "");
+    }
+
+    function isBaseCardName(name) {
+      const raw = stripCardTaxonomyPrefix(name);
+      return Object.values(DEFAULT_BASE_CARD_NAMES).some(list => Array.isArray(list) && list.includes(raw));
+    }
+
+    function tierFromTaxonomyName(name) {
+      const match = `${name || ""}`.match(/^(普通技能|高级技能|特殊技能)([ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ])?·/);
+      return match ? SKILL_TIER_FROM_LABEL[match[1]] : "";
+    }
+
+    function replaceTrailingRoman(name, roman) {
+      const raw = stripCardTaxonomyPrefix(name);
+      return ROMANS.some(r => raw.endsWith(r)) ? raw.replace(/[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]$/, roman) : `${raw}${roman}`;
+    }
+
+    function normalizeSkillSourceName(name, tier) {
+      const raw = stripCardTaxonomyPrefix(name);
+      const parsed = parseSkillRank(raw);
+      if (tier === "normal" && parsed.value > 8) return replaceTrailingRoman(raw, "Ⅷ");
+      return raw;
+    }
+
+    function displayCardName(sourceName, category, tier, rankMode, skillRank) {
+      const raw = stripCardTaxonomyPrefix(sourceName);
+      if (category === "base") return raw.startsWith("基础·") ? raw : `基础·${raw}`;
+      const label = SKILL_TIER_LABELS[tier] || "普通技能";
+      const stem = ROMANS.some(r => raw.endsWith(r)) ? raw.replace(/[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]$/, "") : raw;
+      return rankMode === "scalable" ? `${label}${skillRank || "Ⅰ"}·${stem}` : `${label}·${stem}`;
     }
 
     function requiredLevelForSkill(tier, rankMode, rankValue) {
       if (tier === "none") return 1;
-      if (rankMode === "fixed") return tier === "special" ? 90 : tier === "advanced" ? 80 : 50;
-      if (tier === "normal") return clamp((rankValue || 1) * 10, 10, 90);
+      if (rankMode === "fixed") return tier === "special" ? 90 : tier === "advanced" ? 80 : 1;
+      if (tier === "normal") return clamp((rankValue || 1) * 10, 10, 80);
       if (tier === "advanced") return {1:70, 2:80, 3:90}[rankValue || 1] || 90;
       if (tier === "special") return {1:80, 2:90, 3:95}[rankValue || 1] || 95;
       return 1;
     }
 
     function getCardLevelRequirement(card) {
-      const name = card.name || "";
-      const mark = card.mark || "";
-      if (mark === "★") {
-        if (name.includes("Ⅲ")) return 90;
-        if (name.includes("Ⅱ")) return 80;
-        return 70; // ★Ⅰ or ★ without numeral
-      }
-      if (mark === "♛") return 80;
-      if (name.includes("Ⅲ")) return 75;
-      if (name.includes("Ⅱ")) return 60;
-      if (name.includes("Ⅰ")) return 45;
-      return 1;
+      if (Number.isFinite(card?.requiredLevel)) return card.requiredLevel;
+      const tier = card?.skillTier || (card?.category === "base" ? "none" : tierFromTaxonomyName(card?.name) || "normal");
+      const parsed = parseSkillRank(card?.name || "");
+      const rankMode = card?.category === "base" ? "none" : (!parsed.roman && tier !== "normal" ? "fixed" : "scalable");
+      return requiredLevelForSkill(tier, rankMode, parsed.value || 1);
     }
 
     function tryDowngradeCard(card, characterLevel) {
-      const name = card.name || "";
-      const mark = card.mark || "";
+      const name = card.baseName || stripCardTaxonomyPrefix(card.name || "");
       const tier = card.skillTier || "normal";
-      if (mark === "★") {
-        if (name.includes("Ⅲ")) {
-          if (characterLevel >= 80) return cardGenerator.cardFromName(name.replace("Ⅲ", "Ⅱ"), { category:"skill", skillTier:tier, level:characterLevel, element:card.element });
-          if (characterLevel >= 70) return cardGenerator.cardFromName(name.replace("Ⅲ", "Ⅰ"), { category:"skill", skillTier:tier, level:characterLevel, element:card.element });
-        }
-        if (name.includes("Ⅱ") && characterLevel >= 70) return cardGenerator.cardFromName(name.replace("Ⅱ", "Ⅰ"), { category:"skill", skillTier:tier, level:characterLevel, element:card.element });
-        return null;
-      }
-      if (mark === "♛") return null;
-      if (name.includes("Ⅲ")) {
-        if (characterLevel >= 60) return cardGenerator.cardFromName(name.replace("Ⅲ", "Ⅱ"), { category:card.category, skillTier:tier, level:characterLevel, element:card.element });
-        if (characterLevel >= 45) return cardGenerator.cardFromName(name.replace("Ⅲ", "Ⅰ"), { category:card.category, skillTier:tier, level:characterLevel, element:card.element });
-      }
-      if (name.includes("Ⅱ") && characterLevel >= 45) return cardGenerator.cardFromName(name.replace("Ⅱ", "Ⅰ"), { category:card.category, skillTier:tier, level:characterLevel, element:card.element });
+      const rankByTier = {
+        normal: characterLevel >= 80 ? 8 : characterLevel >= 70 ? 7 : characterLevel >= 60 ? 6 : characterLevel >= 50 ? 5 : characterLevel >= 40 ? 4 : characterLevel >= 30 ? 3 : characterLevel >= 20 ? 2 : characterLevel >= 10 ? 1 : 0,
+        advanced: characterLevel >= 90 ? 3 : characterLevel >= 80 ? 2 : characterLevel >= 70 ? 1 : 0,
+        special: characterLevel >= 95 ? 3 : characterLevel >= 90 ? 2 : characterLevel >= 80 ? 1 : 0
+      };
+      const maxRank = rankByTier[tier] || 0;
+      const parsed = parseSkillRank(name);
+      if (!parsed.roman || parsed.value <= maxRank || maxRank < 1) return null;
+      return cardGenerator.cardFromName(replaceTrailingRoman(name, ROMANS.find(r => ROMAN_VALUE[r] === maxRank)), { category:card.category, skillTier:tier, level:characterLevel, element:card.element });
       return null;
     }
 
     function skillTierFromName(name, fallback="normal") {
-      if (DEFAULT_SKILL_NAMES.special.includes(name) || /时间|死亡支配|元素圣体|灵魂|绝对死亡|恶魔契约|天使羽|陨星|神威|不灭魔躯|起死回生|斩魔剑|五元素/.test(name)) return "special";
-      if (DEFAULT_SKILL_NAMES.advanced.includes(name) || /终·|王座|圣裁|魔域|之主|君王|领主|超位|龙神意志|噩梦|雷霆|超大冰暴/.test(name)) return "advanced";
+      const explicitTier = tierFromTaxonomyName(name);
+      if (explicitTier) return explicitTier;
+      const raw = stripCardTaxonomyPrefix(name);
+      if (DEFAULT_SKILL_NAMES.special.includes(raw) || /时间|死亡支配|元素圣体|灵魂|绝对死亡|恶魔契约|天使羽|陨星|神威|不灭魔躯|起死回生|斩魔剑|五元素/.test(raw)) return "special";
+      if (DEFAULT_SKILL_NAMES.advanced.includes(raw) || /终·|王座|圣裁|魔域|之主|君王|领主|超位|龙神意志|噩梦|雷霆|超大冰暴/.test(raw)) return "advanced";
       return fallback;
     }
 
@@ -8008,17 +8037,19 @@
     }
 
     cardGenerator.cardFromName = function(name, options = {}) {
-      const category = options.category || (DEFAULT_BASE_CARD_NAMES.common.includes(name) ? "base" : "skill");
-      let skillTier = options.skillTier || "none";
+      const rawInputName = stripCardTaxonomyPrefix(name);
+      const category = options.category || (isBaseCardName(rawInputName) ? "base" : "skill");
+      let skillTier = options.skillTier || tierFromTaxonomyName(name) || "none";
       if (category === "skill" && skillTier === "none") skillTier = skillTierFromName(name, "normal");
-      const parsed = parseSkillRank(name);
-      const rankMode = category === "base" ? "none" : (FIXED_SKILL_NAMES.has(name) || (!parsed.roman && skillTier !== "normal") ? "fixed" : (/终·/.test(name) ? "ultimate" : "scalable"));
+      const sourceName = category === "skill" ? normalizeSkillSourceName(rawInputName, skillTier) : rawInputName;
+      const parsed = parseSkillRank(sourceName);
+      const rankMode = category === "base" ? "none" : (FIXED_SKILL_NAMES.has(sourceName) || (!parsed.roman && skillTier !== "normal") ? "fixed" : "scalable");
       const skillRank = rankMode === "scalable" ? parsed.roman || "Ⅰ" : null;
       const rankValue = rankMode === "scalable" ? (parsed.value || 1) : 0;
       const requiredLevel = requiredLevelForSkill(skillTier, rankMode, rankValue);
       const level = clamp(Number(options.level || requiredLevel || 30), 1, 100);
-      const effectType = options.effectType || stableEffectType(name);
-      const element = options.element || inferElement(name, options.elementBias || "无");
+      const effectType = options.effectType || stableEffectType(sourceName);
+      const element = options.element || inferElement(sourceName, options.elementBias || "无");
       const tierRatio = category === "base" ? .075 : skillTier === "normal" ? .125 : skillTier === "advanced" ? .205 : .28;
       const rankRatio = 1 + (rankValue ? (rankValue - 1) * .055 : (rankMode === "fixed" ? .16 : 0));
       const effectRatio = { attack:1, burn:.86, freeze:.8, curse:.86, lifesteal:.72, pierce:.92, defense:.78, shield:.96, heal:.72, draw:.34, charge:.3, buff:.48, debuff:.44, control:.58, summon:.78, revive:.68, execute:.74 }[effectType] || 1;
@@ -8028,12 +8059,13 @@
       if (category === "base") cost = ["charge","draw"].includes(effectType) ? 1 : ["defense","heal"].includes(effectType) ? 1 : 2;
       else if (skillTier === "normal") cost = clamp(2 + Math.ceil((rankValue || Math.max(1, Math.floor(level / 15))) / 3), 2, 6);
       else if (skillTier === "advanced") cost = {1:6,2:7,3:8}[rankValue || 2] || 8;
-      else cost = rankMode === "fixed" || rankMode === "ultimate" ? 10 : ({1:8,2:9,3:10}[rankValue || 2] || 10);
+      else cost = rankMode === "fixed" ? 10 : ({1:8,2:9,3:10}[rankValue || 2] || 10);
       const rarity = category === "base" ? "common" : skillTier === "normal" ? (rankValue >= 7 ? "epic" : "rare") : skillTier === "advanced" ? (rankValue >= 3 || rankMode !== "scalable" ? "mythic" : "legendary") : "divine";
-      const mechanics = mechanicsForCard(name, effectType, element, skillTier);
+      const displayName = displayCardName(sourceName, category, skillTier, rankMode, skillRank);
+      const mechanics = mechanicsForCard(displayName, effectType, element, skillTier);
       const mark = skillTier === "special" ? "♛" : skillTier === "advanced" ? "★" : category === "skill" ? "✦" : "•";
       const card = {
-        id: options.id || `${deterministicId(`card-${name}`)}`, name, category,
+        id: options.id || `${deterministicId(`card-${displayName}`)}`, name: displayName, baseName: sourceName, category,
         skillTier, skillRank, rankMode, requiredLevel, effectType, element, level, cost, rarity, power,
         mechanics, keywords: keywordsForMechanics(mechanics), tags: [element, effectType, skillTier].filter(Boolean), mark
       };
