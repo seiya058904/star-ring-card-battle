@@ -7271,7 +7271,7 @@
           <div class="deck-card">
             <h3>${card.name}</h3>
             <p class="small-note">${card.category === "base" ? "基础卡" : "技能卡"} · ${card.element} · ${DEFAULT_RARITIES[card.rarity] || card.rarity}</p>
-            <div class="pill-list"><span class="pill">${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</span><span class="pill">${formatNumber(card.power)}</span></div>
+            <div class="pill-list"><span class="pill">${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</span><span class="pill">${getCardPowerLabel(card)}</span></div>
           </div>
         `).join("") : `<p class="small-note">还没有保存自定义卡牌</p>`;
       },
@@ -7282,7 +7282,7 @@
           <div class="deck-card">
             <h3>${card.name}</h3>
             <p class="small-note">${card.element} · ${card.effectType} · 消耗${card.cost}</p>
-            <div class="pill-list"><span class="pill">${DEFAULT_RARITIES[card.rarity] || card.rarity}</span><span class="pill">${formatNumber(card.power)}</span></div>
+            <div class="pill-list"><span class="pill">${DEFAULT_RARITIES[card.rarity] || card.rarity}</span><span class="pill">${getCardPowerLabel(card)}</span></div>
           </div>
         `).join("");
       },
