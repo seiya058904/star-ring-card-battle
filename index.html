@@ -5449,6 +5449,8 @@
       // Note: draw/drawOrEvade is in Priority 4, not Priority 3, because
       // mechanicsForCard gives all wind-element cards drawOrEvade, which would
       // preempt wind control name patterns (猎场/笼罩).
+      if (elementKey === "thunder" && /雷金斩|白雷突击|雷光真闪|最终一击·雷霆|超位雷斩/.test(name)) return "cardart_thunder_spear.png";
+      if (elementKey === "wind" && /风暴冲击/.test(name)) return "cardart_wind_slash.png";
       // Ice attack cards: prioritize blade storm for attack-oriented ice spells
       if (elementKey === "ice") {
         const controlName = /冻结|冰封|禁锢|囚|牢|绝对冰冻|控制/.test(name);
