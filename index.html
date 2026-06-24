@@ -5140,6 +5140,167 @@
       }[getCardArtKey(card)] || "artArcane";
     }
 
+    const CARD_ART_V2_BASE = "assets/ui/card_art_v2/";
+    const CARD_ART_V2_FILES = new Set([
+      "cardart_fire_burn_basic.png",
+      "cardart_fire_meteor.png",
+      "cardart_fire_lava_eruption.png",
+      "cardart_ice_freeze_control.png",
+      "cardart_ice_blade_storm.png",
+      "cardart_ice_prison.png",
+      "cardart_thunder_burst_chain.png",
+      "cardart_thunder_spear.png",
+      "cardart_thunder_storm_field.png",
+      "cardart_wind_slash.png",
+      "cardart_wind_spiral_control.png",
+      "cardart_earth_crush.png",
+      "cardart_light_holy_strike.png",
+      "cardart_light_judgement.png",
+      "cardart_heal_restoration.png",
+      "cardart_purify_cleanse.png",
+      "cardart_light_revival.png",
+      "cardart_shield_protection.png",
+      "cardart_earth_fortress_guard.png",
+      "cardart_charge_buff_empower.png",
+      "cardart_tactical_draw.png",
+      "cardart_tactical_command.png",
+      "cardart_dark_curse_control.png",
+      "cardart_dark_lifesteal_drain.png",
+      "cardart_summon_guardian.png",
+      "cardart_holy_guard_summon.png",
+      "cardart_wind_hunter_summon.png",
+      "cardart_summon_fire_lord.png",
+      "cardart_summon_dark_lord.png",
+      "cardart_pierce_break_armor.png",
+      "cardart_execute_death_slash.png",
+      "cardart_curse_execute_hybrid.png",
+      "cardart_dark_shadow_tentacle.png",
+      "cardart_dark_death_orb.png",
+      "cardart_arcane_magic_circle.png",
+      "cardart_dual_light_heal_purify.png"
+    ]);
+
+    function cardArtV2Path(file) {
+      return CARD_ART_V2_FILES.has(file) ? `${CARD_ART_V2_BASE}${file}` : "";
+    }
+
+    function cardArtHasMechanic(card, names) {
+      const type = `${card?.effectType || ""}`;
+      const mechanics = Array.isArray(card?.mechanics) ? card.mechanics : [];
+      return names.some(name => type === name || mechanics.includes(name));
+    }
+
+    function cardArtV2Sprite(card) {
+      if (!card) return "";
+      const name = `${card.name || ""}`;
+      const elementKey = getCardArtKey(card);
+      const tier = `${card.skillTier || ""}`;
+
+      if (cardArtHasMechanic(card, ["summon"])) {
+        if (elementKey === "fire" || /\u706b|\u708e|\u7130|\u71c3/.test(name)) return "cardart_summon_fire_lord.png";
+        if (elementKey === "dark" || /\u6697|\u9ed1\u6697|\u6076\u9b54/.test(name)) return "cardart_summon_dark_lord.png";
+        if (elementKey === "wind" || /\u98ce|\u730e/.test(name)) return "cardart_wind_hunter_summon.png";
+        if (elementKey === "light" || /\u5149|\u5723/.test(name)) return "cardart_holy_guard_summon.png";
+        return "cardart_summon_guardian.png";
+      }
+
+      if (cardArtHasMechanic(card, ["revive"]) || /\u8d77\u6b7b\u56de\u751f|\u590d\u6d3b/.test(name)) return "cardart_light_revival.png";
+      if (cardArtHasMechanic(card, ["heal", "cleanse"])) {
+        if (cardArtHasMechanic(card, ["cleanse"]) && (tier === "special" || elementKey === "light")) return "cardart_dual_light_heal_purify.png";
+        if (cardArtHasMechanic(card, ["cleanse"])) return "cardart_purify_cleanse.png";
+        return "cardart_heal_restoration.png";
+      }
+      if (/\u4e0d\u706d\u9b54\u8eaf|\u9b54\u8eaf/.test(name)) return "cardart_dark_lifesteal_drain.png";
+      if (cardArtHasMechanic(card, ["shield", "defense", "guard", "damageReduction"])) {
+        if (elementKey === "earth" || cardArtHasMechanic(card, ["fortify"])) return "cardart_earth_fortress_guard.png";
+        return "cardart_shield_protection.png";
+      }
+      if (cardArtHasMechanic(card, ["lifesteal"])) return "cardart_dark_lifesteal_drain.png";
+      if (cardArtHasMechanic(card, ["freeze", "control"])) return "cardart_ice_prison.png";
+      if (cardArtHasMechanic(card, ["curse", "control", "execute"])) {
+        if (cardArtHasMechanic(card, ["execute"]) && cardArtHasMechanic(card, ["curse", "control"])) return "cardart_curse_execute_hybrid.png";
+        if (cardArtHasMechanic(card, ["execute"])) return "cardart_execute_death_slash.png";
+        if (cardArtHasMechanic(card, ["control"])) return "cardart_dark_curse_control.png";
+        return elementKey === "dark" ? "cardart_dark_shadow_tentacle.png" : "cardart_dark_curse_control.png";
+      }
+      if (cardArtHasMechanic(card, ["pierce"])) return "cardart_pierce_break_armor.png";
+      if (cardArtHasMechanic(card, ["draw", "drawOrEvade"])) return "cardart_tactical_draw.png";
+      if (cardArtHasMechanic(card, ["charge", "buff"])) return "cardart_charge_buff_empower.png";
+      if (cardArtHasMechanic(card, ["freeze"])) {
+        if (cardArtHasMechanic(card, ["control"]) || /\u7981\u9522|\u56da|\u7262/.test(name)) return "cardart_ice_prison.png";
+        if (tier === "advanced" || tier === "special" || /\u738b\u65a9|\u98ce\u66b4/.test(name)) return "cardart_ice_blade_storm.png";
+        return "cardart_ice_freeze_control.png";
+      }
+      if (cardArtHasMechanic(card, ["burn"])) {
+        if (tier === "special" || /\u7ec8|\u70c8\u65e5|\u7070\u70ec/.test(name)) return "cardart_fire_meteor.png";
+        if (tier === "advanced" || /\u7194\u5ca9|\u7206|\u65a9/.test(name)) return "cardart_fire_lava_eruption.png";
+        return "cardart_fire_burn_basic.png";
+      }
+      if (cardArtHasMechanic(card, ["chain"])) {
+        if (tier === "advanced" || tier === "special") return "cardart_thunder_storm_field.png";
+        return "cardart_thunder_burst_chain.png";
+      }
+
+      if (elementKey === "fire") return "cardart_fire_burn_basic.png";
+      if (elementKey === "ice") return "cardart_ice_freeze_control.png";
+      if (elementKey === "wind") return "cardart_wind_slash.png";
+      if (elementKey === "earth") return "cardart_earth_crush.png";
+      if (elementKey === "thunder") return "cardart_thunder_spear.png";
+      if (elementKey === "light") return tier === "advanced" || tier === "special" ? "cardart_light_judgement.png" : "cardart_light_holy_strike.png";
+      if (elementKey === "dark") return tier === "advanced" || tier === "special" ? "cardart_dark_death_orb.png" : "cardart_dark_shadow_tentacle.png";
+      return "cardart_arcane_magic_circle.png";
+    }
+
+    function cardArtV2AssetPath(card) {
+      return cardArtV2Path(cardArtV2Sprite(card));
+    }
+
+    function cardArtVisualAssetSrc(card) {
+      return cardArtV2AssetPath(card) || `assets/ui/sprites/${cardArtSprite(card)}.png`;
+    }
+
+    function cardArtBackgroundStyle(card) {
+      const v2Path = cardArtV2AssetPath(card);
+      if (v2Path) {
+        return [
+          `--atlas-art-image:url('${v2Path}')`,
+          "--atlas-art-size:cover",
+          "--atlas-art-position:center"
+        ].join(";");
+      }
+      return atlasBackgroundVars("atlas-art", cardArtSprite(card), 120, 82);
+    }
+
+    function cardArtV2AuditCards() {
+      const cardsByName = new Map();
+      const decks = deckBuilder?.defaultDecks?.() || uiRenderer?.defaultDecks || [];
+      decks.forEach(deck => (deck.cards || []).forEach(card => {
+        if (card?.name && !cardsByName.has(card.name)) cardsByName.set(card.name, card);
+      }));
+      if (cardsByName.size) return [...cardsByName.values()];
+      const names = new Set([
+        ...DEFAULT_BASE_CARD_NAMES.common,
+        ...Object.values(DEFAULT_BASE_CARD_NAMES).flat(),
+        ...DEFAULT_SKILL_NAMES.normal,
+        ...DEFAULT_SKILL_NAMES.advanced,
+        ...DEFAULT_SKILL_NAMES.special
+      ].filter(Boolean));
+      return [...names].map(name => cardGenerator.cardFromName(name));
+    }
+
+    window.debugCardArtV2 = function(options = {}) {
+      const rows = cardArtV2AuditCards().map(card => ({
+        name: card.name,
+        element: card.element,
+        effectType: card.effectType,
+        mechanics: (card.mechanics || []).join(","),
+        art: cardArtV2AssetPath(card) || cardArtVisualAssetSrc(card),
+        fallback: !cardArtV2AssetPath(card)
+      }));
+      if (!options.silent) console.table(rows);
+      return rows;
+    };
+
     function statusSprite(type) {
       const text = `${type || ""}`.toLowerCase();
       if (/burn|火|燃/.test(text)) return "statusBurn";
@@ -5540,7 +5701,7 @@
     function collectCardVisualAssetSrcs(card, out = new Set()) {
       if (!card) return out;
       out.add(skillIconFor(card));
-      out.add(`assets/ui/sprites/${cardArtSprite(card)}.png`);
+      out.add(cardArtVisualAssetSrc(card));
       out.add(`assets/ui/sprites/${cardFrameSprite(card)}.png`);
       if (card.cost >= 1 && card.cost <= 10) out.add(`assets/ui/sprites/cost${card.cost}.png`);
       return out;
@@ -8850,7 +9011,7 @@
       const frameStyle = atlasBackgroundStyle(cardFrameSprite(card), 162, 286);
       const costSprite = card.cost >= 1 && card.cost <= 10 ? `cost${card.cost}` : "";
       const costStyle = costSprite ? `--cost-sprite-img:url('assets/ui/sprites/${costSprite}.png')` : "";
-      const artStyle = atlasBackgroundVars("atlas-art", cardArtSprite(card), 120, 82);
+      const artStyle = cardArtBackgroundStyle(card);
       const advantageHint = cardHasAdvantageAgainst(card, currentTarget) ? `<div class="card-advantage-badge">克制 +20%</div>` : "";
       const orbitHtml = card.cost >= 8 ? `
         <div class="card-orbit-system" aria-hidden="true">
@@ -8879,7 +9040,7 @@
       const typeName = card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能";
       const rankText = card.skillRank || (card.rankMode === "fixed" ? "固定规格" : card.rankMode === "ultimate" ? "终极" : "");
       const target = card.effectType === "heal" || card.effectType === "defense" || card.effectType === "shield" || card.effectType === "buff" ? "自身" : "单体";
-      const artStyle = atlasBackgroundVars("atlas-art", cardArtSprite(card), 120, 82);
+      const artStyle = cardArtBackgroundStyle(card);
       const costSprite = card.cost >= 1 && card.cost <= 10 ? `cost${card.cost}` : "";
       const advantageLine = currentAdvantageText(card, gameEngine.state?.enemy);
       return `
