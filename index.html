@@ -4802,6 +4802,171 @@
       text-shadow: 0 2px 0 rgba(0,0,0,.7) !important;
       z-index: 2 !important;
     }
+
+    /* ════════════════════════════════════════════════
+       Card Encyclopedia Preview Modal
+       ════════════════════════════════════════════════ */
+    .card-encyclopedia-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.72);
+      backdrop-filter: blur(2px);
+    }
+    .card-encyclopedia-overlay.hidden {
+      display: none !important;
+    }
+    .card-encyclopedia-modal {
+      position: relative;
+      padding: 28px 32px;
+      border-radius: 8px;
+      border: 1px solid rgba(231,172,78,.4);
+      background: linear-gradient(135deg, rgba(30,18,8,.96), rgba(8,6,4,.98));
+      box-shadow: 0 0 40px rgba(0,0,0,.6), 0 0 80px rgba(180,140,60,.08);
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .card-encyclopedia-close {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      z-index: 10;
+      width: 28px;
+      height: 28px;
+      border: 1px solid rgba(231,172,78,.3);
+      background: rgba(0,0,0,.5);
+      color: #ffdc8a;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s, border-color .15s;
+      font-family: inherit;
+      padding: 0;
+    }
+    .card-encyclopedia-close:hover {
+      background: rgba(60,38,20,.7);
+      border-color: rgba(255,218,122,.6);
+    }
+
+    /* Preview card sizing — match battle card look outside battle-mode */
+    .card-encyclopedia-card-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 0 4px;
+    }
+    .card-encyclopedia-card-wrap .card {
+      width: 240px !important;
+      min-height: 360px !important;
+      grid-template-rows: 38px 24px 148px 1fr !important;
+      gap: 8px !important;
+      padding: 16px 15px 12px !important;
+      cursor: default !important;
+      pointer-events: auto !important;
+    }
+    .card-encyclopedia-card-wrap .card:hover {
+      transform: none !important;
+      box-shadow:
+        inset 0 0 0 2px rgba(0,0,0,.42),
+        inset 0 0 0 3px rgba(255,255,255,.06),
+        0 10px 0 rgba(0,0,0,.24),
+        0 12px 24px rgba(0,0,0,.32) !important;
+    }
+    .card-encyclopedia-card-wrap .card-art {
+      height: 140px !important;
+      min-height: 140px !important;
+      background-size: var(--atlas-art-size, cover) !important;
+      background-position: var(--atlas-art-position, center) !important;
+      background-repeat: no-repeat !important;
+      background-color: transparent !important;
+      position: relative !important;
+      display: grid !important;
+      place-items: center !important;
+      margin: 0 !important;
+    }
+    .card-encyclopedia-card-wrap .card-name {
+      font-size: 17px !important;
+      line-height: 1.15 !important;
+    }
+    .card-encyclopedia-card-wrap .card-cost {
+      position: absolute !important;
+      left: -3px !important;
+      top: -4px !important;
+      width: 52px !important;
+      height: 56px !important;
+      min-width: 52px !important;
+      display: block !important;
+      z-index: 8 !important;
+      background: var(--cost-sprite-img) center / contain no-repeat !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      filter: none !important;
+      color: transparent !important;
+      font-size: 0 !important;
+      line-height: 0 !important;
+      text-indent: -9999px !important;
+      overflow: hidden !important;
+      text-shadow: none !important;
+      transform: none !important;
+    }
+    .card-encyclopedia-card-wrap .card-top {
+      position: relative !important;
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+      min-height: 38px !important;
+      padding: 3px 22px 2px !important;
+      align-items: center !important;
+      background: linear-gradient(180deg, rgba(8,9,9,.35), rgba(9,7,4,.12) 74%, rgba(0,0,0,0)) !important;
+      border: 0 !important;
+      box-shadow: inset 0 -1px 0 rgba(229,170,70,.24) !important;
+    }
+    .card-encyclopedia-card-wrap .card-meta {
+      display: flex !important;
+      gap: 4px !important;
+      flex-wrap: wrap !important;
+      min-height: 24px !important;
+    }
+    .card-encyclopedia-card-wrap .card-meta .pill {
+      font-size: 11px !important;
+      padding: 2px 6px !important;
+      border-radius: 3px !important;
+      background: rgba(255,244,206,.18) !important;
+      border: 1px solid rgba(255,226,142,.24) !important;
+    }
+    .card-encyclopedia-card-wrap .card-desc {
+      font-size: 13px !important;
+      line-height: 1.45 !important;
+      color: rgba(255,250,232,.95) !important;
+      padding: 6px 4px !important;
+    }
+
+    /* Responsive: narrow screen */
+    @media (max-width: 600px) {
+      .card-encyclopedia-modal {
+        padding: 20px 16px !important;
+        max-width: 95vw !important;
+        max-height: 95vh !important;
+      }
+      .card-encyclopedia-card-wrap .card {
+        width: 200px !important;
+        min-height: 310px !important;
+        grid-template-rows: 32px 20px 120px 1fr !important;
+        padding: 12px 10px 10px !important;
+      }
+      .card-encyclopedia-card-wrap .card-art {
+        height: 114px !important;
+        min-height: 114px !important;
+      }
+    }
 </style>
 </head>
 <body>
@@ -5039,6 +5204,13 @@
       </section>
     </div>
     <div class="toast-layer" id="toastLayer" aria-live="polite"></div>
+    <div class="card-encyclopedia-overlay hidden" id="cardEncyclopediaOverlay" aria-hidden="true">
+      <div class="card-encyclopedia-backdrop" id="cardEncyclopediaBackdrop"></div>
+      <div class="card-encyclopedia-modal" role="dialog" aria-modal="true" aria-label="卡牌预览">
+        <button class="card-encyclopedia-close" id="cardEncyclopediaClose" type="button" aria-label="关闭">×</button>
+        <div id="cardEncyclopediaBody"></div>
+      </div>
+    </div>
   </main>
 
   <script>
@@ -8553,15 +8725,95 @@
         list.className = "codex-grid";
         const cards = [];
         this.defaultDecks.forEach(deck => deck.cards.forEach(card => { if (!cards.some(c => c.name === card.name)) cards.push(card); }));
-        list.innerHTML = cards.map(card => `
+        list.innerHTML = cards.map((card, index) => `
           <div class="codex-card">
-            <h3>${card.mark || "•"} ${card.name}</h3>
+            <h3>${card.mark || "•"} ${card.name}<button class="card-preview-btn" data-preview-index="${index}" type="button">预览</button></h3>
             <p class="small-note">${card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能"} · ${card.skillRank || (card.rankMode === "fixed" ? "固定规格" : "无等级")} · ${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType} · ${card.cost}能量</p>
             <div class="pill-list">${(card.keywords || []).map(k => `<span class="pill">${k}</span>`).join("")}${staticAdvantageText(card) ? `<span class="pill">${staticAdvantageText(card)}</span>` : ""}</div>
             <div class="desc">${card.fullDescription || card.description}</div>
           </div>`).join("");
+        this._codexCards = cards;
       }
     };
+
+    /* ── Card Encyclopedia Preview ── */
+    uiRenderer._previewEscHandler = null;
+
+    function renderEncyclopediaPreviewCard(card) {
+      const [c1, c2] = cardColors(card);
+      const typeName = card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能";
+      const rankText = card.skillRank || (card.rankMode === "fixed" ? "固定规格" : card.rankMode === "ultimate" ? "终极" : "");
+      const tier = tierNameFor(card);
+      const visualTier = inferVisualTier(card);
+      const frameStyle = atlasBackgroundStyle(cardFrameSprite(card), 162, 286);
+      const costSprite = card.cost >= 1 && card.cost <= 10 ? `cost${card.cost}` : "";
+      const costStyle = costSprite ? `--cost-sprite-img:url('assets/ui/sprites/${costSprite}.png')` : "";
+      const artStyle = cardArtBackgroundStyle(card);
+      return `
+        <div class="card-encyclopedia-card-wrap">
+          <div class="card card-tier-${visualTier}" data-visual-tier="${visualTier}" data-tier="${tier}" data-drama-tier="${dramaTierNameFor(card)}" data-cost="${card.cost}" data-element="${card.element}" data-effect="${card.effectType}" data-symbol="${card.mark || "✦"}" style="--c1:${c1};--c2:${c2};${frameStyle}">
+            <div class="card-top">
+              <div class="card-name">${card.name}</div>
+              ${costSprite ? `<div class="card-cost" style="${costStyle}" aria-label="${card.cost} 能量"></div>` : ""}
+            </div>
+            <div class="card-meta">
+              <span class="pill">${card.element}</span>
+              <span class="pill">${typeName}${rankText ? ` · ${rankText}` : ""}</span>
+            </div>
+            <div class="card-art card-art-v2" style="${artStyle}"></div>
+            <div class="card-desc">${card.fullDescription || card.description}</div>
+          </div>
+        </div>`;
+    }
+
+    function openCardEncyclopediaPreview(index) {
+      const cards = uiRenderer._codexCards;
+      if (!cards || !cards[index]) return;
+      const card = cards[index];
+      const overlay = document.getElementById("cardEncyclopediaOverlay");
+      const body = document.getElementById("cardEncyclopediaBody");
+      if (!overlay || !body) return;
+      body.innerHTML = renderEncyclopediaPreviewCard(card);
+      overlay.classList.remove("hidden");
+      overlay.setAttribute("aria-hidden", "false");
+      if (uiRenderer._previewEscHandler) {
+        document.removeEventListener("keydown", uiRenderer._previewEscHandler);
+      }
+      uiRenderer._previewEscHandler = function(e) {
+        if (e.key === "Escape") closeCardEncyclopediaPreview();
+      };
+      document.addEventListener("keydown", uiRenderer._previewEscHandler);
+    }
+
+    function closeCardEncyclopediaPreview() {
+      const overlay = document.getElementById("cardEncyclopediaOverlay");
+      if (!overlay) return;
+      overlay.classList.add("hidden");
+      overlay.setAttribute("aria-hidden", "true");
+      if (uiRenderer._previewEscHandler) {
+        document.removeEventListener("keydown", uiRenderer._previewEscHandler);
+        uiRenderer._previewEscHandler = null;
+      }
+    }
+
+    /* Delegate preview button clicks and backdrop/close clicks */
+    document.addEventListener("click", function(e) {
+      const btn = e.target.closest(".card-preview-btn");
+      if (btn && btn.closest(".codex-card")) {
+        e.stopPropagation();
+        const idx = parseInt(btn.dataset.previewIndex, 10);
+        if (!isNaN(idx)) openCardEncyclopediaPreview(idx);
+        return;
+      }
+      if (e.target.closest("#cardEncyclopediaClose")) {
+        closeCardEncyclopediaPreview();
+        return;
+      }
+      if (e.target.closest("#cardEncyclopediaBackdrop")) {
+        closeCardEncyclopediaPreview();
+        return;
+      }
+    });
 
     function renderGuidePageContent() {
       return `
