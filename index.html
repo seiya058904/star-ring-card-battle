@@ -1765,6 +1765,36 @@
       margin-top: 12px;
     }
 
+    .codex-search-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 12px 0 4px;
+      padding: 10px;
+      border: 1px solid rgba(231, 172, 78, .24);
+      background: linear-gradient(135deg, rgba(44, 30, 16, .72), rgba(10, 8, 6, .9));
+    }
+
+    .codex-search-bar input {
+      width: min(360px, 100%);
+      border: 1px solid rgba(231, 172, 78, .35);
+      background: rgba(8, 7, 6, .82);
+      color: #ffe2a0;
+      padding: 9px 10px;
+      outline: none;
+    }
+
+    .codex-search-bar input:focus {
+      border-color: rgba(255, 210, 126, .72);
+      box-shadow: 0 0 0 2px rgba(231, 172, 78, .14);
+    }
+
+    .codex-search-count {
+      color: #b8a87a;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
     .character-card {
       position: relative;
       border: 1px solid rgba(231, 172, 78, .26);
@@ -9076,18 +9106,41 @@
         this._previewDeckCards = sortedCards;
         list.querySelector("[data-codex-mode='characters']")?.addEventListener("click", () => this.renderDeckManager("characters"));
       } else if (mode === "cards") {
-        list.className = "codex-grid";
+        list.className = "codex-card-library";
         const cards = [];
         this.defaultDecks.forEach(deck => deck.cards.forEach(card => { if (!cards.some(c => c.id === card.id)) cards.push(card); }));
         const sortedCards = cards.slice().sort(compareCardsByRequiredLevel);
-        list.innerHTML = sortedCards.map((card, index) => `
-          <div class="codex-card">
-            <h3>${formatCardTitle(card)}<button class="card-preview-btn" data-preview-index="${index}" type="button">预览</button></h3>
-            <p class="small-note">${card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能"} · ${card.skillRank || (card.rankMode === "fixed" ? "固定规格" : "无等级")} · ${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType} · ${card.cost}能量</p>
-            <div class="pill-list">${(card.keywords || []).map(k => `<span class="pill">${k}</span>`).join("")}${staticAdvantageText(card) ? `<span class="pill">${staticAdvantageText(card)}</span>` : ""}</div>
-            <div class="desc">${card.fullDescription || card.description}</div>
-          </div>`).join("");
-        this._codexCards = sortedCards;
+        const query = this.codexCardSearch || "";
+        list.innerHTML = `
+          <div class="codex-search-bar">
+            <input id="codexCardSearchInput" type="search" placeholder="按卡名搜索" value="${query.replace(/"/g, "&quot;")}" autocomplete="off">
+            <span class="codex-search-count" id="codexCardSearchCount"></span>
+          </div>
+          <div class="codex-grid" id="codexCardGrid"></div>
+        `;
+        const grid = list.querySelector("#codexCardGrid");
+        const count = list.querySelector("#codexCardSearchCount");
+        const input = list.querySelector("#codexCardSearchInput");
+        const renderCards = searchText => {
+          const normalized = `${searchText || ""}`.trim().toLowerCase();
+          const filteredCards = normalized
+            ? sortedCards.filter(card => `${formatCardTitle(card)} ${card.name || ""} ${card.baseName || ""}`.toLowerCase().includes(normalized))
+            : sortedCards;
+          grid.innerHTML = filteredCards.map((card, index) => `
+            <div class="codex-card">
+              <h3>${formatCardTitle(card)}<button class="card-preview-btn" data-preview-index="${index}" type="button">预览</button></h3>
+              <p class="small-note">${card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能"} · ${card.skillRank || (card.rankMode === "fixed" ? "固定规格" : "无等级")} · ${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType} · ${card.cost}能量</p>
+              <div class="pill-list">${(card.keywords || []).map(k => `<span class="pill">${k}</span>`).join("")}${staticAdvantageText(card) ? `<span class="pill">${staticAdvantageText(card)}</span>` : ""}</div>
+              <div class="desc">${card.fullDescription || card.description}</div>
+            </div>`).join("");
+          this._codexCards = filteredCards;
+          if (count) count.textContent = `${filteredCards.length} / ${sortedCards.length} 张`;
+        };
+        renderCards(query);
+        input?.addEventListener("input", e => {
+          this.codexCardSearch = e.target.value;
+          renderCards(this.codexCardSearch);
+        });
       }
     };
 
