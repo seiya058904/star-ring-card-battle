@@ -5407,7 +5407,9 @@
       "高级治愈": "cardart_heal_restoration.png",
       "龙鳞防御": "cardart_shield_protection.png",
       "圣光之音": "cardart_light_holy_strike.png",
+      "五元素诛神斩": "cardart_ice_blade_storm.png",
       "雷金斩": "cardart_thunder_spear.png",
+      "雷神剑": "cardart_thunder_spear.png",
       "白雷突击": "cardart_thunder_spear.png",
       "雷光真闪": "cardart_thunder_spear.png",
       "最终一击·雷霆": "cardart_thunder_spear.png",
@@ -7888,10 +7890,14 @@
 
     function displayCardName(sourceName, category, tier, rankMode, skillRank) {
       const raw = stripCardTaxonomyPrefix(sourceName);
-      if (category === "base") return raw.startsWith("基础·") ? raw : `基础·${raw}`;
-      const label = SKILL_TIER_LABELS[tier] || "普通技能";
-      const stem = ROMANS.some(r => raw.endsWith(r)) ? raw.replace(/[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]$/, "") : raw;
-      return rankMode === "scalable" ? `${label}${skillRank || "Ⅰ"}·${stem}` : `${label}·${stem}`;
+      return ROMANS.some(r => raw.endsWith(r)) ? raw.replace(/[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]$/, "") : raw;
+    }
+
+    function formatCardTitle(card) {
+      const name = displayCardName(card?.baseName || card?.name || "", card?.category, card?.skillTier, card?.rankMode, card?.skillRank);
+      const rank = card?.skillRank || "";
+      const mark = card?.category === "base" ? "•" : ["advanced", "special"].includes(card?.skillTier) ? card?.mark : (card?.mark && card.mark !== "✦" ? card.mark : "");
+      return [mark, `${name}${rank ? ` · ${rank}` : ""}`].filter(Boolean).join(" ");
     }
 
     function requiredLevelForSkill(tier, rankMode, rankValue) {
@@ -8069,7 +8075,7 @@
       const mechanics = mechanicsForCard(displayName, effectType, element, skillTier);
       const mark = skillTier === "special" ? "♛" : skillTier === "advanced" ? "★" : category === "skill" ? "✦" : "•";
       const card = {
-        id: options.id || `${deterministicId(`card-${displayName}`)}`, name: displayName, baseName: sourceName, category,
+        id: options.id || `${deterministicId(`card-${sourceName}-${category}-${skillTier}-${skillRank || rankMode}`)}`, name: displayName, baseName: sourceName, category,
         skillTier, skillRank, rankMode, requiredLevel, effectType, element, level, cost, rarity, power,
         mechanics, keywords: keywordsForMechanics(mechanics), tags: [element, effectType, skillTier].filter(Boolean), mark
       };
@@ -8222,7 +8228,7 @@
 
     function replacementIndexForCoverage(deck, counts) {
       const indexes = deck.cards
-        .map((card, index) => ({ card, index, duplicateCount: counts.get(card.name) || 0 }))
+        .map((card, index) => ({ card, index, duplicateCount: counts.get(cardCoverageKey(card)) || 0 }))
         .filter(item => item.duplicateCount > 1);
       indexes.sort((a, b) => {
         const baseBias = (a.card.category === "base" ? 0 : 1) - (b.card.category === "base" ? 0 : 1);
@@ -8250,6 +8256,10 @@
       return score;
     }
 
+    function cardCoverageKey(card) {
+      return [card.category, card.baseName || card.name, card.skillTier || "none", card.skillRank || card.rankMode || "none"].join("|");
+    }
+
     function cardForCoverageDeck(definition, deck, offset = 0) {
       const allowed = allowedElementsFor(deck);
       const elementBias = deck.primaryElement || deck.element || allowed[offset % Math.max(1, allowed.length)] || "无";
@@ -8260,7 +8270,7 @@
         level: deck.level,
         elementBias,
         profile,
-        id: `${deck.characterId}-coverage-${deterministicId(stripCardTaxonomyPrefix(definition.name))}`
+        id: `${deck.characterId}-coverage-${deterministicId(cardCoverageKey(definition))}`
       });
       return validateCardForCharacter(card, deck, offset);
     }
@@ -8268,25 +8278,31 @@
     function ensureAllBuiltInCardsCovered(decks) {
       const allCards = builtInCardDefinitions();
       const counts = new Map();
-      decks.forEach(deck => deck.cards.forEach(card => counts.set(card.name, (counts.get(card.name) || 0) + 1)));
+      decks.forEach(deck => deck.cards.forEach(card => {
+        const key = cardCoverageKey(card);
+        counts.set(key, (counts.get(key) || 0) + 1);
+      }));
 
       allCards.forEach(definition => {
-        if (counts.has(definition.name)) return;
+        const definitionKey = cardCoverageKey(definition);
+        if (counts.has(definitionKey)) return;
         let best = null;
         decks.forEach(deck => {
           const replacementIndex = replacementIndexForCoverage(deck, counts);
           if (replacementIndex < 0) return;
           const candidate = cardForCoverageDeck(definition, deck, replacementIndex);
-          if (!candidate || candidate.name !== definition.name) return;
+          if (!candidate || cardCoverageKey(candidate) !== definitionKey) return;
           const score = coverageFitScore(candidate, deck);
           if (!best || score > best.score) best = { deck, replacementIndex, candidate, score };
         });
         if (!best) return;
         const removed = best.deck.cards[best.replacementIndex];
-        counts.set(removed.name, Math.max(0, (counts.get(removed.name) || 1) - 1));
-        if (counts.get(removed.name) === 0) counts.delete(removed.name);
+        const removedKey = cardCoverageKey(removed);
+        counts.set(removedKey, Math.max(0, (counts.get(removedKey) || 1) - 1));
+        if (counts.get(removedKey) === 0) counts.delete(removedKey);
         best.deck.cards[best.replacementIndex] = best.candidate;
-        counts.set(best.candidate.name, (counts.get(best.candidate.name) || 0) + 1);
+        const candidateKey = cardCoverageKey(best.candidate);
+        counts.set(candidateKey, (counts.get(candidateKey) || 0) + 1);
       });
 
       decks.forEach(deck => FIXED_CHARACTER_DECKS.set(deck.characterId, JSON.parse(JSON.stringify(deck))));
@@ -8919,7 +8935,7 @@
           </div>
           ${deck.cards.map((card, idx) => `
             <div class="deck-card">
-              <h3>${card.mark || "•"} ${card.name}<button class="card-preview-btn" data-preview-deck-index="${idx}" type="button">预览</button></h3>
+              <h3>${formatCardTitle(card)}<button class="card-preview-btn" data-preview-deck-index="${idx}" type="button">预览</button></h3>
               <p class="small-note">${card.cost} 能量 · ${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</p>
               <div class="pill-list"><span class="pill">${card.category === "base" ? "基础卡" : "技能卡"}</span><span class="pill">${DEFAULT_RARITIES[card.rarity] || card.rarity}</span>${staticAdvantageText(card) ? `<span class="pill">${staticAdvantageText(card)}</span>` : ""}</div>
               <div class="desc">${card.fullDescription || card.description}</div>
@@ -8930,10 +8946,10 @@
       } else if (mode === "cards") {
         list.className = "codex-grid";
         const cards = [];
-        this.defaultDecks.forEach(deck => deck.cards.forEach(card => { if (!cards.some(c => c.name === card.name)) cards.push(card); }));
+        this.defaultDecks.forEach(deck => deck.cards.forEach(card => { if (!cards.some(c => c.id === card.id)) cards.push(card); }));
         list.innerHTML = cards.map((card, index) => `
           <div class="codex-card">
-            <h3>${card.mark || "•"} ${card.name}<button class="card-preview-btn" data-preview-index="${index}" type="button">预览</button></h3>
+            <h3>${formatCardTitle(card)}<button class="card-preview-btn" data-preview-index="${index}" type="button">预览</button></h3>
             <p class="small-note">${card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能"} · ${card.skillRank || (card.rankMode === "fixed" ? "固定规格" : "无等级")} · ${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType} · ${card.cost}能量</p>
             <div class="pill-list">${(card.keywords || []).map(k => `<span class="pill">${k}</span>`).join("")}${staticAdvantageText(card) ? `<span class="pill">${staticAdvantageText(card)}</span>` : ""}</div>
             <div class="desc">${card.fullDescription || card.description}</div>
@@ -8959,7 +8975,7 @@
         <div class="card-encyclopedia-card-wrap">
           <div class="card card-tier-${visualTier}" data-visual-tier="${visualTier}" data-tier="${tier}" data-drama-tier="${dramaTierNameFor(card)}" data-cost="${card.cost}" data-element="${card.element}" data-effect="${card.effectType}" data-symbol="${card.mark || "✦"}" style="--c1:${c1};--c2:${c2};${frameStyle}">
             <div class="card-top">
-              <div class="card-name">${card.name}</div>
+              <div class="card-name">${formatCardTitle(card)}</div>
               ${costSprite ? `<div class="card-cost" style="${costStyle}" aria-label="${card.cost} 能量"></div>` : ""}
             </div>
             <div class="card-meta">
@@ -9244,7 +9260,7 @@
         <div class="card ${unplayable ? "unplayable" : ""}" data-instance-id="${card.instanceId || ""}" data-symbol="${card.mark || "•"}" style="--c1:${c1};--c2:${c2};">
           <div class="card-top">
             <img class="card-icon" src="${icon}" alt="">
-            <div class="card-name">${card.name}</div>
+            <div class="card-name">${formatCardTitle(card)}</div>
             <div class="card-cost">${card.cost}</div>
           </div>
           <div class="card-meta">
@@ -9291,7 +9307,7 @@
       const typeName = card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能";
       const rankText = card.skillRank || (card.rankMode === "fixed" ? "固定规格" : card.rankMode === "ultimate" ? "终极" : "");
       return `
-        <div class="preview-card-title"><span>${card.name}</span><span>${card.cost} 能量</span></div>
+        <div class="preview-card-title"><span>${formatCardTitle(card)}</span><span>${card.cost} 能量</span></div>
         <div class="preview-card-meta">
           <span class="pill">${iconImg(ASSETS.elements[card.element])}${card.element}</span>
           <span class="pill">${typeName}${rankText ? ` · ${rankText}` : ""}</span>
@@ -9313,7 +9329,7 @@
         <div class="card ${unplayable ? "unplayable" : ""}" data-instance-id="${card.instanceId || ""}" data-tier="${tier}" data-drama-tier="${dramaTierNameFor(card)}" data-cost="${card.cost}" data-element="${card.element}" data-symbol="${card.mark || "•"}" style="--c1:${c1};--c2:${c2};">
           <div class="card-top">
             <img class="card-icon" src="${icon}" alt="">
-            <div class="card-name">${card.name}</div>
+            <div class="card-name">${formatCardTitle(card)}</div>
             <div class="card-cost">${card.cost}</div>
           </div>
           <div class="card-meta">
@@ -9412,7 +9428,7 @@
       return `
         <div class="card ${unplayable ? "unplayable" : ""}" data-instance-id="${card.instanceId || ""}" data-tier="${tier}" data-drama-tier="${dramaTierNameFor(card)}" data-cost="${card.cost}" data-element="${card.element}" data-effect="${card.effectType}" data-symbol="${card.mark || "•"}" style="--c1:${c1};--c2:${c2};${artBg}">
           <div class="card-top">
-            <div class="card-name">${card.name}</div>
+            <div class="card-name">${formatCardTitle(card)}</div>
             <div class="card-cost">${card.cost}</div>
           </div>
           <div class="card-meta">
@@ -9431,7 +9447,7 @@
       const artBg = cardArtBackgroundStyle(card);
       const target = card.effectType === "heal" || card.effectType === "defense" || card.effectType === "shield" || card.effectType === "buff" ? "自身" : "单体";
       return `
-        <div class="preview-card-title"><span>${card.name}</span><span>${card.cost} 能量</span></div>
+        <div class="preview-card-title"><span>${formatCardTitle(card)}</span><span>${card.cost} 能量</span></div>
         <div class="preview-card-meta">
           <span class="pill">${iconImg(ASSETS.elements[card.element])}${card.element}</span>
           <span class="pill">${typeName}${rankText ? ` · ${rankText}` : ""}</span>
@@ -9469,7 +9485,7 @@
       const deck = this.selectedDeck || this.defaultDecks?.[0];
       const cards = (deck?.cards || []).slice(0, 18).map(card => `
         <div class="codex-card mini-codex-card">
-          <h3>${card.name}</h3>
+          <h3>${formatCardTitle(card)}</h3>
           <p class="small-note">${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType} · ${card.cost} 能量</p>
           <div class="desc">${card.fullDescription || card.description || "无说明"}</div>
         </div>
@@ -9561,7 +9577,7 @@
         <div class="card ${unplayable ? "unplayable" : ""} card-tier-${visualTier}" data-visual-tier="${visualTier}" data-instance-id="${card.instanceId || ""}" data-tier="${tier}" data-drama-tier="${dramaTierNameFor(card)}" data-cost="${card.cost}" data-element="${card.element}" data-effect="${card.effectType}" data-symbol="${card.mark || "✦"}" style="--c1:${c1};--c2:${c2};${frameStyle}">
           ${orbitHtml}
           <div class="card-top">
-            <div class="card-name">${card.name}</div>
+            <div class="card-name">${formatCardTitle(card)}</div>
             ${costSprite ? `<div class="card-cost" style="${costStyle}" aria-label="${card.cost} 能量"></div>` : ""}
           </div>
           <div class="card-meta">
@@ -9584,7 +9600,7 @@
       const advantageLine = currentAdvantageText(card, gameEngine.state?.enemy);
       const visualTier = inferVisualTier(card);
       return `
-        <div class="preview-card-title" data-visual-tier="${visualTier}"><span>${card.name}</span><span>${costSprite ? `<span class="atlas-status-icon" style="--cost-sprite:url('assets/ui/sprites/${costSprite}.png')"></span>` : ""}${card.cost} 能量</span></div>
+        <div class="preview-card-title" data-visual-tier="${visualTier}"><span>${formatCardTitle(card)}</span><span>${costSprite ? `<span class="atlas-status-icon" style="--cost-sprite:url('assets/ui/sprites/${costSprite}.png')"></span>` : ""}${card.cost} 能量</span></div>
         <div class="preview-card-meta">
           <span class="pill">${card.element}</span>
           <span class="pill">${typeName}${rankText ? ` · ${rankText}` : ""}</span>
