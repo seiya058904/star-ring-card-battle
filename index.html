@@ -5398,6 +5398,12 @@
       "死之审判": "cardart_curse_execute_hybrid.png",
       "真王穿刺": "cardart_pierce_break_armor.png",
       "终·元素贯穿": "cardart_pierce_break_armor.png",
+      "魔法极致化": "cardart_arcane_magic_circle.png",
+      "时间回溯": "cardart_purify_cleanse.png",
+      "九重神斩": "cardart_light_holy_strike.png",
+      "递种": "cardart_charge_buff_empower.png",
+      "斩魔剑": "cardart_light_holy_strike.png",
+      "星界放逐": "cardart_purify_cleanse.png",
       "超大冰暴": "cardart_ice_blade_storm.png",
       "冰王斩": "cardart_ice_blade_storm.png",
       "绝对冰冻": "cardart_ice_prison.png",
@@ -7955,6 +7961,11 @@
     }
 
     function stableEffectType(name, fallback="attack") {
+      const rawName = stripCardTaxonomyPrefix(name);
+      if (/魔法极致化|伤害真实化/.test(rawName)) return "buff";
+      if (/统治/.test(rawName)) return "control";
+      if (/递种/.test(rawName)) return "debuff";
+      if (/九重神斩|锁龙|斩魔剑|星界放逐/.test(rawName)) return "attack";
       if (/领主|之主|君王/.test(name)) return "summon";
       if (/庇护|铠甲|圣体|魔躯|护体|装甲|屏障|防御|护盾|格挡|龙鳞/.test(name)) return "shield";
       if (/治愈|祝福|起死回生|急救|治疗|恢复|祈愿|祈祷/.test(name)) return name.includes("起死回生") ? "revive" : "heal";
@@ -7975,6 +7986,13 @@
     function mechanicsForCard(name, effectType, element, tier) {
       const mechanics = new Set();
       mechanics.add(effectType === "defense" ? "guard" : effectType);
+      const rawName = stripCardTaxonomyPrefix(name);
+      if (/伤害真实化/.test(rawName)) mechanics.add("trueDamageBuff");
+      if (/太阳神的祝福/.test(rawName)) mechanics.add("buff");
+      if (/锁龙/.test(rawName)) mechanics.add("dragonSlayer");
+      if (/斩魔剑/.test(rawName)) mechanics.add("demonSlayer");
+      if (/递种/.test(rawName)) mechanics.add("drawSuppress");
+      if (/星界放逐/.test(rawName)) mechanics.add("control");
       if (/吞噬|吸血|血契|魔躯/.test(name)) mechanics.add("lifesteal");
       if (/庇护|护体|铠甲|装甲|屏障|龙鳞/.test(name)) { mechanics.add("shield"); mechanics.add("damageReduction"); }
       if (/治愈|祝福|圣光|光明|起死回生/.test(name)) { mechanics.add("heal"); mechanics.add("cleanse"); }
@@ -7996,12 +8014,56 @@
       const map = {
         damage:"伤害", attack:"攻击", guard:"格挡", defense:"防御", heal:"治疗", cleanse:"净化", shield:"护盾", damageReduction:"减伤",
         lifesteal:"吸血", burn:"燃烧", freeze:"冻结", curse:"诅咒", chain:"连锁", drawOrEvade:"抽牌/闪避", fortify:"坚守", pierce:"穿透",
-        execute:"斩杀", control:"控制", summon:"召唤", ultimate:"终极", buff:"增益", debuff:"削弱", draw:"抽牌", charge:"蓄力", revive:"复活"
+        execute:"斩杀", control:"控制", summon:"召唤", ultimate:"终极", buff:"增益", debuff:"削弱", draw:"抽牌", charge:"蓄力", revive:"复活",
+        trueDamageBuff:"真实伤害", dragonSlayer:"龙族特攻", demonSlayer:"恶魔特攻", drawSuppress:"少抽牌"
       };
       return mechanics.map(m => map[m] || m).filter(Boolean).slice(0, 4);
     }
 
+    function specialCardRules(card) {
+      const name = stripCardTaxonomyPrefix(card?.baseName || card?.name || "");
+      if (/魔法极致化/.test(name)) return {
+        description: "自身获得魔法增幅 4 回合，造成的伤害提高 35%。",
+        fullDescription: "自身获得魔法增幅 4 回合，造成的伤害提高 35%。固定规格特殊技能。"
+      };
+      if (/伤害真实化/.test(name)) return {
+        description: "自身获得真实伤害 2 回合：造成伤害时无视护盾，直接扣除生命。",
+        fullDescription: "自身获得真实伤害 2 回合。持续期间，己方对敌方造成的伤害无视护盾，直接作用于生命。固定规格特殊技能。"
+      };
+      if (/锁龙/.test(name)) return {
+        description: `造成 ${formatNumber(card.power)} 点伤害；目标为龙族时伤害约翻倍。`,
+        fullDescription: `造成 ${formatNumber(card.power)} 点伤害。若目标种族为龙族，本次伤害约 2 倍。`
+      };
+      if (/统治/.test(name)) return {
+        description: "禁锢目标 2 回合，使其无法行动、不能出牌。",
+        fullDescription: "禁锢目标 2 回合。目标回合开始时会跳过行动，不能出牌。"
+      };
+      if (/太阳神的祝福/.test(name)) return {
+        description: `恢复 ${formatNumber(card.power)} 点生命，并获得增幅 3 回合。`,
+        fullDescription: `恢复 ${formatNumber(card.power)} 点生命并净化 1 个负面状态；随后获得增幅 3 回合，造成的伤害提高 25%。固定规格特殊技能。`
+      };
+      if (/起死回生/.test(name)) return {
+        description: "直接恢复到最大生命值，并净化 1 个负面状态。",
+        fullDescription: "直接将生命恢复到最大生命值，并净化自身 1 个负面状态。固定规格特殊技能。"
+      };
+      if (/递种/.test(name)) return {
+        description: "压制目标 3 回合：目标每次回合开始时少抽 1 张牌。",
+        fullDescription: "使目标获得抽牌压制 3 回合。持续期间，目标每次回合开始补牌时少抽 1 张。固定规格特殊技能。"
+      };
+      if (/斩魔剑/.test(name)) return {
+        description: `造成 ${formatNumber(card.power)} 点伤害；目标为恶魔时伤害约翻倍。`,
+        fullDescription: `造成 ${formatNumber(card.power)} 点伤害。若目标种族为恶魔，本次伤害约 2 倍。固定规格特殊技能。`
+      };
+      if (/星界放逐/.test(name)) return {
+        description: `造成大额伤害，并禁锢目标 2 回合。`,
+        fullDescription: `造成大额伤害，并使目标获得禁锢 2 回合。目标回合开始时会跳过行动，不能出牌。`
+      };
+      return null;
+    }
+
     function mechanicDescription(card) {
+      const special = specialCardRules(card);
+      if (special?.fullDescription) return special.fullDescription;
       const value = formatNumber(card.power);
       const parts = [];
       const e = card.element === "无" ? "" : `${card.element}属性`;
@@ -8037,6 +8099,8 @@
     }
 
     function shortMechanicDescription(card) {
+      const special = specialCardRules(card);
+      if (special?.description) return special.description;
       const value = formatNumber(card.power);
       const e = card.element === "无" ? "" : `${card.element}属性`;
       if (isDirectDamageCard(card) || card.effectType === "freeze") {
@@ -8064,6 +8128,7 @@
       const category = options.category || (isBaseCardName(rawInputName) ? "base" : "skill");
       let skillTier = options.skillTier || tierFromTaxonomyName(name) || "none";
       if (category === "skill" && skillTier === "none") skillTier = skillTierFromName(name, "normal");
+      if (category === "skill" && /魔法极致化|伤害真实化/.test(rawInputName)) skillTier = "special";
       const sourceName = category === "skill" ? normalizeSkillSourceName(rawInputName, skillTier) : rawInputName;
       const parsed = parseSkillRank(sourceName);
       const rankMode = category === "base" ? "none" : (FIXED_SKILL_NAMES.has(sourceName) || (!parsed.roman && skillTier !== "normal") ? "fixed" : "scalable");
@@ -8384,6 +8449,8 @@
         "蓄力": { label:"增益", desc: p => `下一次攻击/燃烧/穿透/斩杀伤害提高 ${Math.round((p||0.25)*100)}%` },
         "禁锢": { label:"控制", desc: () => "本回合无法行动，不能出牌" },
         "冻结": { label:"控制", desc: () => "本回合能量恢复降低" },
+        "真实伤害": { label:"增益", desc: () => "造成伤害时无视护盾，直接扣除生命" },
+        "抽牌压制": { label:"减益", desc: p => `回合开始补牌时少抽 ${formatNumber(p||1)} 张` },
         "燃烧": { label:"持续伤害", desc: p => `每回合开始受到 ${formatNumber(p||0)} 点火属性持续伤害` },
         "诅咒": { label:"持续伤害", desc: p => `每回合开始受到 ${formatNumber(p||0)} 点暗属性持续伤害` },
         "中毒": { label:"持续伤害", desc: p => `每回合开始受到 ${formatNumber(p||0)} 点持续伤害` },
@@ -8471,13 +8538,19 @@
       fighter.shield = Math.max(0, Math.round(fighter.shield * .35));
       // 先检查控制再tick——避免禁锢的duration被减少后无法检测
       const controlStatus = fighter.statuses.find(s => s.type === "禁锢");
+      const drawSuppressStatus = fighter.statuses.find(s => s.type === "抽牌压制");
       fighter.skipAction = !!controlStatus;
       if (controlStatus) {
         this.log(`[控制] ${fighter.name} 被${controlStatus.type}，本回合无法行动。`);
       }
       this.tickStatuses(fighter);
       this.checkGameOver();
-      if (!fighter.skipAction) this.draw(fighter, 5 - fighter.hand.length);
+      if (!fighter.skipAction) {
+        const drawPenalty = drawSuppressStatus ? Math.max(1, Math.round(drawSuppressStatus.power || 1)) : 0;
+        const drawAmount = Math.max(0, 5 - fighter.hand.length - drawPenalty);
+        if (drawPenalty) this.log(`[抽牌压制] ${fighter.name} 本回合少抽 ${drawPenalty} 张牌。`);
+        this.draw(fighter, drawAmount);
+      }
       this.log(`${fighter.name}进入第 ${this.state.round} 回合，能量恢复到 ${fighter.energy}。`);
       if (side === "enemy") setTimeout(() => uiRenderer.showAiDialogue("turnStart"), 180);
     };
@@ -8487,9 +8560,10 @@
       const intent = getCardActionIntent(card);
       const visualTargets = getVisualTargets(actorSide, card);
       const result = { text:"", amount:0, kind:card.effectType, intent, element:card.element, tier:card.skillTier, actorId:actor.id, targetId:visualTargets.primary, visualTargets, popups:[] };
+      const rawCardName = stripCardTaxonomyPrefix(card.baseName || card.name || "");
       // 确保 mechanics 存在——与 mechanicDescription 共用同一来源
       if (!Array.isArray(card.mechanics)) card.mechanics = mechanicsForCard(card.name || "", card.effectType || "attack", card.element || "无", card.skillTier);
-      const NEGATIVE_STATUS_TYPES = new Set(["燃烧","冻结","诅咒","破甲","虚弱","禁锢","中毒"]);
+      const NEGATIVE_STATUS_TYPES = new Set(["燃烧","冻结","诅咒","破甲","虚弱","禁锢","中毒","抽牌压制"]);
       const skillHasLifesteal = card.effectType === "lifesteal" || card.mechanics?.includes("lifesteal");
       let lifestealFromTalent = false;
       const statusMult = this.statusMultiplier(actor, target, card);
@@ -8543,21 +8617,36 @@
 
       if (intent === "hostile-damage") {
         let damage = power;
+        if (/星界放逐/.test(rawCardName)) {
+          damage = Math.round(damage * 1.35);
+          result.popups.push({ type:"status", text:"星界放逐 大伤害", side: target.id });
+        }
+        if (card.mechanics?.includes("dragonSlayer") && target.race === "龙族") {
+          damage = Math.round(damage * 2);
+          result.popups.push({ type:"status", text:"龙族特攻 x2", side: target.id });
+        }
+        if (card.mechanics?.includes("demonSlayer") && target.race === "恶魔") {
+          damage = Math.round(damage * 2);
+          result.popups.push({ type:"status", text:"恶魔特攻 x2", side: target.id });
+        }
         if (card.mechanics?.includes("execute") && target.hp / target.maxHp < .3) damage = Math.round(damage * 1.55);
         if (card.mechanics?.includes("chain") && target.shield <= 0) damage += Math.round(power * .3);
-        if (card.effectType === "pierce" || card.mechanics?.includes("pierce")) {
+        const trueDamageActive = actor.statuses.some(status => status.type === "真实伤害");
+        if (!trueDamageActive && (card.effectType === "pierce" || card.mechanics?.includes("pierce"))) {
           const pierceCut = Math.round(Math.min(target.shield, damage) * .45);
           target.shield = Math.max(0, target.shield - pierceCut);
         }
-        const blocked = Math.min(target.shield, damage);
-        target.shield = Math.max(0, target.shield - blocked);
-        damage = Math.max(0, damage - blocked);
+        const blocked = trueDamageActive ? 0 : Math.min(target.shield, damage);
+        if (!trueDamageActive) {
+          target.shield = Math.max(0, target.shield - blocked);
+          damage = Math.max(0, damage - blocked);
+        }
         const shared = shareOwnerDamageWithSummon(target, damage);
         target.hp = Math.max(0, target.hp - shared.ownerDamage);
         result.amount = shared.ownerDamage;
         result.totalDamage = damage;
         result.summonGuard = shared.guard ? { id: shared.guard.id, name: shared.guard.name, amount: shared.summonDamage, ownerId: target.id } : null;
-        result.text = `${actor.name}使用「${card.name}」。\n[伤害] 造成 ${formatNumber(damage)} 点${card.element}属性伤害。${elem.text ? "\n" + elem.text : ""}${modifierNote ? "\n" + modifierNote : ""}`;
+        result.text = `${actor.name}使用「${card.name}」。\n[伤害] 造成 ${formatNumber(damage)} 点${card.element}属性伤害。${trueDamageActive ? "\n[真实伤害] 本次伤害无视护盾，直接作用于生命。" : ""}${elem.text ? "\n" + elem.text : ""}${modifierNote ? "\n" + modifierNote : ""}`;
         if (card.mechanics?.includes("lifesteal")) {
           const heal = Math.round(Math.max(1, damage) * .28);
           actor.hp = Math.min(actor.maxHp, actor.hp + heal);
@@ -8569,7 +8658,15 @@
         if (card.mechanics?.includes("burn")) { const st = createStatusFromMechanic("burn", card, power); if (st) { target.statuses.push(st); result.popups.push({ type:"status debuff", text:"燃烧 2 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「燃烧」2回合：每回合开始受到火属性持续伤害。"; } }
         if (card.mechanics?.includes("freeze")) { target.statuses.push({ type:"冻结", turns:1, power:0 }); result.popups.push({ type:"status control", text:"冻结 1 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「冻结」1回合：本回合能量恢复降低。"; }
         if (card.mechanics?.includes("curse")) { const st = createStatusFromMechanic("curse", card, power); if (st) { target.statuses.push(st); result.popups.push({ type:"status debuff", text:"诅咒 3 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「诅咒」3回合：每回合开始受到暗属性持续伤害。"; } }
-        if (card.mechanics?.includes("control")) { const st = createStatusFromMechanic("control", card, power); if (st) { target.statuses.push(st); result.popups.push({ type:"status control", text:"禁锢 1 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「禁锢」1回合：下回合无法行动。"; } }
+        if (card.mechanics?.includes("control")) {
+          const st = createStatusFromMechanic("control", card, power);
+          if (st) {
+            if (/星界放逐/.test(rawCardName)) st.turns = 2;
+            target.statuses.push(st);
+            result.popups.push({ type:"status control", text:`禁锢 ${st.turns} 回合`, side: target.id });
+            result.text += `\n[状态施加] 目标获得「禁锢」${st.turns}回合：回合开始时无法行动。`;
+          }
+        }
         if (card.mechanics?.includes("summon")) {
           const summonResult = upsertSummonEntity(actor, card, power);
           const summon = summonResult.summon;
@@ -8592,6 +8689,7 @@
         result.text = `${actor.name}使用「${card.name}」，获得 ${formatNumber(shield)} 护盾。`;
       } else if (["heal","revive"].includes(card.effectType)) {
         let heal = Math.round(power * actor.profile.heal * (card.effectType === "revive" && actor.hp / actor.maxHp < .25 ? 1.45 : 1));
+        if (/起死回生/.test(rawCardName)) heal = Math.max(0, actor.maxHp - actor.hp);
         actor.hp = Math.min(actor.maxHp, actor.hp + heal);
         let cleansed = false;
         if (card.mechanics?.includes("cleanse")) {
@@ -8605,13 +8703,21 @@
         result.targetId = actor.id;
         result.popups.push({ type:"status heal", text:`恢复 +${formatNumber(heal)}`, side: actor.id });
         result.text = `${actor.name}使用「${card.name}」，恢复 ${formatNumber(heal)} 生命${cleansed ? "，并净化负面状态" : ""}。`;
+        if (/太阳神的祝福/.test(rawCardName)) {
+          actor.statuses.push({ type:"增幅", turns:3, power:.25, source: card.name });
+          result.popups.push({ type:"status", text:"增幅 3 回合", side: actor.id });
+          result.text += "\n[状态施加] 自身获得「增幅」3回合，伤害提高25%。";
+        }
       } else if (intent === "hostile-status") {
         const statusName = card.effectType === "control" ? "禁锢" : "虚弱";
-        const turns = 2;
-        target.statuses.push({ type:statusName, turns, power: card.effectType === "control" ? 0 : .2 });
+        const turns = /统治/.test(rawCardName) ? 2 : 2;
+        if (/递种/.test(rawCardName)) target.statuses.push({ type:"抽牌压制", turns:3, power:1, source: card.name });
+        else target.statuses.push({ type:statusName, turns, power: card.effectType === "control" ? 0 : .2, source: card.name });
         result.targetId = target.id;
-        result.popups.push({ type: card.effectType === "control" ? "status control" : "status debuff", text:`${statusName} ${turns} 回合`, side: target.id });
-        result.text = `${actor.name}使用「${card.name}」，使${target.name}陷入${statusName}。[状态施加] ${statusName}${turns}回合。`;
+        result.popups.push({ type: card.effectType === "control" ? "status control" : "status debuff", text: /递种/.test(rawCardName) ? "少抽牌 3 回合" : `${statusName} ${turns} 回合`, side: target.id });
+        result.text = /递种/.test(rawCardName)
+          ? `${actor.name}使用「${card.name}」，使${target.name}获得抽牌压制。\n[状态施加] 之后 3 回合，目标每次回合开始少抽 1 张牌。`
+          : `${actor.name}使用「${card.name}」，使${target.name}陷入${statusName}。[状态施加] ${statusName}${turns}回合。`;
       } else if (card.effectType === "draw") {
         this.draw(actor, actor.race === "精灵族" ? 3 : 2);
         actor.energy = clamp(actor.energy + 1, 0, actor.maxEnergy);
@@ -8626,10 +8732,22 @@
         result.popups.push({ type:"status", text:"蓄力 +2", side: actor.id });
         result.text = `${actor.name}使用「${card.name}」，获得 2 点能量，并蓄力。`;
       } else if (["buff","debuff"].includes(card.effectType)) {
-        if (card.effectType === "buff") { actor.statuses.push({ type:"增幅", turns:2, power:.25 }); result.targetId = actor.id; result.popups.push({ type:"status", text:"增幅 2 回合", side: actor.id }); }
+        if (card.effectType === "buff") {
+          if (/伤害真实化/.test(rawCardName)) {
+            actor.statuses.push({ type:"真实伤害", turns:2, power:1, source: card.name });
+            result.targetId = actor.id;
+            result.popups.push({ type:"status", text:"真实伤害 2 回合", side: actor.id });
+          } else {
+            const turns = /魔法极致化/.test(rawCardName) ? 4 : 2;
+            const statusPower = /魔法极致化/.test(rawCardName) ? .35 : .25;
+            actor.statuses.push({ type:"增幅", turns, power:statusPower, source: card.name });
+            result.targetId = actor.id;
+            result.popups.push({ type:"status", text:`增幅 ${turns} 回合`, side: actor.id });
+          }
+        }
         else { target.statuses.push({ type:"虚弱", turns:2, power:.2 }); result.targetId = target.id; result.popups.push({ type:"status debuff", text:"虚弱 2 回合", side: target.id }); }
         result.text = `${actor.name}使用「${card.name}」。
-[状态施加] ${card.effectType === "buff" ? "自身获得「增幅」2回合，伤害提高25%" : "目标获得「虚弱」2回合，伤害降低20%"}。
+[状态施加] ${/伤害真实化/.test(rawCardName) ? "自身获得「真实伤害」2回合，造成伤害无视护盾" : card.effectType === "buff" ? `自身获得「增幅」${/魔法极致化/.test(rawCardName) ? 4 : 2}回合，伤害提高${/魔法极致化/.test(rawCardName) ? 35 : 25}%` : "目标获得「虚弱」2回合，伤害降低20%"}。
 [叠加规则] 不同来源可叠加；同名状态按当前持续回合与最终倍率上限结算。`;
       } else if (card.effectType === "summon") {
         const summonResult = upsertSummonEntity(actor, card, power);
