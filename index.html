@@ -6134,8 +6134,8 @@
         const category = options.category || (DEFAULT_SKILL_NAMES.normal.concat(DEFAULT_SKILL_NAMES.advanced, DEFAULT_SKILL_NAMES.special).includes(name) ? "skill" : "base");
         let skillTier = options.skillTier || "none";
         if (category === "skill" && skillTier === "none") {
-          if (DEFAULT_SKILL_NAMES.special.includes(name) || /时间|死亡支配|元素圣体|起死回生|不灭魔躯|天使羽/.test(name)) skillTier = "special";
-          else if (DEFAULT_SKILL_NAMES.advanced.includes(name) || /终·|Ⅲ|王座|圣裁|魔域|之主|君王|领主|超大冰暴/.test(name)) skillTier = "advanced";
+          if (/^终·/.test(name) || DEFAULT_SKILL_NAMES.special.includes(name) || /时间|死亡支配|元素圣体|起死回生|不灭魔躯|天使羽/.test(name)) skillTier = "special";
+          else if (DEFAULT_SKILL_NAMES.advanced.includes(name) || /Ⅲ|王座|圣裁|魔域|之主|君王|领主|超大冰暴/.test(name)) skillTier = "advanced";
           else skillTier = "normal";
         }
         const level = clamp(Number(options.level || 30), 1, 100);
@@ -7917,6 +7917,19 @@
       return requiredLevelForSkill(tier, rankMode, parsed.value || 1);
     }
 
+    function compareCardsByRequiredLevel(a, b) {
+      const levelDiff = getCardLevelRequirement(a) - getCardLevelRequirement(b);
+      if (levelDiff) return levelDiff;
+      const tierOrder = { base: 0, normal: 1, advanced: 2, special: 3 };
+      const tierA = a.category === "base" ? "base" : a.skillTier || "normal";
+      const tierB = b.category === "base" ? "base" : b.skillTier || "normal";
+      const tierDiff = (tierOrder[tierA] ?? 9) - (tierOrder[tierB] ?? 9);
+      if (tierDiff) return tierDiff;
+      const titleA = formatCardTitle(a);
+      const titleB = formatCardTitle(b);
+      return titleA.localeCompare(titleB, "zh-Hans");
+    }
+
     function tryDowngradeCard(card, characterLevel) {
       const name = card.baseName || stripCardTaxonomyPrefix(card.name || "");
       const tier = card.skillTier || "normal";
@@ -7936,8 +7949,8 @@
       const explicitTier = tierFromTaxonomyName(name);
       if (explicitTier) return explicitTier;
       const raw = stripCardTaxonomyPrefix(name);
-      if (DEFAULT_SKILL_NAMES.special.includes(raw) || /时间|死亡支配|元素圣体|灵魂|绝对死亡|恶魔契约|天使羽|陨星|神威|不灭魔躯|起死回生|斩魔剑|五元素/.test(raw)) return "special";
-      if (DEFAULT_SKILL_NAMES.advanced.includes(raw) || /终·|王座|圣裁|魔域|之主|君王|领主|超位|龙神意志|噩梦|雷霆|超大冰暴/.test(raw)) return "advanced";
+      if (/^终·/.test(raw) || DEFAULT_SKILL_NAMES.special.includes(raw) || /时间|死亡支配|元素圣体|灵魂|绝对死亡|恶魔契约|天使羽|陨星|神威|不灭魔躯|起死回生|斩魔剑|五元素/.test(raw)) return "special";
+      if (DEFAULT_SKILL_NAMES.advanced.includes(raw) || /王座|圣裁|魔域|之主|君王|领主|超位|龙神意志|噩梦|雷霆|超大冰暴/.test(raw)) return "advanced";
       return fallback;
     }
 
@@ -8924,6 +8937,7 @@
       } else if (mode === "characterDeck") {
         const deck = this.defaultDecks.find(d => d.characterId === characterId) || this.defaultDecks[0];
         const talent = RACE_TALENTS[deck.originalRace] || RACE_TALENTS[deck.race] || RACE_TALENTS["人族"];
+        const sortedCards = deck.cards.slice().sort(compareCardsByRequiredLevel);
         list.className = "deck-list";
         list.innerHTML = `
           <div class="panel" style="margin-bottom:12px;">
@@ -8933,7 +8947,7 @@
             <div class="pill-list"><span class="pill">主元素 ${deck.element || "无"}</span><span class="pill">掌握元素 ${(deck.elements || [deck.element]).join("、")}</span><span class="pill">固定卡组 ${deck.cards.length} 张</span></div>
             <p class="small-note" style="margin-top:8px;">天赋【${talent.name}】：${talent.desc}</p>
           </div>
-          ${deck.cards.map((card, idx) => `
+          ${sortedCards.map((card, idx) => `
             <div class="deck-card">
               <h3>${formatCardTitle(card)}<button class="card-preview-btn" data-preview-deck-index="${idx}" type="button">预览</button></h3>
               <p class="small-note">${card.cost} 能量 · ${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</p>
@@ -8941,20 +8955,21 @@
               <div class="desc">${card.fullDescription || card.description}</div>
             </div>`).join("")}
         `;
-        this._previewDeckCards = deck.cards;
+        this._previewDeckCards = sortedCards;
         list.querySelector("[data-codex-mode='characters']")?.addEventListener("click", () => this.renderDeckManager("characters"));
       } else if (mode === "cards") {
         list.className = "codex-grid";
         const cards = [];
         this.defaultDecks.forEach(deck => deck.cards.forEach(card => { if (!cards.some(c => c.id === card.id)) cards.push(card); }));
-        list.innerHTML = cards.map((card, index) => `
+        const sortedCards = cards.slice().sort(compareCardsByRequiredLevel);
+        list.innerHTML = sortedCards.map((card, index) => `
           <div class="codex-card">
             <h3>${formatCardTitle(card)}<button class="card-preview-btn" data-preview-index="${index}" type="button">预览</button></h3>
             <p class="small-note">${card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能"} · ${card.skillRank || (card.rankMode === "fixed" ? "固定规格" : "无等级")} · ${card.element} · ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType} · ${card.cost}能量</p>
             <div class="pill-list">${(card.keywords || []).map(k => `<span class="pill">${k}</span>`).join("")}${staticAdvantageText(card) ? `<span class="pill">${staticAdvantageText(card)}</span>` : ""}</div>
             <div class="desc">${card.fullDescription || card.description}</div>
           </div>`).join("");
-        this._codexCards = cards;
+        this._codexCards = sortedCards;
       }
     };
 
