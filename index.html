@@ -5473,20 +5473,6 @@
       const elementKey = getCardArtKey(card);
       const tier = `${card.skillTier || ""}`;
 
-      // ═══ Priority 1: Strong name-based semantic mapping ═══
-      // These cards always use the same art regardless of assigned element
-      if (/龙神意志|神威降临/.test(name)) return "cardart_charge_buff_empower.png";
-      if (/死亡支配者/.test(name)) return "cardart_curse_execute_hybrid.png";
-      if (/死之审判/.test(name)) return "cardart_curse_execute_hybrid.png";
-      if (/黑暗视野/.test(name)) return "cardart_dark_curse_control.png";
-      if (/真王穿刺/.test(name) || /终·元素贯穿/.test(name)) return "cardart_pierce_break_armor.png";
-      if (/超大冰暴/.test(name)) return "cardart_ice_blade_storm.png";
-      if (/元素凝聚/.test(name)) return "cardart_charge_buff_empower.png";
-      if (/龙鳞防御/.test(name)) return "cardart_shield_protection.png";
-      if (/圣光之音/.test(name)) return "cardart_light_holy_strike.png";
-      // "绝对冰冻" — genuine ice freeze/control → ice prison art
-      if (/绝对冰冻/.test(name)) return "cardart_ice_prison.png";
-
       if (cardArtHasMechanic(card, ["summon"])) {
         if (elementKey === "fire" || /\u706b|\u708e|\u7130|\u71c3/.test(name)) return "cardart_summon_fire_lord.png";
         if (elementKey === "dark" || /\u6697|\u9ed1\u6697|\u6076\u9b54/.test(name)) return "cardart_summon_dark_lord.png";
