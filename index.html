@@ -9269,7 +9269,7 @@
         <div class="guide-section">
           <h3 class="guide-section-title">角色与固定卡组</h3>
           <div class="guide-section-body">
-            <p>每个角色拥有<strong>固定卡组</strong>，玩家不能自由编辑或自定义。角色等级决定能使用什么阶级的卡牌。</p>
+            <p>每个角色拥有<strong>24 张固定卡组</strong>。玩家主要通过固定角色卡组体验全部内置卡牌。</p>
             <ul>
               <li>角色<strong>主元素</strong>决定其核心元素属性。</li>
               <li><strong>掌握元素</strong>决定卡组中可以出现哪些元素的卡牌。</li>
@@ -9280,18 +9280,31 @@
         </div>
 
         <div class="guide-section">
-          <h3 class="guide-section-title">卡牌等级与费用</h3>
+          <h3 class="guide-section-title">卡牌等级与标题</h3>
           <div class="guide-section-body">
-            <p>卡牌根据稀有度和等级分为多个阶级，角色等级不足时无法使用高阶卡牌：</p>
+            <p>卡牌分为基础牌、普通技能、高级技能、特殊技能。角色等级不足时，固定卡组不会保留越界卡。</p>
             <ul>
-              <li><strong>普通卡</strong>：适合低等级角色，无特别准入限制。</li>
-              <li><strong>★Ⅰ</strong>：通常需要约 70 级才能使用。</li>
-              <li><strong>★Ⅱ</strong>：通常需要约 80 级。</li>
-              <li><strong>★Ⅲ</strong>：通常需要约 90 级。</li>
-              <li><strong>♛（特殊高级技能）</strong>：通常需要 80 级以上。</li>
+              <li><strong>基础牌</strong>：需要 1 级。</li>
+              <li><strong>普通技能 Ⅰ–Ⅷ</strong>：对应 10–80 级；不再存在普通技能 Ⅸ。</li>
+              <li><strong>高级技能 Ⅰ / Ⅱ / Ⅲ</strong>：对应 70 / 80 / 90 级。</li>
+              <li><strong>固定高级技能</strong>：需要 80 级。</li>
+              <li><strong>特殊技能 Ⅰ / Ⅱ / Ⅲ</strong>：对应 80 / 90 / 95 级。</li>
+              <li><strong>固定特殊技能</strong>：需要 90 级。</li>
             </ul>
-            <p>如果卡牌等级超过角色等级，系统会优先尝试降级；不能合法降级时会被替换为其他合法卡牌。</p>
-            <p>卡牌消耗<strong>能量</strong>打出。每回合开始自动恢复能量，上限由角色决定。</p>
+            <p>标题格式会把卡牌强度直接显示出来，例如：<strong>★ 真王穿刺 · Ⅲ</strong>、<strong>♛ 五元素诛神斩</strong>、<strong>高级治愈 · Ⅷ</strong>、<strong>• 精灵箭</strong>。</p>
+            <p>卡牌消耗<strong>能量</strong>打出。每回合开始自动恢复能量。</p>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <h3 class="guide-section-title">卡牌图鉴</h3>
+          <div class="guide-section-body">
+            <p>打开<strong>「卡牌图鉴」</strong>可以查看所有固定卡组中出现的卡牌。</p>
+            <ul>
+              <li>搜索框支持按卡名查找，例如输入“时间”会筛出时间相关卡。</li>
+              <li>清空搜索框后，会恢复显示全部卡牌。</li>
+              <li>点击<strong>预览</strong>可以查看卡牌标题、类型、素材和完整描述。</li>
+            </ul>
           </div>
         </div>
 
@@ -9338,19 +9351,19 @@
               </div>
               <div class="guide-status-item">
                 <strong>⛓️ 禁锢</strong>
-                <span>下回合无法行动。持续 1 回合。</span>
+                <span>目标回合开始时无法行动，不能出牌。常见持续 1–2 回合。</span>
               </div>
               <div class="guide-status-item">
                 <strong>⬆ 增幅</strong>
-                <span>攻击伤害提高 25%。持续 2 回合。</span>
+                <span>造成伤害提高。普通增幅为 25%，特殊卡可能是 10% 或 35%。</span>
               </div>
               <div class="guide-status-item">
                 <strong>⬇ 虚弱 / 削弱</strong>
-                <span>受到伤害提高 20%。持续 2 回合。</span>
+                <span>目标受到伤害提高 20%。持续 2 回合。</span>
               </div>
               <div class="guide-status-item">
                 <strong>🛡️ 减伤</strong>
-                <span>受到伤害降低 18%（护盾强化时 12%）。持续 1–2 回合。</span>
+                <span>受到伤害降低。普通护盾减伤为 18%，特殊卡可为 10%。</span>
               </div>
               <div class="guide-status-item">
                 <strong>💨 闪避</strong>
@@ -9360,8 +9373,30 @@
                 <strong>⚡ 蓄力</strong>
                 <span>下一次攻击/燃烧/穿透/斩杀伤害提高 25%。同时获得 2 点能量。</span>
               </div>
+              <div class="guide-status-item">
+                <strong>🎴 抽牌压制</strong>
+                <span>目标接下来 3 回合，每次回合开始少抽 1 张牌。</span>
+              </div>
+              <div class="guide-status-item">
+                <strong>🛡️ 无视护盾</strong>
+                <span>伤害直接扣除生命，不先扣护盾。伤害真实化会提供 2 回合该效果。</span>
+              </div>
             </div>
             <p style="margin-top:10px;">状态在每回合结束减少 1 回合持续时间，回合数为 0 时解除。多个同类状态同时存在时叠加效果。</p>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <h3 class="guide-section-title">特殊卡机制</h3>
+          <div class="guide-section-body">
+            <ul>
+              <li><strong>统治Ⅲ</strong>：让对方无法行动 2 回合；自己获得 10% 增伤和 10% 减伤，持续 2 回合。</li>
+              <li><strong>防御极致化</strong>：获得最大生命值 50% 的护盾，并获得 10% 减伤，持续 3 回合。</li>
+              <li><strong>伤害真实化</strong>：接下来 2 回合，自己造成的伤害无视护盾。</li>
+              <li><strong>锁龙Ⅲ / 斩魔剑</strong>：分别对龙族 / 恶魔造成 2 倍伤害。</li>
+              <li><strong>起死回生</strong>：直接恢复到最大生命值。</li>
+              <li><strong>递种</strong>：目标接下来 3 回合每回合少抽 1 张牌。</li>
+            </ul>
           </div>
         </div>
 
