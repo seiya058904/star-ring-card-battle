@@ -7411,7 +7411,14 @@
         document.getElementById("playerHand").innerHTML = gameEngine.state.player.hand.map(card => renderCard(card, card.cost > gameEngine.state.player.energy, gameEngine.state.enemy)).join("");
         const playerEnergy = gameEngine.state.player.energy;
         const playerMaxEnergy = gameEngine.state.player.maxEnergy;
-        document.getElementById("playerDeckCounters").innerHTML = `<span class="energy-badge">能量 ${playerEnergy}/${playerMaxEnergy}</span>`;
+        document.getElementById("playerDeckCounters").innerHTML = `
+          <div class="energy-meter" aria-label="能量 ${playerEnergy}/${playerMaxEnergy}">
+            <div class="energy-slots">
+              ${Array.from({ length: playerMaxEnergy }, (_, i) => `<span class="energy-slot ${i < playerEnergy ? "full" : ""}"></span>`).join("")}
+            </div>
+            <span class="energy-count">${playerEnergy}/${playerMaxEnergy}</span>
+          </div>
+        `;
         document.getElementById("turnLabel").textContent = gameEngine.state.turn === "player" ? "玩家回合" : "电脑回合";
         document.getElementById("battleRoundLabel").textContent = `第 ${gameEngine.state.round} 回合`;
         document.getElementById("endTurnBtn").disabled = gameEngine.state.turn !== "player" || gameEngine.state.gameOver;
@@ -7474,8 +7481,6 @@
             </div>
           </div>
           <img class="unit-sprite" src="${sprite}" alt="${fighter.name}">
-          <div class="unit-label">${fighter.name} · ${fighter.race}</div>
-          <div class="unit-hp"><div class="unit-hp-fill" style="width:${hpPct}%"></div><span>${formatNumber(fighter.hp)}</span></div>
         `;
       },
       renderSummons() {
@@ -13275,6 +13280,297 @@
 
       body.battle-mode .duel-unit .unit-hp {
         width: 150px !important;
+      }
+    }
+
+    /* Battle Dock Scale Refinement Pass: hand scale, layering, single HP, and energy slots. */
+    body.battle-mode .hand-dock-v3 {
+      grid-template-columns: 190px minmax(0, 1fr) 320px !important;
+      gap: 10px !important;
+      overflow: visible !important;
+      z-index: 720 !important;
+      border-top-color: rgba(231, 176, 78, .58) !important;
+      background:
+        radial-gradient(ellipse at 50% -18%, rgba(226, 171, 75, .18), transparent 42%),
+        linear-gradient(180deg, rgba(8, 9, 9, .86), rgba(2, 3, 3, .98)) !important;
+    }
+
+    body.battle-mode .hand-command-strip {
+      width: 190px !important;
+      overflow: visible !important;
+      padding: 10px 6px 8px !important;
+      background:
+        radial-gradient(circle at 50% 38%, rgba(112, 74, 28, .24), transparent 62%),
+        linear-gradient(180deg, rgba(18, 15, 10, .82), rgba(5, 5, 4, .96)) !important;
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 232, 150, .1),
+        inset 0 0 32px rgba(226, 171, 75, .08),
+        0 0 18px rgba(0, 0, 0, .25) !important;
+    }
+
+    body.battle-mode #endTurnBtn,
+    body.battle-mode .hand-command-strip #endTurnBtn {
+      width: 176px !important;
+      height: 170px !important;
+      min-width: 176px !important;
+      min-height: 170px !important;
+      font-size: 24px !important;
+      line-height: 1.12 !important;
+      background-size: 100% 100% !important;
+    }
+
+    body.battle-mode .deck-counters {
+      width: 100% !important;
+      align-self: end !important;
+    }
+
+    body.battle-mode .energy-meter {
+      width: 170px !important;
+      min-height: 64px !important;
+      display: grid !important;
+      grid-template-rows: 34px 18px !important;
+      align-items: center !important;
+      justify-items: center !important;
+      gap: 4px !important;
+      padding: 7px 8px 6px !important;
+      border: 1px solid rgba(121, 204, 255, .48) !important;
+      clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0 50%) !important;
+      background:
+        radial-gradient(circle at 20px 18px, rgba(121, 222, 255, .78), transparent 9px),
+        linear-gradient(180deg, rgba(14, 29, 35, .9), rgba(4, 7, 8, .96)) !important;
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 232, 160, .08),
+        0 0 14px rgba(80, 190, 255, .12) !important;
+    }
+
+    body.battle-mode .energy-slots {
+      display: grid !important;
+      grid-template-columns: repeat(10, 1fr) !important;
+      gap: 3px !important;
+      width: 142px !important;
+      height: 30px !important;
+      align-items: center !important;
+    }
+
+    body.battle-mode .energy-slot {
+      width: 10px !important;
+      height: 18px !important;
+      border: 1px solid rgba(110, 196, 255, .42) !important;
+      border-radius: 2px !important;
+      transform: skewX(-9deg) !important;
+      background: linear-gradient(180deg, rgba(9, 20, 25, .94), rgba(3, 7, 9, .96)) !important;
+      box-shadow: inset 0 0 5px rgba(0, 0, 0, .55) !important;
+    }
+
+    body.battle-mode .energy-slot.full {
+      background:
+        linear-gradient(180deg, #8fe7ff, #2e8ce7 58%, #0c4a9d) !important;
+      box-shadow:
+        inset 0 0 5px rgba(255, 255, 255, .28),
+        0 0 8px rgba(92, 201, 255, .44) !important;
+    }
+
+    body.battle-mode .energy-count {
+      color: #d8f4ff !important;
+      font-size: 13px !important;
+      font-weight: 900 !important;
+      line-height: 1 !important;
+      letter-spacing: 0 !important;
+      text-shadow: 0 2px 5px #000 !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .hand-row,
+    body.battle-mode #playerHand {
+      height: 306px !important;
+      min-height: 306px !important;
+      max-height: none !important;
+      padding: 0 8px 6px !important;
+      gap: 12px !important;
+      justify-content: center !important;
+      align-items: end !important;
+      overflow: visible !important;
+      border-color: rgba(222, 169, 76, .24) !important;
+      background:
+        radial-gradient(ellipse at 50% 100%, rgba(226, 171, 75, .08), transparent 52%),
+        linear-gradient(180deg, rgba(4, 6, 7, .42), rgba(2, 3, 3, .16)) !important;
+      z-index: 930 !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card {
+      width: 188px !important;
+      flex: 0 0 188px !important;
+      height: 300px !important;
+      min-height: 300px !important;
+      max-height: 300px !important;
+      grid-template-rows: 36px 22px 122px 1fr auto !important;
+      padding: 12px 12px 10px !important;
+      z-index: 2 !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card-art {
+      height: 122px !important;
+      min-height: 122px !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card-desc {
+      min-height: 62px !important;
+      max-height: 62px !important;
+    }
+
+    body.battle-mode .hand-dock-v3 #playerHand .card:hover,
+    body.battle-mode .hand-dock-v3 #playerHand .card:focus {
+      transform: translateY(-42px) rotate(-.6deg) !important;
+      z-index: 940 !important;
+    }
+
+    body.battle-mode .hand-dock-v3 #playerHand .card.selected {
+      transform: translateY(-48px) scale(1.025) !important;
+      z-index: 950 !important;
+    }
+
+    body.battle-mode .card-preview-panel {
+      width: 320px !important;
+      min-width: 320px !important;
+      z-index: 910 !important;
+    }
+
+    body.battle-mode .unit-overhead-hp {
+      top: -50px !important;
+      width: 220px !important;
+      min-height: 34px !important;
+      padding: 5px 8px 6px !important;
+    }
+
+    body.battle-mode .unit-overhead-hp .hp-label {
+      font-size: 11px !important;
+      line-height: 1.1 !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    body.battle-mode .duel-unit .unit-label,
+    body.battle-mode .duel-unit .unit-hp {
+      display: none !important;
+    }
+
+    @media (max-width: 1600px) {
+      body.battle-mode .hand-dock-v3 {
+        grid-template-columns: 176px minmax(0, 1fr) 300px !important;
+      }
+
+      body.battle-mode .hand-command-strip {
+        width: 176px !important;
+      }
+
+      body.battle-mode #endTurnBtn,
+      body.battle-mode .hand-command-strip #endTurnBtn {
+        width: 160px !important;
+        height: 154px !important;
+        min-width: 160px !important;
+        min-height: 154px !important;
+        font-size: 22px !important;
+      }
+
+      body.battle-mode .energy-meter {
+        width: 158px !important;
+      }
+
+      body.battle-mode .energy-slots {
+        width: 132px !important;
+      }
+
+      body.battle-mode .hand-dock-v3 .card {
+        width: 172px !important;
+        flex-basis: 172px !important;
+        height: 286px !important;
+        min-height: 286px !important;
+        max-height: 286px !important;
+        grid-template-rows: 34px 21px 108px 1fr auto !important;
+      }
+
+      body.battle-mode .hand-dock-v3 .card-art {
+        height: 108px !important;
+        min-height: 108px !important;
+      }
+
+      body.battle-mode .card-preview-panel {
+        width: 300px !important;
+        min-width: 300px !important;
+      }
+    }
+
+    @media (max-width: 1400px) {
+      body.battle-mode .hand-dock-v3 {
+        grid-template-columns: 168px minmax(0, 1fr) 292px !important;
+      }
+
+      body.battle-mode .hand-command-strip {
+        width: 168px !important;
+      }
+
+      body.battle-mode #endTurnBtn,
+      body.battle-mode .hand-command-strip #endTurnBtn {
+        width: 148px !important;
+        height: 142px !important;
+        min-width: 148px !important;
+        min-height: 142px !important;
+        font-size: 20px !important;
+      }
+
+      body.battle-mode .energy-meter {
+        width: 150px !important;
+        min-height: 58px !important;
+      }
+
+      body.battle-mode .energy-slots {
+        width: 124px !important;
+        gap: 2px !important;
+      }
+
+      body.battle-mode .energy-slot {
+        width: 9px !important;
+        height: 16px !important;
+      }
+
+      body.battle-mode .hand-dock-v3 .hand-row,
+      body.battle-mode #playerHand {
+        height: 286px !important;
+        min-height: 286px !important;
+        max-height: none !important;
+        gap: 8px !important;
+        padding-left: 4px !important;
+        padding-right: 4px !important;
+      }
+
+      body.battle-mode .hand-dock-v3 .card {
+        width: 158px !important;
+        flex-basis: 158px !important;
+        height: 264px !important;
+        min-height: 264px !important;
+        max-height: 264px !important;
+        grid-template-rows: 30px 20px 96px 1fr auto !important;
+        padding: 10px 9px 8px !important;
+      }
+
+      body.battle-mode .hand-dock-v3 .card-art {
+        height: 96px !important;
+        min-height: 96px !important;
+      }
+
+      body.battle-mode .hand-dock-v3 .card-desc {
+        min-height: 52px !important;
+        max-height: 52px !important;
+      }
+
+      body.battle-mode .card-preview-panel {
+        width: 292px !important;
+        min-width: 292px !important;
+      }
+
+      body.battle-mode .unit-overhead-hp {
+        top: -46px !important;
+        width: 190px !important;
       }
     }
 
