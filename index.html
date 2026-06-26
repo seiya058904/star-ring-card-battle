@@ -13711,13 +13711,7 @@
       z-index: 935 !important;
     }
 
-    /* Suppress hand hover bounce during battle re-renders — pointer-state driven */
-    body.battle-mode.hand-hover-suppressed .hand-dock-v3 #playerHand .card:not(.playing):hover,
-    body.battle-mode.hand-hover-suppressed .hand-dock-v3 #playerHand .card.selected:not(.playing):hover,
-    body.battle-mode.hand-hover-suppressed .hand-dock-v3 #playerHand .card:not(.playing):focus,
-    body.battle-mode.hand-hover-suppressed .hand-dock-v3 #playerHand .card:not(.playing):focus-visible {
-      transform: translateY(0) rotate(0) !important;
-    }
+    /* Pause hand hover transition during re-render so new DOM lands at final position without bounce */
     body.battle-mode.hand-hover-suppressed .hand-dock-v3 #playerHand .card:not(.playing) {
       transition: none !important;
     }
