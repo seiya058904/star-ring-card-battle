@@ -6552,7 +6552,10 @@
             fighter.discardPile = [];
           }
           const card = fighter.drawPile.shift();
-          if (card) fighter.hand.push(card);
+          if (card) {
+            fighter.hand.push(card);
+            preloadCardVisualAssets(card, `draw-${fighter.id}`);
+          }
         }
       },
       resolveAction(action) {
@@ -6704,8 +6707,12 @@
         setTimeout(loop, 420);
       },
       chooseCard(enemy, player) {
-        const playable = enemy.hand.filter(card => card.cost <= enemy.energy);
-        if (!playable.length) return null;
+        const playable = enemy.hand.filter(card => safeNumber(card.cost, 99) <= enemy.energy);
+        if (!playable.length) {
+          const costly = enemy.hand.slice(0, 3).map(c => `${c.name}(费${c.cost})`).join("、");
+          console.debug(`[AI] 敌方跳过：能量 ${enemy.energy}/${enemy.maxEnergy}，手牌 ${enemy.hand.length} 张，可用 0 张。示例: ${costly}`);
+          return null;
+        }
         const lowHp = enemy.hp / enemy.maxHp < .38;
         const scored = playable.map(card => {
           let score = card.power / Math.max(1, card.cost || 1);
@@ -8975,6 +8982,9 @@
         steps += 1;
         const card = this.chooseCard(enemy, state.player);
         if (!card || steps > 8) {
+          if (!card && !state.gameOver) {
+            gameEngine.log(`${enemy.name}跳过回合（能量 ${enemy.energy}，手牌 ${enemy.hand.length} 张）。`);
+          }
           setTimeout(() => gameEngine.resolveAction({ type:"endTurn", side:"enemy" }), 650);
           return;
         }
