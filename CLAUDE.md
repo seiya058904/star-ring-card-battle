@@ -4,177 +4,160 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Single-file HTML5 card battle game ("星环卡牌战场" / Star Ring Card Battlefield) with procedural card generation, AI opponent, and a dark fantasy UI. No build system, no package.json, no tests — pure frontend.
+Single-file HTML5 card battle game ("星环卡牌战场" / Star Ring Card Battlefield) with procedural card generation, AI opponent, and a dark fantasy UI. No build system, no package.json, no tests — pure frontend. Everything runs in the browser via `localStorage`.
+
+Tech stack: HTML + CSS + vanilla JavaScript + local PNG/JPG assets. Serve with `python -m http.server 8000` or open `index.html` directly.
 
 ## Project Structure
 
-- **index.html** (~11232 lines) — the entire game: HTML (~25 lines of structural markup), CSS (two `<style>` blocks: lines 8-4634 for historical versions, lines ~7644-8253 for the active `battle-visual-polish-final`), and JavaScript (single `<script>` block from ~line 4884 to ~line 7640, with newer additions after ~line 8253). **Line numbers shift frequently** — all ~line references in this file are approximate and drift with edits.
-- **assets/** — images organized by type:
-  - `backgrounds/` — 3 battle background images (bg_plains_ruins.png, bg_dark_forest.png, bg_ash_lava.png)
-  - `cards/` — card back images (card_back_base.png, card_back_skill.png)
-  - `icons/elements/`, `icons/classes/`, `icons/races/`, `icons/status/` — icon sprites (8 elements, 3 classes, 5 races, 8 status types)
-  - `rarity/` — rarity badge images (common, rare, legendary, mythic)
-  - `skills/` — 8 skill effect images: slash, explosion, arrows, lightning, shield, heal_light, black_mist, magic_circle (all RGBA PNG with transparency)
-  - `summons/` — 4 summon unit images (fire_lord, dark_lord, holy_guard, wind_hunter)
-  - `units/` — 6 character unit sprites (human_knight, human_mage, elf_archer, orc_warrior, demon_warrior, young_dragon)
-  - `raw/` — source spritesheets (`core-spritesheet.png`, `battle-backgrounds.png`)
-  - `ui/` — battle UI atlas (`battle-ui-atlas.png`), usage map (`battle-ui-atlas-usage-map.png`), and per-sprite exports in `ui/sprites/` (element art PNGs, card frames, cost badges, status icons)
-  - `ui/sprites/_backup_before_user_replacements/` — backup of original sprite replacements
+- **`index.html`** (~13900 lines) — the entire game: HTML (~25 lines of structural markup), CSS (two `<style>` blocks: lines 8~5007 for historical versions, lines ~9892+ for the active `battle-visual-polish-final`), and JavaScript (single `<script>` block from ~line 5200+). **Line numbers shift with every edit.**
+- **`assets/`** — game imagery organized by type:
+  - `backgrounds/` — 3 battle background images
+  - `cards/` — card back images
+  - `icons/elements/`, `icons/classes/`, `icons/races/`, `icons/status/` — icon sprites
+  - `rarity/` — rarity badge images
+  - `skills/` — 8 skill effect images (slash, explosion, arrows, lightning, shield, heal_light, black_mist, magic_circle)
+  - `summons/` — 4 summon unit images
+  - `units/` — 6 character unit sprites
+  - `ui/` — battle UI atlas (`battle-ui-atlas.png`) with per-sprite exports in `ui/sprites/` (element art, card frames, cost badges, status icons)
   - `ui/sprites/SPRITES.md` — sprite coordinate contact sheet documenting atlas positions
-  - `ui/sprites/sprite-contact-sheet.png` — visual contact sheet of all atlas sprites
-  - `asset-manifest.json`, `sprite-atlas-map.json` — sprite cropping metadata (not referenced from index.html; kept on disk for documentation)
-- **AGENTS.md** — agent guidelines for the repository
-- **CLAUDE.md** — this file
-- **.gitignore** — ignores node_modules/, .DS_Store, Thumbs.db, *.tmp/*.bak/*.backup, screenshots/, test-results/, .playwright/, .cache/, temp js, recovered/, tmp/, .claude/settings.local.json
-- **.claude/settings.local.json** — local-only tool configuration (gitignored, not committed)
+  - `asset-manifest.json`, `sprite-atlas-map.json` — sprite cropping metadata (for documentation only; not referenced from index.html)
 
-## Architecture (JS, all in index.html)
+## Balance Formulas (critical for correct edits)
 
-The code loads via a single `<script>` tag. **All line numbers are approximate** and shift with every edit — use them as a rough guide, not gospel. Major sections in order of appearance:
+**HP scaling** (`levelHp`): exponential interpolation through anchor points:
+```
+[1]=100, [10]=1000, [20]=5000, [30]=25000, [40]=100000,
+[50]=500000, [60]=2M, [70]=12M, [80]=96M, [90]=1B, [100]=19B
+```
 
-### Data & Configuration
-1. **UI_ATLAS** (~4885) — sprite coordinate map for `battle-ui-atlas.png`: card frames, cost badges, element art crops, status icons, speech bubble, etc.
-2. **DEFAULT_LORE** (~5026) — world building: races, subraces, countries, professions
-3. **DEFAULT_CHARACTER_TEMPLATES** (~5066) — 22 NPC character definitions
-4. **DEFAULT_SKILL_NAMES** (~5095) — name pools for normal/advanced/special skills
-5. **DEFAULT_BASE_CARD_NAMES** (~5112) — base attack/defense card names per race
-6. **DEFAULT_DECK_NAME_POOL** (~5121) — ~300 thematic deck name templates
-7. **DEFAULT_DECK_ARCHETYPES** (~5152) — 5 starter archetypes
-8. **DEFAULT_ENEMY_NAME_POOL, DEFAULT_RARITIES, DEFAULT_NAME_RULES, DEFAULT_GAME_SETTINGS, ELEMENT_COUNTER, ROMAN_VALUE, RACE_TALENTS, AI_DIALOGUE_BANK, CHARACTER_DECK_NAME_OVERRIDES, EFFECT_TYPE_LABELS_CN, RACE_PROFILES, PROFESSION_PROFILES, FIXED_SKILL_NAMES** — more game data
-9. **ASSETS** (~5175) — path registry for all asset images, organized by category: backgrounds, elements, status, races, classes, units, cards, skills
-10. **ELEMENTS, PROFESSIONS, RACES, PROFESSIONS** — game constant arrays
+**Card power**: `round(levelHp(level) × tierRatio × rankRatio × effectRatio × profileBonus)`
+- `tierRatio`: normal=0.18, advanced=0.28, special=0.36, base=0.115
+- `effectRatio`: varies per effect — attack=1.0, shield=1.05, heal=0.74, burn=0.82, freeze=0.78, etc.
 
-### Core Utilities
-11. **Utilities** (~5320) — seeded PRNG (`rng()`), `pick()`, `shuffle()`, `clamp()`, `formatNumber()`, `normalizeRace()`, `normalizeProfession()`, `inferElement()`, `inferEffectType()`
-12. **Atlas helpers** (~4928) — `atlasBackgroundStyle()`, `atlasBackgroundVars()`, `cardFrameSprite()`, `getCardArtKey()`, `cardArtSprite()`, `statusSprite()`, `atlasStatusIcon()`
+**Card cost**:
+- Base cards: 1 or 2 (type-dependent)
+- Normal skills: `clamp(2 + ceil(rank/3), 2, 6)`
+- Advanced skills: 6-8 (rank-dependent)
+- Special skills: 8-10 (rank-dependent)
 
-### Game Logic
-13. **cardGenerator** (~5400) — procedural card creation: name generation, power/cost/rarity formulas
-14. **deckBuilder** (~5515) — creates full 30-card decks from race+profession+level parameters
-15. **storageManager** (~5585) — localStorage persistence for custom cards, current deck, settings
-16. **gameEngine** (~5625) — turn-based combat: fighters, draw/discard piles, energy, card resolution, status effects, game-over detection
-17. **aiController** (~5795) — simple scoring AI
+**Rarity multipliers**: common=1, rare=0.75-0.85, legendary=0.6-0.7, mythic=0.5-0.6 (lower = smaller stat range, not weaker — inverse scaling with rank/tier)
 
-### Screen Navigation Flow
-The app is a single-page application with screen transitions managed by `uiRenderer.nav()`:
-1. **Home screen** (`nav("home")`) — title image with HTML image-map hotspot click zones (start, settings, guide, codex)
-2. **Character select** (`nav("select")`) — race/profession picker on left, character portraits on right (previously named `nav("duel")`)
-3. **Battle** (`nav("battle")`) — turn-based combat HUD
-4. **Game guide** (`nav("guide")`) — standalone help page split into tabs (rules, elements, characters, decks, skills, tips)
+## Architecture (JS, in index.html)
 
-`nav()` hides all screens via `.screen.hidden`, then shows the targeted screen. The home screen uses a preloaded title image with absolutely-positioned transparent click zones rather than DOM buttons.
+The code loads via a single `<script>` tag. Major sections in order of appearance:
 
-### Rendering
-18. **effectsRenderer** (~5850) — Canvas2D particle system overlaid on the battle UI. Creates element-colored spark/glow particles, screen shake (CSS transform on battle arena), and skill banners (text + element-colored flash overlay). Started by `effectsRenderer.start()` which is called from `uiRenderer.nav("battle")` — if a future battle entry bypasses `nav()`, it must call `start()` manually.
-19. **uiRenderer** (~6010) — DOM rendering: home screen, battle HUD, card preview panel, modals, toasts. Methods: `init()`, `bind()`, `nav()`, `render()`, `showToast()`, `openModal()`, `closeModal()`, `renderDeckManager()`, `renderDuelUnit()`, `renderOpponentHand()`, `updateCardPreview()`, `bindBattleCardPreview()`
+### Data & Configuration (~line 5255+)
+- **UI_ATLAS** — sprite coordinate map for `battle-ui-atlas.png`: card frames, cost badges, element art crops, status icons
+- **Atlas helpers** — `atlasBackgroundStyle()`, `atlasBackgroundVars()`, `cardFrameSprite()`, `getCardArtKey()`, `cardArtSprite()`, `statusSprite()`
+- **DEFAULT_LORE** (~5632) — world building: races, subraces, countries, professions
+- **DEFAULT_CHARACTER_TEMPLATES** (~5669) — 22 NPC character definitions
+- **DEFAULT_SKILL_NAMES** — name pools for normal/advanced/special skills
+- **DEFAULT_BASE_CARD_NAMES** — base attack/defense card names per race
+- **DEFAULT_DECK_NAME_POOL** — ~300 thematic deck name templates
+- **DEFAULT_DECK_ARCHETYPES** — 5 starter archetypes
+- **ASSETS** — path registry for all asset images
+- **Game constants** — ELEMENTS, PROFESSIONS, RACES, ELEMENT_COUNTER, RACE_TALENTS, AI_DIALOGUE_BANK, etc.
 
-### Function Override Pattern (lines ~7200–7615)
-The game uses a **sequential monkey-patching** pattern for visual functions:
-- `renderCard`, `renderFighter`, `renderCardPreview`, `cardColors`, `uiRenderer.render`, `uiRenderer.bind`, `uiRenderer.nav`, `gameEngine.makeFighter`, `gameEngine.endTurn`, etc. are defined multiple times
-- Each new definition saves the old one (e.g., `const prevRender = renderCard`) then replaces it with an enhanced version
-- The final/latest version for each is what's actually used at runtime:
-  - **renderCard** (final, ~line 7482): v8 with atlas card frames, cost sprites, element art backgrounds
-  - **renderFighter** (final, ~line 7456): v8 with HUD status icons, enemy hand display
-  - **renderCardPreview** (final, ~line 7507): v8 with art box, cost badge, detail grid
-  - **cardColors** (final, ~line 7366): tier-aware colors for skill levels
-  - **bindBattleCardPreview** (final, ~line 7531): mouseenter/focus/click binding for preview panel
+### Core Utilities (~line 6073)
+- **Seeded PRNG**: `rng()` — LCG with `seed = seed * 16807 % 2147483647` (not `Math.random`)
+- **Helpers**: `pick()`, `shuffle()`, `clamp()`, `formatNumber()`, `normalizeRace()`, `inferElement()`, `inferEffectType()`
+
+### Game Logic (~line 6154+)
+- **cardGenerator** — procedural card creation: name gen, power/cost/rarity formulas
+- **deckBuilder** — creates full 30-card decks from race+profession+level params
+- **storageManager** — localStorage persistence for custom cards, current deck, settings
+- **gameEngine** — turn-based combat: fighters, draw/discard piles, energy, card resolution, status effects, game-over
+- **aiController** (~line 6441+) — simple scoring AI
+
+### Rendering (many revisions, final versions ~line 9471+)
+- **effectsRenderer** — Canvas2D particle system: element-colored spark/glow particles, screen shake, skill banners
+- **uiRenderer** — DOM rendering: home screen, battle HUD, card preview panel, modals, toasts. Methods: `init()`, `bind()`, `nav()`, `render()`, `showToast()`, `openModal()`, `closeModal()`, `renderDeckManager()`, `renderDuelUnit()`, `renderOpponentHand()`, `updateCardPreview()`, `bindBattleCardPreview()`
+
+### Screen Navigation
+Single-page app with screen transitions managed by `uiRenderer.nav()`:
+1. **Home** (`nav("home")`) — title image with HTML image-map click zones
+2. **Character select** (`nav("select")`) — race/profession picker + character portraits
+3. **Battle** (`nav("battle")`) — turn-based combat HUD (must call `effectsRenderer.start()` if bypassing `nav()`)
+4. **Game guide** (`nav("guide")`) — tabbed help page (rules, elements, characters, decks, skills, tips)
+
+`nav()` hides all screens via `.screen.hidden`, then shows the targeted screen.
+
+### Function Override Pattern (monkey-patching)
+Visual functions (`renderCard`, `renderFighter`, `renderCardPreview`, `cardColors`, `skillIconFor`) are redefined 3-6 times via monkey-patching. Each new version saves the old (`const prevRender = renderCard`) and calls it internally. **The final/latest definition is what runs** — around lines 9797-9840:
+- `renderCard` (final ~9797) — atlas card frames, cost sprites, element art backgrounds
+- `renderFighter` (final ~9750) — HUD status icons, enemy hand display
+- `renderCardPreview` (final ~9829) — art box, cost badge, detail grid
+- `skillIconFor` — element+effect-type icon lookup, redefined multiple times
 
 ## CSS Architecture
 
-The CSS has **two style blocks**:
+**Only the latest style block is active.** Everything earlier is overridden:
 
-1. **Style block 1** (lines 8–4634): Historical versions stacked on top of each other:
-   - Base CSS + variables (8–1130)
-   - v3 (1843–2029), v4 (2030–2413), v5 (2414–2781), v6 (2782–2967), v7 (2968–3166)
-   - Atlas integration/v8 (3167–3479), v9 (3480–3708)
-   - Browser fixes (3709–3871), Final clipping (3872–4088), Review pass (4089–4231)
-   - Sprite pass (4232–4281), Final review (4282–4448), v8.1 (4449–4634)
+1. **Style block 1** (lines 8~4600): historical versions — **do not modify**
+2. **`<style id="battle-visual-polish-final">`** (~line 9892+): **the active CSS** — uses `body.battle-mode` scoping + `!important` to override all earlier rules
 
-2. **`<style id="battle-visual-polish-final">`** (lines ~7644–8253): **This is the ACTIVE CSS.** Everything earlier is overridden by `body.battle-mode` + `!important` selectors in this block.
+Key CSS patterns:
+- All battle CSS is scoped under `body.battle-mode .selector`
+- `data-element="火"` on cards sets CSS vars `--elm-p1`, `--elm-p2`, `--elm-glow` for particle effects
+- `atlasBackgroundVars()` sets `--atlas-art-image`, `--atlas-art-size`, `--atlas-art-position` inline
+- Card grid: `grid-template-rows: 38px 24px 148px 70px`
 
-### Key CSS Patterns
-- **body.battle-mode prefix**: All battle CSS uses `body.battle-mode .selector` to scope to battle mode
-- **!important everywhere**: Later versions use `!important` to guarantee override over earlier ones
-- **CSS custom properties for elements**: `data-element="火"` on each `.card` sets `--elm-p1`, `--elm-p2`, `--elm-glow` used by particle effects
-- **Inline CSS variables from JS**: `atlasBackgroundVars()` sets `--atlas-art-image`, `--atlas-art-size`, `--atlas-art-position` for element art
-- **Cost sprites**: `--cost-sprite-img` variable set inline for cost badge display
-
-### Card DOM Structure (final renderCard v8)
+## Card DOM Structure (final)
 ```html
-<div class="card" data-instance-id="..." data-tier="..." data-element="火" data-effect="..." data-symbol="✦" style="--c1:...;--c2:...;">
+<div class="card" data-instance-id="..." data-tier="..." data-element="火" data-effect="..." data-symbol="✦">
   <div class="card-top">
-    <div class="card-name">卡牌名称</div>
+    <div class="card-name">名称</div>
     <div class="card-cost" style="--cost-sprite-img:url(...)"></div>
   </div>
-  <div class="card-meta">
-    <span class="pill">火</span>
-    <span class="pill">基础卡</span>
-  </div>
+  <div class="card-meta"><span class="pill">火</span><span class="pill">基础卡</span></div>
   <div class="card-art" style="--atlas-art-image:url(...);--atlas-art-size:...;--atlas-art-position:...;">
     <img class="card-icon" src="assets/skills/skill_slash.png" alt="">
   </div>
-  <div class="card-desc">卡牌描述</div>
+  <div class="card-desc">描述</div>
   <div class="card-power">攻击 · 1,234</div>
 </div>
 ```
 
-Grid layout: `grid-template-rows: 38px 24px 118px 70px 30px`
-
-## Visual Effect Systems
-
-### Element Art Backgrounds
-- Each card's `.card-art` div uses `background-image: var(--atlas-art-image)` set inline by JS
-- 8 art sprites in `assets/ui/sprites/`: artFire.png, artIce.png, artWind.png, artEarth.png, artThunder.png, artLight.png, artDark.png, artArcane.png
-- Determined by `cardArtSprite(card)` which maps element → sprite name
-
-### Skill Icons
-- Displayed as `<img class="card-icon">` inside `.card-art`
-- `skillIconFor(card)` returns the path based on card element + effect type — follows a priority chain: special case (雷+attack→lightning) → skills[effectType] → elements[element] → fallback "slash"
-- Like render functions, `skillIconFor` is redefined multiple times via monkey-patching; the latest version is active
-- File naming: `skill_<type>.png` under `assets/skills/`, all RGBA with proper alpha channel
-
-### Card Art v2 Mapping (current branch: `feature/card-art-v2-mapping`)
-- Recent work re-maps card element art from the basic 8-element backgrounds to finer-grained "v2" semantic art crops
-- New sprite crops define art per card effect type rather than just element — e.g., a fire "shield" card gets different art than a fire "attack" card
-- The `getCardArtKey(card)` function determines the appropriate art sprite key, with fallback to element-only art
-- Preloaded via early `<link rel="preload">` and `ASSETS` registry entries with performance logging
-
-### Element Particle Effects (CSS-only)
-- `.card-art::after` creates floating colored dots using multiple `radial-gradient` layers
-- Colors determined by `data-element` → CSS variables `--elm-p1`, `--elm-p2`, `--elm-glow`
-- 3 keyframe animations: `elmParticleFloat` (hand cards), `elmParticleFloatSlow` (settled), `elmCardPlayed` (burst)
-- States: hand (opacity .65), hover/selected (opacity .95, faster), played card (burst + drop-shadow glow)
+## Visual Effects
+- **Element art backgrounds**: 8 art sprites in `assets/ui/sprites/` mapped by `cardArtSprite(card)` (element → sprite)
+- **Card art v2**: `getCardArtKey(card)` maps card effect type to finer-grained art crops (e.g., fire-shield ≠ fire-attack)
+- **Skill icons**: `skillIconFor(card)` returns path: special case → skills[effectType] → elements[element] → "slash" fallback
+- **CSS particles**: `.card-art::after` with multiple `radial-gradient` layers and 3 keyframe animations (`elmParticleFloat`, `elmParticleFloatSlow`, `elmCardPlayed`)
 
 ## Key Conventions
-
-- **All text is in Chinese** — UI labels, game text, codex descriptions
-- **HP scales exponentially**: `levelHp(1) = 100`, `levelHp(100) = 19B`
-- **Card power** is derived as a fraction of level-based HP, multiplied by effect-type ratios
-- **No backend** — everything runs in the browser via `localStorage`
-- **Seeded PRNG** (`rng()`) rather than `Math.random` — used by card generation, deck building, AI, effects
-- **Editing must be safe and localized** — never rewrite the whole file, never use PowerShell to write back HTML, never re-format the entire document
-- **Git workflow**: tag baseline commits; use feature branches for cleanup; commit after each safe deletion/change
-- **Branch naming**: `feature/<descriptive-name>` for features, `fix/<issue-name>` for fixes, `chore/<task>` for cleanup — push feature branches to origin for collaboration
-- **Commit style**: short behavior-focused messages with `feat:`, `fix:`, `balance:`, `docs:`, `assets:` prefixes
-
-## Common Operations
-
-- **No build step** — just open `index.html` in a browser (or serve with any static file server)
-- **Testing** — no test framework exists; test by opening the HTML in a browser and playing; check console for errors
-- **Adding a character** — add an entry to `DEFAULT_CHARACTER_TEMPLATES` (~line 5066)
-- **Adding skills** — add names to `DEFAULT_SKILL_NAMES.normal/advanced/special` (~line 5095)
-- **Adding deck archetypes** — add to `DEFAULT_DECK_ARCHETYPES` (~line 5152)
-- **Adding assets** — place images in the appropriate `assets/` subdirectory, register paths in `ASSETS` (~line 5175)
-- **Git tags**: `baseline-repaired-ui` (original baseline), `card-art-v2-assets-1` (v2 card art asset milestone)
-- **Active branches**: feature branches include `card-art-v2-mapping` (current), `card-art-preload-smoothing`, `card-art-skill-audit`, `card-art-sprite-crops`, `combat-pacing-epic-effects`, `combat-drama-v2`, `home-title-screen-image`, `guide-character-decks-elements`, `card-detail-effectiveness-layout-fix`, `particle-rendering-pass-1`, `audit-refactor-1`, `dead-code-pass-1`
+- **All UI text is in Chinese**
+- **Seeded PRNG** — all randomness uses `rng()`, NOT `Math.random`
+- **No backend** — everything client-side via `localStorage`
+- **Editing must be safe and localized** — never rewrite the whole file, never use PowerShell `Set-Content` to write HTML, never auto-format
+- **Git tags**: `baseline-repaired-ui`, `card-art-v2-assets`
 - **Published at**: `https://github.com/seiya058904/star-ring-card-battle`
 
-## Safety Rules
+## Common Git Workflow
+```bash
+# Branch naming: feature/<name>, fix/<name>, chore/<task>
+git checkout -b feature/my-change
+# ... make changes ...
+git add -A
+git commit -m "feat: description of the change"
+git push origin feature/my-change
+# Then create PR on GitHub (do not push directly to main)
+```
 
-- Never use `git push --force` or `git reset --hard` on the main branch
-- Never rewrite the entire `index.html` file in one operation
-- Never use PowerShell `Set-Content` to write HTML back (breaks UTF-8 encoding)
-- Never reformat the entire file (no auto-formatter)
-- When editing CSS: check `battle-visual-polish-final` first — it's the active block; older version blocks above line 4634 are historical and should not be modified
-- When in doubt whether code is used, mark it as uncertain rather than deleting
+Commit prefixes: `feat:`, `fix:`, `balance:`, `docs:`, `assets:`
+
+## Common Operations
+- **Run**: open `index.html` in browser or `python -m http.server 8000`
+- **Test**: manual browser testing — check console for errors; no test framework
+- **Add character**: add entry to `DEFAULT_CHARACTER_TEMPLATES`
+- **Add skill names**: add to `DEFAULT_SKILL_NAMES.normal/advanced/special`
+- **Add deck archetype**: add to `DEFAULT_DECK_ARCHETYPES`
+- **Add asset**: place in `assets/` subdirectory, register path in `ASSETS`
+- **Edit CSS**: check `battle-visual-polish-final` first — the active block; older blocks above it are historical
+
+## Safety Rules
+- Never `git push --force` or `git reset --hard` on main
+- Never rewrite `index.html` in one operation or auto-format it
+- Never use PowerShell `Set-Content` to write HTML (breaks UTF-8)
 - Verify with `git diff --check`, garbled character search, and browser console after each change
+- When unsure whether code is used, leave it rather than delete
