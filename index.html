@@ -9681,10 +9681,16 @@
       });
     };
 
+    function setHandHoverSuppressed(active) {
+      document.body.classList.toggle("hand-hover-suppressed", active);
+    }
+
     const originalRenderBattleLayoutV3 = uiRenderer.render;
     uiRenderer.render = function() {
+      setHandHoverSuppressed(true);
       originalRenderBattleLayoutV3.call(this);
       this.bindBattleCardPreview();
+      requestAnimationFrame(() => setHandHoverSuppressed(false));
     };
 
 
@@ -13664,6 +13670,15 @@
         0 0 24px var(--elm-glow, rgba(255, 205, 92, .34)),
         inset 0 0 0 1px rgba(255, 232, 148, .24) !important;
       z-index: 935 !important;
+    }
+
+    /* Suppress hand hover bounce during battle re-renders */
+    body.battle-mode.hand-hover-suppressed .hand-dock-v3 #playerHand .card:not(.playing):hover,
+    body.battle-mode.hand-hover-suppressed .hand-dock-v3 #playerHand .card.selected:not(.playing):hover {
+      transform: translateY(0) rotate(0) !important;
+    }
+    body.battle-mode.hand-hover-suppressed .hand-dock-v3 #playerHand .card {
+      transition: none !important;
     }
 
     body.battle-mode .card-preview-panel {
