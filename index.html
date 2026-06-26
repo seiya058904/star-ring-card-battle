@@ -6601,6 +6601,11 @@
         uiRenderer.render();
         setTimeout(() => {
           if (this.state) {
+            clearHpDisplayOverrides();
+            if (pendingGameOverCheck.flag) {
+              pendingGameOverCheck.flag = false;
+              this.checkGameOver();
+            }
             this.state.actionLocked = false;
             uiRenderer.render();
           }
@@ -6690,6 +6695,11 @@
       checkGameOver() {
         if (this.state.resultPending || this.state.gameOver) return;
         if (this.state.player.hp <= 0 || this.state.enemy.hp <= 0) {
+          /* If stat changes are still visually hidden, defer the result screen */
+          if (hasPendingOverrides()) {
+            pendingGameOverCheck.flag = true;
+            return;
+          }
           this.state.gameOver = true;
           this.state.resultPending = true;
           this.state.actionLocked = true;
@@ -6890,6 +6900,11 @@
           this.showMechanicPopups(result, drama);
           if (result.summonGuard?.amount > 0) this.showSummonGuardDamage(result.summonGuard);
           this.showTargetImpact(result, card, drama);
+          /* Deferred game-over check after all visual reveals */
+          if (pendingGameOverCheck.flag) {
+            pendingGameOverCheck.flag = false;
+            gameEngine.checkGameOver();
+          }
           if (settings.shake && result.visualTargets?.shake) {
             targetUnit?.classList.remove("hit");
             void targetUnit?.offsetWidth;
@@ -7470,6 +7485,8 @@
         this.openBattlePrep();
       },
       startBattle() {
+        clearHpDisplayOverrides();
+        pendingGameOverCheck.flag = false;
         resetBattleViewTransform();
         const playerDeck = this.selectedDeck || this.generatedDeck || this.defaultDecks[0];
         storageManager.saveCurrentDeck(playerDeck);
@@ -7577,7 +7594,8 @@
           { side: "enemy", fighter: state.enemy }
         ].forEach(({ side, fighter }) => {
           (fighter.summons || []).filter(summon => summon.hp > 0).forEach((summon, index) => {
-            const hpPct = clamp((summon.hp / summon.maxHp) * 100, 0, 100);
+            const displayHpVal = displayHp(summon);
+            const hpPct = clamp((displayHpVal / summon.maxHp) * 100, 0, 100);
             const nextAssistDamage = Math.max(1, Math.round(summon.power * (summon.nextAssistMultiplier || 1)));
             const boostLine = summon.nextAssistMultiplier > 1 ? "\n下一次协击已强化。" : "";
             const el = document.createElement("div");
@@ -7585,11 +7603,11 @@
             el.dataset.summonId = summon.id;
             el.style.setProperty("--summon-x", `${index * 42}px`);
             el.style.setProperty("--summon-y", `${index * 12}px`);
-            el.title = `召唤单位：${summon.name}\n每方最多 1 个召唤物；再次召唤会恢复生命并强化下一次协击。\n当前生命值 ${formatNumber(summon.hp)} / ${formatNumber(summon.maxHp)}\n下一次协助攻击伤害：${formatNumber(nextAssistDamage)}${boostLine}\n拥有者回合结束时协助攻击。\n拥有者受到真正伤害时，召唤物会分摊约一半伤害。\n生命值归零后消失。\n来源：${summon.source}`;
+            el.title = `召唤单位：${summon.name}\n每方最多 1 个召唤物；再次召唤会恢复生命并强化下一次协击。\n当前生命值 ${formatNumber(displayHpVal)} / ${formatNumber(summon.maxHp)}\n下一次协助攻击伤害：${formatNumber(nextAssistDamage)}${boostLine}\n拥有者回合结束时协助攻击。\n拥有者受到真正伤害时，召唤物会分摊约一半伤害。\n生命值归零后消失。\n来源：${summon.source}`;
             el.innerHTML = `
               <div class="summon-name">${summon.name}</div>
               <img class="summon-sprite" src="${summon.sprite}" alt="${summon.name}">
-              <div class="summon-hp"><div class="summon-hp-fill" style="width:${hpPct}%"></div><span>${formatNumber(summon.hp)}</span></div>
+              <div class="summon-hp"><div class="summon-hp-fill" style="width:${hpPct}%"></div><span>${formatNumber(displayHpVal)}</span></div>
             `;
             field.appendChild(el);
           });
@@ -8705,20 +8723,31 @@
 
     /* HP display override: keeps old HP visible on screen until damage numbers appear */
     const hpDisplayOverrides = {};
-    function setHpDisplayOverride(fighter) {
-      hpDisplayOverrides[fighter.id] = { hp: fighter.hp, shield: fighter.shield };
+    function _overrideKey(entity) {
+      const id = entity.id;
+      if (id === "player" || id === "enemy") return id;
+      return "summon:" + id;
+    }
+    function setHpDisplayOverride(entity) {
+      hpDisplayOverrides[_overrideKey(entity)] = { hp: entity.hp, shield: entity.shield || 0 };
     }
     function clearHpDisplayOverrides() {
       Object.keys(hpDisplayOverrides).forEach(k => delete hpDisplayOverrides[k]);
     }
-    function displayHp(fighter) {
-      const o = hpDisplayOverrides[fighter.id];
-      return o !== undefined ? o.hp : fighter.hp;
+    function displayHp(entity) {
+      const o = hpDisplayOverrides[_overrideKey(entity)];
+      return o !== undefined ? o.hp : entity.hp;
     }
-    function displayShield(fighter) {
-      const o = hpDisplayOverrides[fighter.id];
-      return o !== undefined ? o.shield : fighter.shield;
+    function displayShield(entity) {
+      const o = hpDisplayOverrides[_overrideKey(entity)];
+      return o !== undefined ? o.shield : (entity.shield || 0);
     }
+    function hasPendingOverrides() {
+      return Object.keys(hpDisplayOverrides).length > 0;
+    }
+
+    /** Deferred game-over flag: set when checkGameOver detects a kill during a delayed-reveal action. */
+    const pendingGameOverCheck = { flag: false };
 
     gameEngine.applyCard = function(actor, target, card) {
       const actorSide = actor.id === "enemy" ? "enemy" : "player";
@@ -8807,6 +8836,9 @@
           target.shield = Math.max(0, target.shield - blocked);
           damage = Math.max(0, damage - blocked);
         }
+        /* Capture summon guard HP before damage */
+        const guardBefore = target.summons?.find(s => s.hp > 0);
+        if (guardBefore) setHpDisplayOverride(guardBefore);
         const shared = shareOwnerDamageWithSummon(target, damage);
         target.hp = Math.max(0, target.hp - shared.ownerDamage);
         result.amount = shared.ownerDamage;
@@ -8815,6 +8847,7 @@
         result.text = `${actor.name}使用「${card.name}」。\n[伤害] 造成 ${formatNumber(damage)} 点${card.element}属性伤害。${trueDamageActive ? "\n[真实伤害] 本次伤害无视护盾，直接作用于生命。" : ""}${elem.text ? "\n" + elem.text : ""}${modifierNote ? "\n" + modifierNote : ""}`;
         if (card.mechanics?.includes("lifesteal")) {
           const heal = Math.round(Math.max(1, damage) * .28);
+          setHpDisplayOverride(actor);
           actor.hp = Math.min(actor.maxHp, actor.hp + heal);
           result.popups.push({ type:"status heal", text:`吸血 +${formatNumber(heal)}`, side: actor.id });
           result.text += lifestealFromTalent
@@ -8846,6 +8879,7 @@
         }
       } else if (["defense","shield"].includes(card.effectType)) {
         const shield = /防御极致化/.test(rawCardName) ? Math.round(actor.maxHp * .5) : Math.round(power * actor.profile.defense);
+        setHpDisplayOverride(actor);
         actor.shield += shield;
         result.popups.push({ type:"status shield", text:`护盾 +${formatNumber(shield)}`, side: actor.id });
         if (/防御极致化/.test(rawCardName)) actor.statuses.push({ type:"减伤", turns:3, power:.10, source: card.name });
@@ -8859,6 +8893,7 @@
       } else if (["heal","revive"].includes(card.effectType)) {
         let heal = Math.round(power * actor.profile.heal * (card.effectType === "revive" && actor.hp / actor.maxHp < .25 ? 1.45 : 1));
         if (/起死回生/.test(rawCardName)) heal = Math.max(0, actor.maxHp - actor.hp);
+        setHpDisplayOverride(actor);
         actor.hp = Math.min(actor.maxHp, actor.hp + heal);
         let cleansed = false;
         if (card.mechanics?.includes("cleanse")) {
@@ -8939,6 +8974,7 @@
       this.log(result.text);
       if (target.hp / target.maxHp < .35 && !target.talentUsed && ["人族","神人"].includes(target.race)) {
         const gain = Math.round(target.maxHp * .08);
+        setHpDisplayOverride(target);
         target.hp = Math.min(target.maxHp, target.hp + gain);
         target.shield += gain;
         target.talentUsed = true;
@@ -9016,6 +9052,10 @@
 
     const originalEndTurnStandard = gameEngine.endTurn.bind(gameEngine);
     gameEngine.endTurn = function(side) {
+      /* Fallback: clear any stale display overrides on turn switch */
+      if (hasPendingOverrides() && !pendingGameOverCheck.flag) {
+        clearHpDisplayOverrides();
+      }
       if (this.state?.turn === side) {
         const fighter = this.state[side];
         processSummonsAtTurnEnd(fighter);
