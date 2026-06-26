@@ -6032,6 +6032,21 @@
       scheduleImagePreload([...collectCardVisualAssetSrcs(card)], reason);
     }
 
+    function preloadCardVisualAssetsReady(card, timeoutMs = 250) {
+      const srcs = [...collectCardVisualAssetSrcs(card)].map(normalizeImageSrc).filter(Boolean);
+      if (!srcs.length) return Promise.resolve(false);
+      const promises = srcs.map(src => {
+        const normalized = normalizeImageSrc(src);
+        if (!normalized) return Promise.resolve(false);
+        if (preloadImagePromiseMap.has(normalized)) return preloadImagePromiseMap.get(normalized);
+        return preloadImage(normalized, "card-ready");
+      });
+      return Promise.race([
+        Promise.allSettled(promises).then(() => true),
+        new Promise(resolve => setTimeout(() => resolve(false), timeoutMs))
+      ]);
+    }
+
     function collectBattleAssetSrcs(decks = []) {
       const srcs = collectImageSrcsFromObject(ASSETS);
       srcs.add(UI_ATLAS.src);
@@ -8630,16 +8645,41 @@
       };
       this.beginTurn("player");
       this.draw(this.state.enemy, 5);
+      ensureEnemyOpeningPlayableCard(this.state.enemy);
       this.log(`战斗开始：「${this.state.player.name}」对阵「${this.state.enemy.name}${this.state.enemy.title || this.state.enemy.deckName || ""}」。`);
       setTimeout(() => uiRenderer.showAiDialogue("battleStart"), 350);
       return this.state;
     };
+
+    function ensureEnemyOpeningPlayableCard(enemy) {
+      const firstTurnEnergy = clamp(3 + (1 - 1) * 2, 0, enemy.maxEnergy);
+      if (enemy.hand.some(c => safeNumber(c.cost, 99) <= firstTurnEnergy)) return;
+      const affordable = enemy.drawPile.filter(c => safeNumber(c.cost, 99) <= firstTurnEnergy);
+      if (!affordable.length) {
+        console.debug("[AI] 敌方整副牌没有费 <= " + firstTurnEnergy + " 的卡，无法保底。");
+        return;
+      }
+      const swapIn = affordable[0];
+      const swapOutIdx = enemy.hand.reduce((maxIdx, c, i, arr) => safeNumber(c.cost, 0) > safeNumber(arr[maxIdx].cost, 0) ? i : maxIdx, 0);
+      const swapOut = enemy.hand[swapOutIdx];
+      enemy.hand[swapOutIdx] = swapIn;
+      enemy.drawPile = enemy.drawPile.filter(c => c !== swapIn);
+      enemy.drawPile.push(swapOut);
+      console.debug(`[AI] 开场保底：将 ${swapOut.name}(费${swapOut.cost}) 与牌库中的 ${swapIn.name}(费${swapIn.cost}) 交换。`);
+    }
 
     gameEngine.beginTurn = function(side) {
       const fighter = this.state[side];
       fighter.turnFlags = { firstHit: true };
       fighter.energy = clamp(3 + (this.state.round - 1) * 2, 0, fighter.maxEnergy);
       fighter.shield = Math.max(0, Math.round(fighter.shield * .35));
+      // 冻结：能量恢复后立即生效，再tick duration
+      const freezeStatus = fighter.statuses.find(s => s.type === "冻结");
+      if (freezeStatus) {
+        const reduction = 1;
+        fighter.energy = Math.max(1, fighter.energy - reduction);
+        this.log(`${fighter.name}受到冻结影响，能量恢复减少 ${reduction}。`);
+      }
       // 先检查控制再tick——避免禁锢的duration被减少后无法检测
       const controlStatus = fighter.statuses.find(s => s.type === "禁锢");
       const drawSuppressStatus = fighter.statuses.find(s => s.type === "抽牌压制");
@@ -8648,6 +8688,9 @@
         this.log(`[控制] ${fighter.name} 被${controlStatus.type}，本回合无法行动。`);
       }
       this.tickStatuses(fighter);
+      if (freezeStatus && !fighter.statuses.find(s => s.type === "冻结")) {
+        this.log(`${fighter.name}的冻结已消退。`);
+      }
       this.checkGameOver();
       if (!fighter.skipAction) {
         const drawPenalty = drawSuppressStatus ? Math.max(1, Math.round(drawSuppressStatus.power || 1)) : 0;
@@ -8983,7 +9026,7 @@
         const card = this.chooseCard(enemy, state.player);
         if (!card || steps > 8) {
           if (!card && !state.gameOver) {
-            gameEngine.log(`${enemy.name}跳过回合（能量 ${enemy.energy}，手牌 ${enemy.hand.length} 张）。`);
+            gameEngine.log(`${enemy.name}没有可打牌，跳过回合（能量 ${enemy.energy}，手牌 ${enemy.hand.length} 张）。`);
           }
           setTimeout(() => gameEngine.resolveAction({ type:"endTurn", side:"enemy" }), 650);
           return;
@@ -9596,6 +9639,7 @@
       }
       battlePerfMonitor.markFirstCard(card);
       preloadCardVisualAssets(card, "played-card-stage");
+      preloadCardVisualAssetsReady(card, 200).then(() => {});
       originalEffectsPlayStandard(card, result);
       const timing = dramaTimingForCard(card);
       setTimeout(() => { this._playLock = 0; }, timing.totalMin + 200);
