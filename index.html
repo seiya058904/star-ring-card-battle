@@ -6861,6 +6861,7 @@
         }
         const impactDelay = drama.enter + drama.focus + drama.charge + drama.cast;
         setTimeout(() => {
+          clearHpDisplayOverrides();
           uiRenderer.render();
           const numberSide = result.visualTargets?.number || result.targetId;
           const impactSide = result.visualTargets?.impact || result.targetId;
@@ -7548,8 +7549,8 @@
         `;
       },
       renderDuelUnit(id, fighter, isPlayer) {
-        const hpPct = clamp((fighter.hp / fighter.maxHp) * 100, 0, 100);
-        const shieldPct = clamp((fighter.shield / fighter.maxHp) * 100, 0, 100);
+        const hpPct = clamp((displayHp(fighter) / fighter.maxHp) * 100, 0, 100);
+        const shieldPct = clamp((displayShield(fighter) / fighter.maxHp) * 100, 0, 100);
         const sprite = unitSpriteFor(fighter);
         const unit = document.getElementById(id);
         const raceKey = normalizeRace(fighter.race);
@@ -7557,7 +7558,7 @@
         unit.dataset.race = raceKey === "龙族" ? "dragon" : raceKey;
         unit.innerHTML = `
           <div class="unit-overhead-hp ${isPlayer ? "player" : "enemy"}">
-            <div class="hp-label">${fighter.name} ${formatNumber(fighter.hp)} / ${formatNumber(fighter.maxHp)}</div>
+            <div class="hp-label">${fighter.name} ${formatNumber(displayHp(fighter))} / ${formatNumber(fighter.maxHp)}</div>
             <div class="hp-track">
               <div class="hp-fill" style="width:${hpPct}%"></div>
               <div class="shield-fill" style="width:${shieldPct}%"></div>
@@ -8702,6 +8703,23 @@
       if (side === "enemy") setTimeout(() => uiRenderer.showAiDialogue("turnStart"), 180);
     };
 
+    /* HP display override: keeps old HP visible on screen until damage numbers appear */
+    const hpDisplayOverrides = {};
+    function setHpDisplayOverride(fighter) {
+      hpDisplayOverrides[fighter.id] = { hp: fighter.hp, shield: fighter.shield };
+    }
+    function clearHpDisplayOverrides() {
+      Object.keys(hpDisplayOverrides).forEach(k => delete hpDisplayOverrides[k]);
+    }
+    function displayHp(fighter) {
+      const o = hpDisplayOverrides[fighter.id];
+      return o !== undefined ? o.hp : fighter.hp;
+    }
+    function displayShield(fighter) {
+      const o = hpDisplayOverrides[fighter.id];
+      return o !== undefined ? o.shield : fighter.shield;
+    }
+
     gameEngine.applyCard = function(actor, target, card) {
       const actorSide = actor.id === "enemy" ? "enemy" : "player";
       const intent = getCardActionIntent(card);
@@ -8763,6 +8781,7 @@
       }
 
       if (intent === "hostile-damage") {
+        setHpDisplayOverride(target);
         let damage = power;
         if (/星界放逐/.test(rawCardName)) {
           damage = Math.round(damage * 1.35);
@@ -9910,7 +9929,7 @@
 
     /* Battle UI atlas v8: card frames, cost badges, art blocks, and HUD status icons. */
     uiRenderer.renderFighter = function(id, fighter, isPlayer) {
-      const hpPct = clamp((fighter.hp / fighter.maxHp) * 100, 0, 100);
+      const hpPct = clamp((displayHp(fighter) / fighter.maxHp) * 100, 0, 100);
       const visibleStatuses = (fighter.statuses || []).filter(s => s.type !== "召唤");
       const raceKey = fighter.normalizedRace || normalizeRace(fighter.race);
       const raceIcon = ASSETS.races[raceKey] || ASSETS.races[fighter.race];
@@ -9927,10 +9946,10 @@
           <div class="fighter-name"><span>${fighter.name}${fighter.title ? `「${fighter.title}」` : ""}</span><span>Lv. ${fighter.level}</span></div>
           <p title="${elementDescriptionFor(fighter)}">${iconImg(raceIcon)}${fighter.race} · ${iconImg(classIcon)}${fighter.profession} · ${fighter.element}</p>
           <p class="mechanic-note" style="font-size:11px;color:#b8a87a;margin:2px 0 4px;" title="${TALENT_DETAILS[fighter.race] || fighter.talent?.desc || ""}">天赋【${fighter.talent?.name || "无"}】${fighter.talent?.desc || ""}</p>
-          <div class="bar"><div class="bar-fill" style="width:${hpPct}%"></div><div class="bar-text">${formatNumber(fighter.hp)} / ${formatNumber(fighter.maxHp)}</div></div>
+          <div class="bar"><div class="bar-fill" style="width:${hpPct}%"></div><div class="bar-text">${formatNumber(displayHp(fighter))} / ${formatNumber(fighter.maxHp)}</div></div>
           <div class="energy-row">${Array.from({ length: fighter.maxEnergy }, (_, i) => `<span class="energy-dot ${i < fighter.energy ? "full" : ""}"></span>`).join("")}<span class="status">${fighter.energy}/${fighter.maxEnergy}</span></div>
           <div class="status-line">
-            <span class="status" title="优先抵扣受到的伤害">${atlasStatusIcon("shield")}护盾 ${formatNumber(fighter.shield)}</span>
+            <span class="status" title="优先抵扣受到的伤害">${atlasStatusIcon("shield")}护盾 ${formatNumber(displayShield(fighter))}</span>
             ${visibleStatuses.map(s => `<span class="status" title="${describeStatus(s.type, s.turns, s.power, s.source, s.maxHp)}">${atlasStatusIcon(s.type)}${s.type} ${s.turns}</span>`).join("")}
           </div>
           ${enemyHandHtml}
