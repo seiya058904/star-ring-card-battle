@@ -5870,7 +5870,9 @@
         control: "assets/skills/skill_black_mist.png",
         curse: "assets/skills/skill_black_mist.png",
         lifesteal: "assets/skills/skill_black_mist.png",
-        summon: "assets/icons/status/status_summon.png"
+        summon: "assets/icons/status/status_summon.png",
+        freeze: "assets/skills/skill_black_mist.png",
+        debuff: "assets/skills/skill_black_mist.png"
       }
     };
 
@@ -6051,9 +6053,61 @@
       preloadBattleAssets(uiRenderer?.defaultDecks || [], "initial-battle-assets");
     }
 
+    function preloadCriticalAndWait(srcs, timeoutMs = 1000) {
+      const unique = [...new Set((srcs || []).map(normalizeImageSrc).filter(Boolean))];
+      if (!unique.length) return Promise.resolve(false);
+      const promises = unique.map(src => preloadImage(src, "critical"));
+      return Promise.race([
+        Promise.allSettled(promises).then(() => true),
+        new Promise(resolve => setTimeout(() => resolve(false), timeoutMs))
+      ]);
+    }
+
+    function collectCriticalBattleSrcs(playerDeck, enemyDeck) {
+      const srcs = new Set();
+      // backgrounds
+      Object.values(ASSETS.backgrounds).forEach(v => srcs.add(v));
+      // UI atlas
+      srcs.add(UI_ATLAS.src);
+      Object.keys(UI_ATLAS.sprites || {}).forEach(name => srcs.add(`assets/ui/sprites/${name}.png`));
+      // card backs
+      Object.values(ASSETS.cards || {}).forEach(v => srcs.add(v));
+      // cost icons 1-10
+      for (let i = 1; i <= 10; i++) srcs.add(`assets/ui/sprites/cost${i}.png`);
+      // player & enemy unit sprites (mirrors unitSpriteFor logic)
+      [playerDeck, enemyDeck].filter(Boolean).forEach(deck => {
+        const r = deck.race || "";
+        const p = deck.profession || "";
+        if (r === "龙族") srcs.add(ASSETS.units.youngDragon);
+        else if (r === "恶魔") srcs.add(ASSETS.units.demonWarrior);
+        else if (r === "兽人族") srcs.add(ASSETS.units.orcWarrior);
+        else if (p === "弓箭手" && /精灵|黑暗精灵/.test(r)) srcs.add(ASSETS.units.elfArcher);
+        else if (p === "魔法师" || /法|魔/.test(p)) srcs.add(ASSETS.units.humanMage);
+        else srcs.add(ASSETS.units.humanKnight);
+        (deck.cards || []).forEach(c => collectCardVisualAssetSrcs(c, srcs));
+      });
+      // elements, skills, status icons referenced by ASSETS
+      Object.values(ASSETS.elements || {}).forEach(v => srcs.add(v));
+      Object.values(ASSETS.skills || {}).forEach(v => srcs.add(v));
+      Object.values(ASSETS.status || {}).forEach(v => srcs.add(v));
+      Object.values(ASSETS.summons || {}).forEach(v => srcs.add(v));
+      return [...srcs].filter(Boolean);
+    }
+
     const ELEMENTS = ["火", "冰", "风", "土", "雷", "光", "暗", "无"];
     const PROFESSIONS = ["魔法师", "战士", "弓箭手"];
     const EFFECT_TYPES = ["attack", "defense", "heal", "draw", "charge", "burn", "freeze", "curse", "summon", "revive", "buff", "debuff", "shield", "execute", "control", "lifesteal", "pierce"];
+
+    Object.defineProperty(window, "__starRingAssetPreloadStatus", {
+      get() {
+        return {
+          loaded: preloadedImageSrcSet.size,
+          pending: preloadImagePromiseMap.size - preloadedImageSrcSet.size
+        };
+      },
+      enumerable: true,
+      configurable: true
+    });
 
     const RACE_PROFILES = {
       "人族": { hp: 1, damage: 1, defense: 1, heal: 1, skillRate: .28, elements: ["光", "雷", "暗", "火"], symbols: "⚔", tags: ["均衡", "治疗", "战术"] },
@@ -6085,6 +6139,11 @@
 
     function clamp(value, min, max) {
       return Math.max(min, Math.min(max, value));
+    }
+
+    function safeNumber(value, fallback = 0) {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : fallback;
     }
 
     function shuffle(list) {
@@ -6532,7 +6591,7 @@
       },
       applyCard(actor, target, card) {
         const result = { text: "", amount: 0, kind: card.effectType, element: card.element, tier: card.skillTier, actorId: actor.id, targetId: target.id };
-        const power = Math.round(card.power * this.statusMultiplier(actor, target, card));
+        const power = Math.round(safeNumber(card.power, 0) * this.statusMultiplier(actor, target, card));
         if (["attack", "burn", "freeze", "curse", "execute", "control", "lifesteal", "pierce", "summon"].includes(card.effectType)) {
           let damage = power;
           if (card.effectType === "execute" && target.hp / target.maxHp < .3) damage = Math.round(damage * 1.55);
@@ -8562,7 +8621,7 @@
       };
       this.beginTurn("player");
       this.draw(this.state.enemy, 5);
-      this.log(`战斗开始${this.state.player.name} 对阵 ${this.state.enemy.name}${this.state.enemy.title || this.state.enemy.deckName}」。`);
+      this.log(`战斗开始：「${this.state.player.name}」对阵「${this.state.enemy.name}${this.state.enemy.title || this.state.enemy.deckName || ""}」。`);
       setTimeout(() => uiRenderer.showAiDialogue("battleStart"), 350);
       return this.state;
     };
@@ -8603,7 +8662,7 @@
       const skillHasLifesteal = card.effectType === "lifesteal" || card.mechanics?.includes("lifesteal");
       let lifestealFromTalent = false;
       const statusMult = this.statusMultiplier(actor, target, card);
-      let power = Math.round(card.power * statusMult);
+      let power = Math.round(safeNumber(card.power, 0) * statusMult);
       if (statusMult > 1.05) result.popups.push({ type:"status", text:`威力提升 ${Math.round((statusMult-1)*100)}%`, side: actor.id });
       if (statusMult < .95) result.popups.push({ type:"status", text:`威力降低 ${Math.round((1-statusMult)*100)}%`, side: target.id });
       const elem = elementMultiplier(card.element, target);
@@ -9049,14 +9108,18 @@
         </div>`;
     };
 
-    uiRenderer.startBattle = function() {
+    uiRenderer.startBattle = async function() {
       battlePerfMonitor.markBattleStart();
       const playerDeck = JSON.parse(JSON.stringify(this.selectedDeck || this.defaultDecks[0]));
       const enemyDeck = deckBuilder.pickEnemyFor(playerDeck);
+      const criticalSrcs = collectCriticalBattleSrcs(playerDeck, enemyDeck);
+      const preloadReady = preloadCriticalAndWait(criticalSrcs, 800);
       preloadBattleAssets([playerDeck, enemyDeck], "battle-start-decks");
       gameEngine.start(playerDeck, enemyDeck);
       document.getElementById("battlefield").style.setProperty("--battle-bg", `url("${battleBackgroundFor(playerDeck, enemyDeck)}")`);
       preloadBattleAssets([playerDeck, enemyDeck], "battle-start-fighters");
+      await preloadReady;
+      battlePerfMonitor.log("critical-preload", { elapsedMs: Math.round(performance.now() - battlePerfMonitor.battleStart) });
       this.nav("battle");
       effectsRenderer.resize();
       this.render();
@@ -9695,7 +9758,7 @@
         </div>
         <div class="preview-card-keywords">${(card.keywords || card.mechanics || []).slice(0, 7).map(k => `<span class="pill">${k}</span>`).join("")}</div>
         <div class="preview-card-power">${getCardPowerLabel(card)}</div>
-        <div class="preview-detail-grid"><span class="pill">类型 ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</span><span class="pill">目标 ${target}</span><span class="pill">冷却 </span></div>
+        <div class="preview-detail-grid"><span class="pill">类型 ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</span><span class="pill">目标 ${target}</span><span class="pill">消耗 ${card.cost}</span></div>
       `;
     };
 
@@ -9849,7 +9912,7 @@
         </div>
         <div class="preview-card-keywords">${(card.keywords || card.mechanics || []).slice(0, 7).map(k => `<span class="pill">${k}</span>`).join("")}</div>
         <div class="preview-card-power">${getCardPowerLabel(card)}</div>
-        <div class="preview-detail-grid"><span class="pill">类型 ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</span><span class="pill">目标 ${target}</span><span class="pill">冷却 </span></div>
+        <div class="preview-detail-grid"><span class="pill">类型 ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</span><span class="pill">目标 ${target}</span><span class="pill">消耗 ${card.cost}</span></div>
       `;
     };
 
@@ -12342,16 +12405,16 @@
     body.battle-mode .battle-hud .status-line {
       margin-top: 7px !important;
       min-height: 20px !important;
-      max-height: 42px !important;
-      overflow: hidden !important;
-      gap: 4px !important;
+      max-height: 60px !important;
+      overflow-y: auto !important;
+      gap: 3px !important;
     }
 
     body.battle-mode .battle-hud .status,
     body.battle-mode .enemy-resource-row {
       font-size: 10px !important;
-      line-height: 1.2 !important;
-      padding: 2px 5px !important;
+      line-height: 1.1 !important;
+      padding: 1px 4px !important;
     }
 
     body.battle-mode .enemy-hand-in-hud {
