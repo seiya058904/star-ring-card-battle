@@ -9685,16 +9685,45 @@
     };
 
     let __handHoverSuppressTimer = null;
+    let lastPointerX = null;
+    let lastPointerY = null;
+
+    function isPointerOverPlayerHand() {
+      if (lastPointerX == null || lastPointerY == null) return false;
+      const el = document.elementFromPoint(lastPointerX, lastPointerY);
+      return !!(el && el.closest && el.closest("#playerHand"));
+    }
 
     function setHandHoverSuppressed(active, duration = 0) {
       document.body.classList.toggle("hand-hover-suppressed", active);
       if (active && duration > 0) {
         clearTimeout(__handHoverSuppressTimer);
         __handHoverSuppressTimer = setTimeout(() => {
-          document.body.classList.remove("hand-hover-suppressed");
+          if (!isPointerOverPlayerHand()) {
+            document.body.classList.remove("hand-hover-suppressed");
+          }
         }, duration);
+      } else if (!active) {
+        clearTimeout(__handHoverSuppressTimer);
       }
     }
+
+    document.addEventListener("pointermove", (event) => {
+      lastPointerX = event.clientX;
+      lastPointerY = event.clientY;
+      if (document.body.classList.contains("hand-hover-suppressed")) {
+        setHandHoverSuppressed(false);
+      }
+    }, { passive: true });
+
+    document.addEventListener("pointerout", (event) => {
+      if (!document.body.classList.contains("hand-hover-suppressed")) return;
+      const fromHand = event.target && typeof event.target.closest === "function" && event.target.closest("#playerHand");
+      const toHand = event.relatedTarget && typeof event.relatedTarget.closest === "function" && event.relatedTarget.closest("#playerHand");
+      if (fromHand && !toHand) {
+        setHandHoverSuppressed(false);
+      }
+    }, { passive: true });
 
     const originalRenderBattleLayoutV3 = uiRenderer.render;
     uiRenderer.render = function() {
@@ -13682,12 +13711,14 @@
       z-index: 935 !important;
     }
 
-    /* Suppress hand hover bounce during battle re-renders */
+    /* Suppress hand hover bounce during battle re-renders — pointer-state driven */
     body.battle-mode.hand-hover-suppressed .hand-dock-v3 #playerHand .card:not(.playing):hover,
-    body.battle-mode.hand-hover-suppressed .hand-dock-v3 #playerHand .card.selected:not(.playing):hover {
+    body.battle-mode.hand-hover-suppressed .hand-dock-v3 #playerHand .card.selected:not(.playing):hover,
+    body.battle-mode.hand-hover-suppressed .hand-dock-v3 #playerHand .card:not(.playing):focus,
+    body.battle-mode.hand-hover-suppressed .hand-dock-v3 #playerHand .card:not(.playing):focus-visible {
       transform: translateY(0) rotate(0) !important;
     }
-    body.battle-mode.hand-hover-suppressed .hand-dock-v3 #playerHand .card {
+    body.battle-mode.hand-hover-suppressed .hand-dock-v3 #playerHand .card:not(.playing) {
       transition: none !important;
     }
 
