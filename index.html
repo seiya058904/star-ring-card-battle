@@ -6575,13 +6575,15 @@
       },
       resolveAction(action) {
         if (!this.state || this.state.gameOver) return;
-        if (this.state.actionLocked && action.type === "playCard") return false;
+        if (action.type === "playCard" && (this.state.actionLocked || effectsRenderer?._playLock)) return false;
         this.state.actions.push(action);
         if (action.type === "playCard") return this.playCard(action.side, action.cardInstanceId);
         if (action.type === "endTurn") return this.endTurn(action.side);
       },
       playCard(side, cardInstanceId) {
+        /* Comprehensive lock: reject if animation/reveal is still in progress */
         if (this.state.actionLocked) return false;
+        if (side === "player" && !canAcceptPlayerCardInput()) return false;
         const actor = this.state[side];
         const target = this.state[side === "player" ? "enemy" : "player"];
         const index = actor.hand.findIndex(card => card.instanceId === cardInstanceId);
@@ -6591,10 +6593,12 @@
           this.log(`${actor.name}能量不足，无法使用「${card.name}」。`);
           return false;
         }
+        /* Lock MUST be set before any state mutation */
+        this.state.actionLocked = true;
+        setCombatInputLocked(true);
         actor.energy -= card.cost;
         actor.hand.splice(index, 1);
         actor.discardPile.push(card);
-        this.state.actionLocked = true;
         setHandHoverSuppressed(true, 700);
         preloadCardVisualAssets(card, `play-card-${side}`);
         this.applyCard(actor, target, card);
@@ -6607,6 +6611,7 @@
               this.checkGameOver();
             }
             this.state.actionLocked = false;
+            /* CSS lock stays until _playLock releases (totalMin + 200) */
             uiRenderer.render();
           }
         }, dramaTimingForCard(card).totalMin);
@@ -7156,7 +7161,12 @@
             message: "当前战斗进度不会保存，是否返回主菜单？",
             confirmText: "确认退出",
             cancelText: "取消",
-            onConfirm: () => { this.nav("home"); this.showToast("已返回主菜单"); }
+            onConfirm: () => {
+              setCombatInputLocked(false);
+              clearHpDisplayOverrides();
+              this.nav("home");
+              this.showToast("已返回主菜单");
+            }
           });
         });
         document.getElementById("toggleLogBtn")?.addEventListener("click", () => {
@@ -7485,6 +7495,7 @@
         this.openBattlePrep();
       },
       startBattle() {
+        setCombatInputLocked(false);
         clearHpDisplayOverrides();
         pendingGameOverCheck.flag = false;
         resetBattleViewTransform();
@@ -7529,7 +7540,7 @@
           event.preventDefault();
           event.stopPropagation();
           if (gameEngine.state.turn !== "player" || gameEngine.state.gameOver || el.classList.contains("unplayable")) return;
-          if (gameEngine.state.actionLocked) {
+          if (!canAcceptPlayerCardInput()) {
             uiRenderer.showToast("上一张卡正在结算，请稍等");
             return;
           }
@@ -8746,6 +8757,24 @@
       return Object.keys(hpDisplayOverrides).length > 0;
     }
 
+    /** Returns true when the player is allowed to click a card in hand. */
+    function canAcceptPlayerCardInput() {
+      const st = gameEngine?.state;
+      if (!st) return false;
+      if (st.turn !== "player") return false;
+      if (st.gameOver) return false;
+      if (st.actionLocked) return false;
+      if (effectsRenderer?._playLock) return false;
+      if (hasPendingOverrides()) return false;
+      if (pendingGameOverCheck?.flag) return false;
+      return true;
+    }
+
+    /** Sets or clears combat-input-locked body class alongside actionLocked. */
+    function setCombatInputLocked(locked) {
+      document.body.classList.toggle("combat-input-locked", locked);
+    }
+
     /** Deferred game-over flag: set when checkGameOver detects a kill during a delayed-reveal action. */
     const pendingGameOverCheck = { flag: false };
 
@@ -9052,9 +9081,10 @@
 
     const originalEndTurnStandard = gameEngine.endTurn.bind(gameEngine);
     gameEngine.endTurn = function(side) {
-      /* Fallback: clear any stale display overrides on turn switch */
-      if (hasPendingOverrides() && !pendingGameOverCheck.flag) {
+      /* Fallback: clear any stale locks on turn switch */
+      if (!pendingGameOverCheck.flag) {
         clearHpDisplayOverrides();
+        setCombatInputLocked(false);
       }
       if (this.state?.turn === side) {
         const fighter = this.state[side];
@@ -9692,6 +9722,7 @@
       const now = Date.now();
       if (now - this._playLock < 3000) return;
       this._playLock = now;
+      setCombatInputLocked(true);
       const banner = document.getElementById("skillBanner");
       if (banner) {
         banner.style.animationDuration = card.skillTier === "special" ? "2.5s" : card.skillTier === "advanced" ? "1.75s" : "1.1s";
@@ -9701,7 +9732,7 @@
       preloadCardVisualAssetsReady(card, 200).then(() => {});
       originalEffectsPlayStandard(card, result);
       const timing = dramaTimingForCard(card);
-      setTimeout(() => { this._playLock = 0; }, timing.totalMin + 200);
+      setTimeout(() => { this._playLock = 0; setCombatInputLocked(false); }, timing.totalMin + 200);
     };
 
 
@@ -13827,6 +13858,11 @@
     /* Pause hand hover transition during re-render so new DOM lands at final position without bounce */
     body.battle-mode.hand-hover-suppressed .hand-dock-v3 #playerHand .card:not(.playing) {
       transition: none !important;
+    }
+
+    /* Disable pointer events on hand cards while combat input is locked */
+    body.battle-mode.combat-input-locked .hand-dock-v3 #playerHand .card {
+      pointer-events: none !important;
     }
 
     body.battle-mode .card-preview-panel {
