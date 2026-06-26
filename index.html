@@ -13574,6 +13574,169 @@
       }
     }
 
+    /* Final small battle UI fix pass: keep selected cards grounded after hover, fit preview labels, and unclip HUD energy. */
+    body.battle-mode .hand-dock-v3 #playerHand .card:not(:hover):not(.playing) {
+      transform: translateY(0) rotate(0) !important;
+    }
+
+    body.battle-mode .hand-dock-v3 #playerHand .card:hover {
+      transform: translateY(-42px) rotate(-.6deg) !important;
+      z-index: 940 !important;
+    }
+
+    body.battle-mode .hand-dock-v3 #playerHand .card:focus:not(:hover):not(.playing),
+    body.battle-mode .hand-dock-v3 #playerHand .card:focus-visible:not(:hover):not(.playing) {
+      transform: translateY(0) rotate(0) !important;
+      outline: 2px solid rgba(255, 224, 112, .74) !important;
+      outline-offset: 3px !important;
+    }
+
+    body.battle-mode .hand-dock-v3 #playerHand .card.selected:not(:hover):not(.playing) {
+      transform: translateY(0) scale(1) !important;
+      filter: brightness(1.1) saturate(1.12) !important;
+      border-color: rgba(255, 228, 124, .98) !important;
+      box-shadow:
+        0 14px 24px rgba(0, 0, 0, .46),
+        0 0 0 2px rgba(255, 219, 105, .38),
+        0 0 24px var(--elm-glow, rgba(255, 205, 92, .34)),
+        inset 0 0 0 1px rgba(255, 232, 148, .24) !important;
+      z-index: 935 !important;
+    }
+
+    body.battle-mode .card-preview-panel {
+      grid-template-rows: 30px 23px 16px 108px 22px 25px 25px !important;
+      gap: 5px !important;
+      padding-top: 8px !important;
+      padding-bottom: 7px !important;
+    }
+
+    body.battle-mode .preview-card-title {
+      min-height: 30px !important;
+      padding-bottom: 3px !important;
+    }
+
+    body.battle-mode .preview-card-meta {
+      min-height: 23px !important;
+      max-height: 23px !important;
+    }
+
+    body.battle-mode .preview-effectiveness-slot {
+      min-height: 16px !important;
+      max-height: 16px !important;
+    }
+
+    body.battle-mode .preview-art-row {
+      min-height: 108px !important;
+      max-height: 108px !important;
+    }
+
+    body.battle-mode .preview-art-box {
+      width: 100px !important;
+      height: 100px !important;
+      min-height: 100px !important;
+    }
+
+    body.battle-mode .preview-card-desc {
+      min-height: 108px !important;
+      max-height: 108px !important;
+      padding-top: 6px !important;
+      padding-bottom: 6px !important;
+    }
+
+    body.battle-mode .preview-card-keywords {
+      min-height: 22px !important;
+      max-height: 22px !important;
+    }
+
+    body.battle-mode .preview-card-power {
+      min-height: 25px !important;
+      max-height: 25px !important;
+      padding-top: 3px !important;
+      padding-bottom: 3px !important;
+    }
+
+    body.battle-mode .preview-detail-grid {
+      min-height: 25px !important;
+      max-height: 25px !important;
+    }
+
+    body.battle-mode .preview-detail-grid .pill {
+      min-height: 25px !important;
+      padding-top: 3px !important;
+      padding-bottom: 3px !important;
+    }
+
+    body.battle-mode .battle-hud .energy-row {
+      max-height: none !important;
+      overflow: visible !important;
+      margin-bottom: 6px !important;
+      position: relative !important;
+      z-index: 3 !important;
+    }
+
+    body.battle-mode .battle-hud .status-line {
+      margin-top: 8px !important;
+      position: relative !important;
+      z-index: 1 !important;
+    }
+
+    @media (max-width: 1400px) {
+      body.battle-mode .hand-dock-v3 #playerHand .card:hover {
+        transform: translateY(-36px) rotate(-.6deg) !important;
+      }
+
+      body.battle-mode .card-preview-panel {
+        grid-template-rows: 28px 22px 14px 100px 20px 24px 24px !important;
+        gap: 4px !important;
+        padding-top: 7px !important;
+        padding-bottom: 6px !important;
+      }
+
+      body.battle-mode .preview-card-title {
+        min-height: 28px !important;
+      }
+
+      body.battle-mode .preview-card-meta {
+        min-height: 22px !important;
+        max-height: 22px !important;
+      }
+
+      body.battle-mode .preview-effectiveness-slot {
+        min-height: 14px !important;
+        max-height: 14px !important;
+      }
+
+      body.battle-mode .preview-art-row {
+        min-height: 100px !important;
+        max-height: 100px !important;
+      }
+
+      body.battle-mode .preview-art-box {
+        width: 92px !important;
+        height: 92px !important;
+        min-height: 92px !important;
+      }
+
+      body.battle-mode .preview-card-desc {
+        min-height: 100px !important;
+        max-height: 100px !important;
+        padding-top: 6px !important;
+        padding-bottom: 6px !important;
+      }
+
+      body.battle-mode .preview-card-keywords {
+        min-height: 20px !important;
+        max-height: 20px !important;
+      }
+
+      body.battle-mode .preview-card-power,
+      body.battle-mode .preview-detail-grid,
+      body.battle-mode .preview-detail-grid .pill {
+        min-height: 24px !important;
+        max-height: 24px !important;
+      }
+    }
+
   body.home-mode .home-title-screen {
     position: fixed;
     inset: 0;
