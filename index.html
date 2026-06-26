@@ -6577,6 +6577,7 @@
         actor.hand.splice(index, 1);
         actor.discardPile.push(card);
         this.state.actionLocked = true;
+        setHandHoverSuppressed(true, 700);
         preloadCardVisualAssets(card, `play-card-${side}`);
         this.applyCard(actor, target, card);
         uiRenderer.render();
@@ -6661,6 +6662,7 @@
         if (side === "enemy") this.state.round += 1;
         this.state.turn = next;
         this.beginTurn(next);
+        setHandHoverSuppressed(true, 400);
         uiRenderer.render();
         if (next === "enemy") setTimeout(() => aiController.takeTurn(), 520);
       },
@@ -8978,6 +8980,7 @@
         }
         preloadCardVisualAssets(card, "ai-before-card");
         uiRenderer.showAiDialogue(card.skillTier === "special" ? "beforeSpecial" : card.skillTier === "advanced" ? "beforeAdvanced" : "beforeCard");
+        setHandHoverSuppressed(true, 700);
         setTimeout(() => {
           gameEngine.resolveAction({ type:"playCard", side:"enemy", cardInstanceId: card.instanceId });
           const pause = dramaTimingForCard(card).totalMin + 280;
@@ -9681,16 +9684,23 @@
       });
     };
 
-    function setHandHoverSuppressed(active) {
+    let __handHoverSuppressTimer = null;
+
+    function setHandHoverSuppressed(active, duration = 0) {
       document.body.classList.toggle("hand-hover-suppressed", active);
+      if (active && duration > 0) {
+        clearTimeout(__handHoverSuppressTimer);
+        __handHoverSuppressTimer = setTimeout(() => {
+          document.body.classList.remove("hand-hover-suppressed");
+        }, duration);
+      }
     }
 
     const originalRenderBattleLayoutV3 = uiRenderer.render;
     uiRenderer.render = function() {
-      setHandHoverSuppressed(true);
+      setHandHoverSuppressed(true, 350);
       originalRenderBattleLayoutV3.call(this);
       this.bindBattleCardPreview();
-      requestAnimationFrame(() => setHandHoverSuppressed(false));
     };
 
 
