@@ -10368,6 +10368,21 @@
       filter: drop-shadow(0 0 22px var(--elm-glow, transparent)) !important;
     }
 
+    /* Played card – enlarged art area with desc pushed down */
+    body.battle-mode .played-card-stage .card {
+      height: 356px !important;
+      min-height: 356px !important;
+      max-height: 356px !important;
+      grid-template-rows: 38px 24px 162px 78px !important;
+    }
+    body.battle-mode .played-card-stage .card-art {
+      height: 162px !important;
+      min-height: 162px !important;
+    }
+    body.battle-mode .played-card-stage .card-desc {
+      margin-top: 8px !important;
+    }
+
     body.battle-mode .hand-dock-v3 .card:hover,
     body.battle-mode .hand-dock-v3 .card:focus,
     body.battle-mode .hand-dock-v3 .card.selected {
@@ -13633,8 +13648,8 @@
 
     body.battle-mode .hand-dock-v3 .hand-row,
     body.battle-mode #playerHand {
-      height: 306px !important;
-      min-height: 306px !important;
+      height: 322px !important;
+      min-height: 322px !important;
       max-height: none !important;
       padding: 0 8px 6px !important;
       gap: 12px !important;
@@ -13651,22 +13666,23 @@
     body.battle-mode .hand-dock-v3 .card {
       width: 188px !important;
       flex: 0 0 188px !important;
-      height: 300px !important;
-      min-height: 300px !important;
-      max-height: 300px !important;
-      grid-template-rows: 36px 22px 122px 1fr auto !important;
+      height: 316px !important;
+      min-height: 316px !important;
+      max-height: 316px !important;
+      grid-template-rows: 36px 22px 136px 1fr auto !important;
       padding: 12px 12px 10px !important;
       z-index: 2 !important;
     }
 
     body.battle-mode .hand-dock-v3 .card-art {
-      height: 122px !important;
-      min-height: 122px !important;
+      height: 136px !important;
+      min-height: 136px !important;
     }
 
     body.battle-mode .hand-dock-v3 .card-desc {
       min-height: 62px !important;
       max-height: 62px !important;
+      margin-top: 8px !important;
     }
 
     body.battle-mode .hand-dock-v3 #playerHand .card:hover,
@@ -13735,15 +13751,19 @@
       body.battle-mode .hand-dock-v3 .card {
         width: 172px !important;
         flex-basis: 172px !important;
-        height: 286px !important;
-        min-height: 286px !important;
-        max-height: 286px !important;
-        grid-template-rows: 34px 21px 108px 1fr auto !important;
+        height: 298px !important;
+        min-height: 298px !important;
+        max-height: 298px !important;
+        grid-template-rows: 34px 21px 118px 1fr auto !important;
       }
 
       body.battle-mode .hand-dock-v3 .card-art {
-        height: 108px !important;
-        min-height: 108px !important;
+        height: 118px !important;
+        min-height: 118px !important;
+      }
+
+      body.battle-mode .hand-dock-v3 .card-desc {
+        margin-top: 6px !important;
       }
 
       body.battle-mode .card-preview-panel {
@@ -13787,8 +13807,8 @@
 
       body.battle-mode .hand-dock-v3 .hand-row,
       body.battle-mode #playerHand {
-        height: 286px !important;
-        min-height: 286px !important;
+        height: 298px !important;
+        min-height: 298px !important;
         max-height: none !important;
         gap: 8px !important;
         padding-left: 4px !important;
@@ -13798,21 +13818,22 @@
       body.battle-mode .hand-dock-v3 .card {
         width: 158px !important;
         flex-basis: 158px !important;
-        height: 264px !important;
-        min-height: 264px !important;
-        max-height: 264px !important;
-        grid-template-rows: 30px 20px 96px 1fr auto !important;
+        height: 274px !important;
+        min-height: 274px !important;
+        max-height: 274px !important;
+        grid-template-rows: 30px 20px 106px 1fr auto !important;
         padding: 10px 9px 8px !important;
       }
 
       body.battle-mode .hand-dock-v3 .card-art {
-        height: 96px !important;
-        min-height: 96px !important;
+        height: 106px !important;
+        min-height: 106px !important;
       }
 
       body.battle-mode .hand-dock-v3 .card-desc {
         min-height: 52px !important;
         max-height: 52px !important;
+        margin-top: 5px !important;
       }
 
       body.battle-mode .card-preview-panel {
@@ -13866,7 +13887,7 @@
     }
 
     body.battle-mode .card-preview-panel {
-      grid-template-rows: 30px 23px 16px 108px 22px 25px 25px !important;
+      grid-template-rows: 30px 23px 16px 120px 22px 25px 25px !important;
       gap: 5px !important;
       padding-top: 8px !important;
       padding-bottom: 7px !important;
@@ -13888,19 +13909,19 @@
     }
 
     body.battle-mode .preview-art-row {
-      min-height: 108px !important;
-      max-height: 108px !important;
+      min-height: 120px !important;
+      max-height: 120px !important;
     }
 
     body.battle-mode .preview-art-box {
-      width: 100px !important;
-      height: 100px !important;
-      min-height: 100px !important;
+      width: 112px !important;
+      height: 112px !important;
+      min-height: 112px !important;
     }
 
     body.battle-mode .preview-card-desc {
-      min-height: 108px !important;
-      max-height: 108px !important;
+      min-height: 120px !important;
+      max-height: 120px !important;
       padding-top: 6px !important;
       padding-bottom: 6px !important;
     }
