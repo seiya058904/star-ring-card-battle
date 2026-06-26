@@ -7739,7 +7739,7 @@
 
     function createSummonEntity(card, power, owner) {
       const summonPower = Math.max(1, Math.round(power * 0.28));
-      const maxHp = Math.max(1, Math.round(power * 0.45));
+      const maxHp = Math.max(1, Math.round(owner.maxHp * 0.5));
       return {
         id: deterministicId("summon"),
         name: `${card.name}召唤物`,
