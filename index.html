@@ -12079,6 +12079,932 @@
     }
 
   /* ── Home Title Screen: image + hotspot buttons ── */
+    /* =========================================================
+       Battle Reference UI Pass
+       Goal: move battle screen closer to the provided reference mockup.
+       Scope: layout, HUD, hand dock, card preview, log panel only.
+       ========================================================= */
+    body.battle-mode,
+    body.battle-mode #screen-battle {
+      width: 100vw !important;
+      height: 100vh !important;
+      min-height: 100vh !important;
+      overflow: hidden !important;
+      background: #050607 !important;
+    }
+
+    body.battle-mode .battle-layout-v3 {
+      height: 100vh !important;
+      min-height: 100vh !important;
+      max-height: 100vh !important;
+      overflow: hidden !important;
+      display: grid !important;
+      grid-template-rows: 56px minmax(0, 1fr) 326px !important;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.28), rgba(0,0,0,.02) 42%, rgba(0,0,0,.48)),
+        #050607 !important;
+    }
+
+    body.battle-mode .battle-top {
+      height: 56px !important;
+      min-height: 56px !important;
+      grid-template-columns: 280px minmax(360px, 1fr) 240px !important;
+      gap: 10px !important;
+      align-items: center !important;
+      padding: 5px 14px !important;
+      border-bottom: 1px solid rgba(218,166,72,.58) !important;
+      background: linear-gradient(180deg, rgba(8,11,12,.98), rgba(4,5,5,.94)) !important;
+      box-shadow: inset 0 -1px 0 rgba(255,225,132,.12), 0 8px 22px rgba(0,0,0,.36) !important;
+    }
+
+    body.battle-mode .battle-brand {
+      height: 42px !important;
+      min-width: 0 !important;
+      padding: 0 18px 0 8px !important;
+      border: 1px solid rgba(220,166,72,.26) !important;
+      border-right-color: transparent !important;
+      background: linear-gradient(90deg, rgba(12,17,18,.92), rgba(20,15,8,.28) 78%, transparent) !important;
+      clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 50%, calc(100% - 22px) 100%, 0 100%) !important;
+      overflow: hidden !important;
+    }
+
+    body.battle-mode .battle-brand span {
+      font-size: 20px !important;
+      line-height: 1 !important;
+      color: #ffe4a2 !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      text-shadow: 0 2px 6px #000, 0 0 12px rgba(234,178,77,.28) !important;
+    }
+
+    body.battle-mode .brand-mark {
+      width: 32px !important;
+      height: 32px !important;
+      min-width: 32px !important;
+      font-size: 18px !important;
+      border-radius: 3px !important;
+      background: linear-gradient(180deg, rgba(78,54,22,.96), rgba(11,11,9,.96)) !important;
+      border: 1px solid rgba(226,174,82,.46) !important;
+    }
+
+    body.battle-mode .battle-round {
+      justify-self: center !important;
+      width: min(520px, 100%) !important;
+      height: 44px !important;
+      min-height: 44px !important;
+      padding: 0 36px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 12px !important;
+      border: 1px solid rgba(222,169,76,.62) !important;
+      background:
+        linear-gradient(90deg, transparent 0 3%, rgba(8,12,13,.98) 3% 18%, rgba(57,37,16,.96) 50%, rgba(8,12,13,.98) 82%, transparent 97%) !important;
+      clip-path: polygon(26px 0, calc(100% - 26px) 0, 100% 50%, calc(100% - 26px) 100%, 26px 100%, 0 50%) !important;
+      box-shadow: inset 0 0 0 1px rgba(255,230,146,.08), 0 0 18px rgba(218,166,72,.14) !important;
+    }
+
+    body.battle-mode .battle-round span {
+      font-size: 13px !important;
+      color: rgba(255,228,166,.76) !important;
+      white-space: nowrap !important;
+    }
+
+    body.battle-mode .battle-round b {
+      font-size: 21px !important;
+      color: #ffd875 !important;
+      text-shadow: 0 2px 6px #000, 0 0 14px rgba(236,185,83,.32) !important;
+      white-space: nowrap !important;
+    }
+
+    body.battle-mode .battle-icon-actions {
+      justify-content: end !important;
+      gap: 10px !important;
+    }
+
+    body.battle-mode .battle-icon-btn {
+      width: 42px !important;
+      height: 42px !important;
+      min-width: 42px !important;
+      min-height: 42px !important;
+      padding: 0 !important;
+      display: grid !important;
+      place-items: center !important;
+      border-radius: 4px !important;
+      border: 1px solid rgba(222,169,76,.56) !important;
+      background: linear-gradient(180deg, rgba(54,38,18,.98), rgba(8,8,7,.98)) !important;
+      color: #ffe4a2 !important;
+      font-size: 19px !important;
+      line-height: 1 !important;
+      box-shadow: inset 0 0 0 1px rgba(255,230,150,.08), 0 0 16px rgba(218,166,72,.08) !important;
+    }
+
+    body.battle-mode .battle-stage-v3 {
+      grid-template-columns: minmax(0, 1fr) 320px !important;
+      grid-template-rows: minmax(0, 1fr) !important;
+      gap: 8px !important;
+      min-height: 0 !important;
+      padding: 6px 10px 4px !important;
+      overflow: hidden !important;
+      background: #070808 !important;
+    }
+
+    body.battle-mode .battlefield-v3 {
+      min-height: 0 !important;
+      height: 100% !important;
+      overflow: hidden !important;
+      border: 1px solid rgba(225,169,72,.5) !important;
+      border-radius: 0 !important;
+      background:
+        radial-gradient(circle at 50% 12%, rgba(255,210,110,.14), transparent 34%),
+        linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.06) 55%, rgba(0,0,0,.22)),
+        var(--battle-bg, url("assets/backgrounds/bg_plains_ruins.png")) center bottom / cover no-repeat !important;
+      box-shadow: inset 0 0 0 1px rgba(255,231,150,.06), inset 0 -36px 64px rgba(0,0,0,.22), 0 10px 28px rgba(0,0,0,.34) !important;
+    }
+
+    body.battle-mode .battlefield-v3::before {
+      opacity: .2 !important;
+      background: radial-gradient(circle at 50% 54%, transparent 0 54%, rgba(0,0,0,.28) 100%) !important;
+      pointer-events: none !important;
+    }
+
+    body.battle-mode .battlefield-v3::after {
+      opacity: .18 !important;
+      pointer-events: none !important;
+    }
+
+    body.battle-mode #effectsCanvas {
+      inset: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      pointer-events: none !important;
+      z-index: 22 !important;
+    }
+
+    body.battle-mode .battle-hud {
+      width: 288px !important;
+      max-width: 288px !important;
+      z-index: 34 !important;
+      pointer-events: auto !important;
+      filter: drop-shadow(0 12px 18px rgba(0,0,0,.45)) !important;
+    }
+
+    body.battle-mode .battle-hud-player {
+      left: 18px !important;
+      bottom: 18px !important;
+      top: auto !important;
+      right: auto !important;
+    }
+
+    body.battle-mode .battle-hud-enemy {
+      right: 18px !important;
+      top: 18px !important;
+      left: auto !important;
+      bottom: auto !important;
+      width: 300px !important;
+      max-width: 300px !important;
+    }
+
+    body.battle-mode .battle-hud .fighter-card {
+      min-height: 0 !important;
+      padding: 8px 10px 9px !important;
+      border-radius: 3px !important;
+      border: 1px solid rgba(226,171,75,.56) !important;
+      background: linear-gradient(180deg, rgba(9,39,38,.88), rgba(5,10,10,.94)) !important;
+      box-shadow: inset 0 0 0 1px rgba(255,232,160,.06), 0 10px 20px rgba(0,0,0,.35) !important;
+    }
+
+    body.battle-mode .battle-hud-enemy .fighter-card {
+      background: linear-gradient(180deg, rgba(52,23,17,.9), rgba(8,7,6,.96)) !important;
+    }
+
+    body.battle-mode .battle-hud .fighter-name {
+      font-size: 15px !important;
+      line-height: 1.12 !important;
+      color: #ffe7a6 !important;
+      gap: 8px !important;
+    }
+
+    body.battle-mode .battle-hud p {
+      margin-top: 4px !important;
+      font-size: 11px !important;
+      line-height: 1.25 !important;
+      color: rgba(238,218,170,.8) !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    body.battle-mode .battle-hud .mechanic-note {
+      max-height: 28px !important;
+      white-space: normal !important;
+      display: -webkit-box !important;
+      -webkit-line-clamp: 2 !important;
+      -webkit-box-orient: vertical !important;
+      overflow: hidden !important;
+    }
+
+    body.battle-mode .battle-hud .bar {
+      height: 14px !important;
+      margin-top: 6px !important;
+      border: 1px solid rgba(255,232,160,.22) !important;
+      background: rgba(0,0,0,.68) !important;
+    }
+
+    body.battle-mode .battle-hud .energy-row {
+      margin-top: 7px !important;
+      gap: 4px !important;
+      align-items: center !important;
+      max-height: 25px !important;
+      overflow: hidden !important;
+    }
+
+    body.battle-mode .battle-hud .energy-dot {
+      width: 13px !important;
+      height: 13px !important;
+      border-radius: 3px !important;
+      transform: rotate(45deg) !important;
+      border-color: rgba(113,205,255,.48) !important;
+      background: rgba(14,28,37,.9) !important;
+    }
+
+    body.battle-mode .battle-hud .energy-dot.full {
+      background: linear-gradient(135deg, #6ed4ff, #2f80d8) !important;
+      box-shadow: 0 0 8px rgba(91,193,255,.45) !important;
+    }
+
+    body.battle-mode .battle-hud .status-line {
+      margin-top: 7px !important;
+      min-height: 20px !important;
+      max-height: 42px !important;
+      overflow: hidden !important;
+      gap: 4px !important;
+    }
+
+    body.battle-mode .battle-hud .status,
+    body.battle-mode .enemy-resource-row {
+      font-size: 10px !important;
+      line-height: 1.2 !important;
+      padding: 2px 5px !important;
+    }
+
+    body.battle-mode .enemy-hand-in-hud {
+      margin-top: 6px !important;
+      padding-top: 5px !important;
+      border-top: 1px solid rgba(255,220,126,.18) !important;
+    }
+
+    body.battle-mode .opponent-card-row {
+      gap: 5px !important;
+      overflow: hidden !important;
+    }
+
+    body.battle-mode .card-back {
+      width: 24px !important;
+      height: 34px !important;
+      border-radius: 3px !important;
+    }
+
+    body.battle-mode .battlefield-v3 .duel-unit {
+      width: 220px !important;
+      z-index: 18 !important;
+      pointer-events: none !important;
+    }
+
+    body.battle-mode .battlefield-v3 .duel-unit.player-unit {
+      left: 14% !important;
+      bottom: 23% !important;
+      top: auto !important;
+      right: auto !important;
+    }
+
+    body.battle-mode .battlefield-v3 .duel-unit.enemy-unit {
+      right: 28% !important;
+      bottom: 26% !important;
+      top: auto !important;
+      left: auto !important;
+    }
+
+    body.battle-mode .battlefield-v3 .unit-sprite {
+      max-width: 220px !important;
+      max-height: 210px !important;
+      object-fit: contain !important;
+      filter: drop-shadow(0 16px 0 rgba(0,0,0,.25)) !important;
+    }
+
+    body.battle-mode .unit-overhead-hp {
+      top: -38px !important;
+      width: 220px !important;
+      padding: 4px 6px 6px !important;
+      z-index: 7 !important;
+      display: none !important;
+    }
+
+    body.battle-mode .unit-overhead-hp .hp-label {
+      font-size: 11px !important;
+    }
+
+    body.battle-mode .skill-banner {
+      top: 18px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: min(460px, 48vw) !important;
+      min-height: 38px !important;
+      padding: 7px 18px !important;
+      border: 1px solid rgba(234,178,77,.58) !important;
+      background: linear-gradient(90deg, transparent, rgba(54,35,14,.9) 16%, rgba(12,12,10,.94) 50%, rgba(54,35,14,.9) 84%, transparent) !important;
+      color: #ffe9aa !important;
+      font-size: 18px !important;
+      text-align: center !important;
+      text-shadow: 0 2px 7px #000 !important;
+      z-index: 40 !important;
+      pointer-events: none !important;
+    }
+
+    body.battle-mode .log-panel-v3 {
+      width: 320px !important;
+      min-width: 320px !important;
+      height: 100% !important;
+      min-height: 0 !important;
+      display: grid !important;
+      grid-template-rows: auto minmax(0, 1fr) !important;
+      overflow: hidden !important;
+      border-radius: 0 !important;
+      border: 1px solid rgba(222,169,76,.54) !important;
+      background: linear-gradient(180deg, rgba(8,13,14,.96), rgba(3,4,4,.98)) !important;
+      box-shadow: inset 0 0 0 1px rgba(255,226,142,.07), inset 0 0 42px rgba(0,0,0,.42) !important;
+    }
+
+    body.battle-mode .log-panel-v3 .tabs {
+      min-height: 50px !important;
+      padding: 10px 12px 8px !important;
+      border-bottom: 1px solid rgba(222,169,76,.28) !important;
+      gap: 8px !important;
+      flex-wrap: nowrap !important;
+    }
+
+    body.battle-mode .log-panel-v3 h3 {
+      margin: 0 !important;
+      color: #ffe4a2 !important;
+      font-size: 18px !important;
+      white-space: nowrap !important;
+      text-shadow: 0 2px 6px #000 !important;
+    }
+
+    body.battle-mode #toggleLogBtn {
+      min-height: 30px !important;
+      padding: 5px 10px !important;
+      font-size: 12px !important;
+      border-radius: 3px !important;
+    }
+
+    body.battle-mode .log-list {
+      min-height: 0 !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      padding: 10px 12px 14px !important;
+      gap: 0 !important;
+      scrollbar-width: thin !important;
+      scrollbar-color: rgba(218,159,58,.58) rgba(0,0,0,.22) !important;
+    }
+
+    body.battle-mode #battleLog > * {
+      position: relative !important;
+      margin: 0 !important;
+      padding: 9px 8px 9px 24px !important;
+      border-left: 0 !important;
+      border-bottom: 1px solid rgba(222,169,76,.16) !important;
+      background: linear-gradient(90deg, rgba(222,169,76,.08), rgba(0,0,0,0)) !important;
+      color: rgba(244,226,184,.9) !important;
+      line-height: 1.42 !important;
+      font-size: 12px !important;
+    }
+
+    body.battle-mode #battleLog > *::before {
+      content: "" !important;
+      position: absolute !important;
+      left: 8px !important;
+      top: 14px !important;
+      width: 8px !important;
+      height: 8px !important;
+      margin: 0 !important;
+      border-radius: 2px !important;
+      transform: rotate(45deg) !important;
+      background: #e8b75d !important;
+      box-shadow: 0 0 9px rgba(232,183,93,.42) !important;
+    }
+
+    body.battle-mode .hand-dock-v3 {
+      grid-template-columns: 210px minmax(0, 1fr) 360px !important;
+      height: 326px !important;
+      min-height: 326px !important;
+      margin-top: 0 !important;
+      padding: 8px 10px 10px !important;
+      gap: 10px !important;
+      overflow: visible !important;
+      position: relative !important;
+      z-index: 500 !important;
+      border-top: 1px solid rgba(222,169,76,.48) !important;
+      background:
+        radial-gradient(circle at 50% -22%, rgba(224,166,70,.15), transparent 36%),
+        linear-gradient(180deg, rgba(7,9,10,.98), rgba(2,3,3,.99)) !important;
+      box-shadow: inset 0 1px 0 rgba(255,230,150,.14), 0 -12px 26px rgba(0,0,0,.34) !important;
+    }
+
+    body.battle-mode .hand-command-strip {
+      display: grid !important;
+      grid-template-rows: 1fr auto !important;
+      align-content: center !important;
+      justify-items: center !important;
+      gap: 10px !important;
+      padding: 9px 8px !important;
+      border: 1px solid rgba(222,169,76,.36) !important;
+      background: linear-gradient(180deg, rgba(14,18,18,.58), rgba(3,4,4,.86)) !important;
+      overflow: hidden !important;
+    }
+
+    body.battle-mode #endTurnBtn,
+    body.battle-mode .hand-command-strip #endTurnBtn {
+      order: 1 !important;
+      width: 154px !important;
+      height: 154px !important;
+      min-width: 154px !important;
+      min-height: 154px !important;
+      padding: 0 !important;
+      border-radius: 50% !important;
+      display: grid !important;
+      place-items: center !important;
+      text-align: center !important;
+      color: #fff0b6 !important;
+      font-size: 22px !important;
+      line-height: 1.16 !important;
+      font-weight: 900 !important;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(91,64,27,.92), rgba(17,13,8,.98) 62%, rgba(5,5,4,1) 100%),
+        conic-gradient(from 45deg, rgba(226,171,75,.25), rgba(226,171,75,.8), rgba(226,171,75,.25)) !important;
+      border: 1px solid rgba(232,178,82,.68) !important;
+      box-shadow: inset 0 0 0 5px rgba(0,0,0,.42), inset 0 0 0 7px rgba(232,178,82,.17), 0 0 24px rgba(232,178,82,.13) !important;
+      text-shadow: 0 2px 8px #000, 0 0 13px rgba(255,200,86,.62) !important;
+    }
+
+    body.battle-mode .deck-counters {
+      order: 2 !important;
+      width: 100% !important;
+      justify-content: center !important;
+      align-self: start !important;
+      display: flex !important;
+    }
+
+    body.battle-mode .deck-counters .energy-badge {
+      width: 170px !important;
+      min-height: 34px !important;
+      display: grid !important;
+      place-items: center !important;
+      padding: 5px 9px !important;
+      border: 1px solid rgba(116,202,255,.48) !important;
+      background:
+        linear-gradient(135deg, rgba(69,181,255,.22) 0 18%, transparent 18% 32%, rgba(69,181,255,.18) 32% 50%, transparent 50%),
+        rgba(0,0,0,.56) !important;
+      color: #d8f3ff !important;
+      font-size: 18px !important;
+      font-weight: 900 !important;
+      text-shadow: 0 2px 5px #000 !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .hand-row {
+      height: 306px !important;
+      min-height: 306px !important;
+      padding: 18px 6px 8px !important;
+      gap: 14px !important;
+      align-items: end !important;
+      justify-content: center !important;
+      overflow-x: auto !important;
+      overflow-y: visible !important;
+      border: 1px solid rgba(222,169,76,.18) !important;
+      background: linear-gradient(180deg, rgba(10,12,13,.46), rgba(2,3,3,.2)) !important;
+      box-shadow: none !important;
+      scroll-padding: 20px !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card {
+      width: 180px !important;
+      flex: 0 0 180px !important;
+      height: 286px !important;
+      min-height: 286px !important;
+      max-height: 286px !important;
+      grid-template-rows: 34px 22px 118px 1fr auto !important;
+      gap: 5px !important;
+      padding: 12px 12px 9px !important;
+      overflow: hidden !important;
+      transform-origin: center bottom !important;
+      border-radius: 6px !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card:hover,
+    body.battle-mode .hand-dock-v3 .card:focus {
+      transform: translateY(-14px) rotate(-.5deg) !important;
+      z-index: 780 !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card.selected {
+      transform: translateY(-20px) !important;
+      z-index: 790 !important;
+      border-color: rgba(255,219,105,.94) !important;
+      box-shadow: 0 22px 34px rgba(0,0,0,.56), 0 0 0 2px rgba(255,219,105,.42), 0 0 28px rgba(255,204,83,.28), inset 0 0 0 1px rgba(255,232,148,.24) !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card-name {
+      font-size: 15px !important;
+      line-height: 1.12 !important;
+      min-width: 0 !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card-cost {
+      width: 46px !important;
+      height: 50px !important;
+      min-width: 46px !important;
+      left: -4px !important;
+      top: -5px !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card-meta {
+      min-height: 22px !important;
+      max-height: 22px !important;
+      gap: 4px !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card-meta .pill {
+      font-size: 10px !important;
+      line-height: 1.1 !important;
+      padding: 2px 5px !important;
+      white-space: nowrap !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card-art {
+      height: 116px !important;
+      min-height: 116px !important;
+      border: 1px solid rgba(232,178,82,.24) !important;
+      background-size: contain !important;
+      background-position: center !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card-desc {
+      min-height: 58px !important;
+      max-height: 58px !important;
+      padding: 6px 7px !important;
+      font-size: 11px !important;
+      line-height: 1.28 !important;
+      overflow: hidden !important;
+    }
+
+    body.battle-mode .hand-dock-v3 .card-power {
+      min-height: 24px !important;
+      max-height: 24px !important;
+      font-size: 12px !important;
+      line-height: 1.15 !important;
+      padding: 4px 6px !important;
+      overflow: hidden !important;
+    }
+
+    body.battle-mode .card-preview-panel {
+      width: 360px !important;
+      min-width: 360px !important;
+      height: 306px !important;
+      max-height: 306px !important;
+      min-height: 306px !important;
+      display: grid !important;
+      grid-template-rows: 32px 25px 18px 112px 24px 28px 28px !important;
+      gap: 6px !important;
+      padding: 12px 14px !important;
+      overflow: hidden !important;
+      border-radius: 0 !important;
+      border: 1px solid rgba(222,169,76,.54) !important;
+      background: linear-gradient(180deg, rgba(9,11,11,.97), rgba(3,4,4,.99)) !important;
+      box-shadow: inset 0 0 0 1px rgba(255,226,142,.07) !important;
+    }
+
+    body.battle-mode .preview-empty {
+      place-self: center !important;
+      text-align: center !important;
+      color: rgba(255,232,184,.72) !important;
+      line-height: 1.5 !important;
+    }
+
+    body.battle-mode .preview-card-title {
+      font-size: 17px !important;
+      line-height: 1.15 !important;
+      min-width: 0 !important;
+      overflow: hidden !important;
+      white-space: nowrap !important;
+      text-overflow: ellipsis !important;
+      color: #ffe8a9 !important;
+    }
+
+    body.battle-mode .preview-card-title > span:first-child {
+      min-width: 0 !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    body.battle-mode .preview-card-title > span:last-child {
+      flex: 0 0 auto !important;
+      font-size: 14px !important;
+      color: #d9f0ff !important;
+    }
+
+    body.battle-mode .preview-card-meta {
+      min-height: 25px !important;
+      max-height: 25px !important;
+      overflow: hidden !important;
+      gap: 5px !important;
+    }
+
+    body.battle-mode .preview-card-meta .pill,
+    body.battle-mode .preview-card-keywords .pill,
+    body.battle-mode .preview-detail-grid .pill {
+      font-size: 11px !important;
+      line-height: 1.12 !important;
+      white-space: nowrap !important;
+    }
+
+    body.battle-mode .preview-effectiveness-slot {
+      min-height: 18px !important;
+      max-height: 18px !important;
+    }
+
+    body.battle-mode .preview-art-row {
+      grid-template-columns: 112px minmax(0, 1fr) !important;
+      min-height: 112px !important;
+      max-height: 112px !important;
+      gap: 10px !important;
+      overflow: hidden !important;
+    }
+
+    body.battle-mode .preview-art-box {
+      width: 112px !important;
+      height: 112px !important;
+      min-height: 112px !important;
+      background-size: contain !important;
+      background-position: center !important;
+    }
+
+    body.battle-mode .preview-card-desc {
+      min-height: 112px !important;
+      max-height: 112px !important;
+      padding: 8px 9px !important;
+      font-size: 12px !important;
+      line-height: 1.38 !important;
+      overflow: hidden !important;
+    }
+
+    body.battle-mode .preview-card-keywords {
+      min-height: 24px !important;
+      max-height: 24px !important;
+      overflow: hidden !important;
+    }
+
+    body.battle-mode .preview-card-power {
+      min-height: 28px !important;
+      max-height: 28px !important;
+      padding: 5px 8px !important;
+      font-size: 12px !important;
+      line-height: 1.2 !important;
+      overflow: hidden !important;
+    }
+
+    body.battle-mode .preview-detail-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      gap: 6px !important;
+      min-height: 28px !important;
+      max-height: 28px !important;
+      overflow: hidden !important;
+    }
+
+    body.battle-mode .preview-detail-grid .pill {
+      min-height: 28px !important;
+      padding: 4px 6px !important;
+      justify-content: center !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    @media (max-width: 1600px) {
+      body.battle-mode .battle-layout-v3 {
+        grid-template-rows: 54px minmax(0, 1fr) 306px !important;
+      }
+
+      body.battle-mode .battle-top {
+        height: 54px !important;
+        min-height: 54px !important;
+        grid-template-columns: 250px minmax(330px, 1fr) 220px !important;
+      }
+
+      body.battle-mode .battle-stage-v3 {
+        grid-template-columns: minmax(0, 1fr) 300px !important;
+      }
+
+      body.battle-mode .log-panel-v3 {
+        width: 300px !important;
+        min-width: 300px !important;
+      }
+
+      body.battle-mode .hand-dock-v3 {
+        grid-template-columns: 190px minmax(0, 1fr) 340px !important;
+        height: 306px !important;
+        min-height: 306px !important;
+      }
+
+      body.battle-mode .hand-dock-v3 .hand-row,
+      body.battle-mode .card-preview-panel {
+        height: 286px !important;
+        min-height: 286px !important;
+        max-height: 286px !important;
+      }
+
+      body.battle-mode .hand-dock-v3 .card {
+        width: 162px !important;
+        flex-basis: 162px !important;
+        height: 266px !important;
+        min-height: 266px !important;
+        max-height: 266px !important;
+        grid-template-rows: 32px 21px 104px 1fr auto !important;
+      }
+
+      body.battle-mode .card-preview-panel {
+        width: 340px !important;
+        min-width: 340px !important;
+      }
+    }
+
+    @media (max-width: 1366px) {
+      body.battle-mode .battle-layout-v3 {
+        grid-template-rows: 50px minmax(0, 1fr) 288px !important;
+      }
+
+      body.battle-mode .battle-top {
+        height: 50px !important;
+        min-height: 50px !important;
+        grid-template-columns: 210px minmax(280px, 1fr) 188px !important;
+        padding: 4px 9px !important;
+      }
+
+      body.battle-mode .battle-brand span {
+        font-size: 17px !important;
+      }
+
+      body.battle-mode .battle-round {
+        height: 40px !important;
+        padding: 0 28px !important;
+      }
+
+      body.battle-mode .battle-round b {
+        font-size: 18px !important;
+      }
+
+      body.battle-mode .battle-icon-btn {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        min-height: 38px !important;
+      }
+
+      body.battle-mode .battle-stage-v3 {
+        grid-template-columns: minmax(0, 1fr) 286px !important;
+        padding: 5px 7px 3px !important;
+      }
+
+      body.battle-mode .log-panel-v3 {
+        width: 286px !important;
+        min-width: 286px !important;
+      }
+
+      body.battle-mode .battle-hud {
+        width: 252px !important;
+        max-width: 252px !important;
+      }
+
+      body.battle-mode .battle-hud-enemy {
+        width: 268px !important;
+        max-width: 268px !important;
+      }
+
+      body.battle-mode .battlefield-v3 .duel-unit {
+        width: 190px !important;
+      }
+
+      body.battle-mode .battlefield-v3 .unit-sprite {
+        max-width: 190px !important;
+        max-height: 178px !important;
+      }
+
+      body.battle-mode .hand-dock-v3 {
+        grid-template-columns: 174px minmax(0, 1fr) 320px !important;
+        height: 288px !important;
+        min-height: 288px !important;
+        padding: 7px !important;
+        gap: 8px !important;
+      }
+
+      body.battle-mode .hand-command-strip #endTurnBtn {
+        width: 132px !important;
+        height: 132px !important;
+        min-width: 132px !important;
+        min-height: 132px !important;
+        font-size: 19px !important;
+      }
+
+      body.battle-mode .deck-counters .energy-badge {
+        width: 142px !important;
+        font-size: 15px !important;
+      }
+
+      body.battle-mode .hand-dock-v3 .hand-row,
+      body.battle-mode .card-preview-panel {
+        height: 274px !important;
+        min-height: 274px !important;
+        max-height: 274px !important;
+      }
+
+      body.battle-mode .hand-dock-v3 .card {
+        width: 148px !important;
+        flex-basis: 148px !important;
+        height: 252px !important;
+        min-height: 252px !important;
+        max-height: 252px !important;
+        grid-template-rows: 30px 20px 92px 1fr auto !important;
+        padding: 10px 9px 8px !important;
+      }
+
+      body.battle-mode .hand-dock-v3 .card-art {
+        height: 92px !important;
+        min-height: 92px !important;
+      }
+
+      body.battle-mode .hand-dock-v3 .card-desc {
+        min-height: 50px !important;
+        max-height: 50px !important;
+        font-size: 10px !important;
+      }
+
+      body.battle-mode .card-preview-panel {
+        width: 320px !important;
+        min-width: 320px !important;
+        grid-template-rows: 28px 23px 16px 96px 22px 26px 26px !important;
+        padding: 10px !important;
+      }
+
+      body.battle-mode .preview-art-row {
+        grid-template-columns: 96px minmax(0, 1fr) !important;
+        min-height: 96px !important;
+        max-height: 96px !important;
+      }
+
+      body.battle-mode .preview-art-box,
+      body.battle-mode .preview-card-desc {
+        width: 96px !important;
+        height: 96px !important;
+        min-height: 96px !important;
+        max-height: 96px !important;
+      }
+
+      body.battle-mode .preview-card-desc {
+        width: auto !important;
+        font-size: 11px !important;
+      }
+    }
+
+    @media (max-width: 980px) {
+      body.battle-mode .battle-top {
+        grid-template-columns: 44px minmax(220px, 1fr) 150px !important;
+      }
+
+      body.battle-mode .battle-brand span {
+        display: none !important;
+      }
+
+      body.battle-mode .battle-stage-v3 {
+        grid-template-columns: minmax(0, 1fr) 250px !important;
+      }
+
+      body.battle-mode .log-panel-v3 {
+        width: 250px !important;
+        min-width: 250px !important;
+      }
+
+      body.battle-mode .hand-dock-v3 {
+        grid-template-columns: 132px minmax(0, 1fr) 270px !important;
+      }
+
+      body.battle-mode .card-preview-panel {
+        width: 270px !important;
+        min-width: 270px !important;
+      }
+    }
+
   body.home-mode .home-title-screen {
     position: fixed;
     inset: 0;
