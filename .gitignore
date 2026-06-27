@@ -14,3 +14,10 @@ _temp_*.js
 recovered/
 tmp/
 .claude/settings.local.json
+android/.gradle/
+android/**/build/
+android/local.properties
+*.apk
+*.aab
+*.keystore
+*.jks

@@ -1,0 +1,310 @@
+{
+  "source": "assets/ui/battle-ui-atlas.png",
+  "sourceSize": {
+    "w": 1448,
+    "h": 1086
+  },
+  "outputDir": "assets/ui/sprites",
+  "sprites": {
+    "topTitlePlate": {
+      "file": "assets/ui/sprites/topTitlePlate.png",
+      "x": 17,
+      "y": 18,
+      "w": 464,
+      "h": 58,
+      "use": "top-left title plate"
+    },
+    "turnPlate": {
+      "file": "assets/ui/sprites/turnPlate.png",
+      "x": 532,
+      "y": 19,
+      "w": 304,
+      "h": 58,
+      "use": "top-center turn plate"
+    },
+    "topButtonBook": {
+      "file": "assets/ui/sprites/topButtonBook.png",
+      "x": 909,
+      "y": 20,
+      "w": 69,
+      "h": 58,
+      "use": "codex button frame",
+      "replacedFrom": "LS20260622023505.png"
+    },
+    "topButtonGear": {
+      "file": "assets/ui/sprites/topButtonGear.png",
+      "x": 981,
+      "y": 20,
+      "w": 66,
+      "h": 52,
+      "use": "settings button frame"
+    },
+    "topButtonMenu": {
+      "file": "assets/ui/sprites/topButtonMenu.png",
+      "x": 1055,
+      "y": 20,
+      "w": 66,
+      "h": 52,
+      "use": "menu button frame"
+    },
+    "endTurnCircle": {
+      "file": "assets/ui/sprites/endTurnCircle.png",
+      "x": 24,
+      "y": 386,
+      "w": 199,
+      "h": 192,
+      "use": "end-turn round button base",
+      "replacedFrom": "LS20260622023221.png"
+    },
+    "cardFrameBasic": {
+      "file": "assets/ui/sprites/cardFrameBasic.png",
+      "x": 255,
+      "y": 591,
+      "w": 116,
+      "h": 155,
+      "use": "basic card frame",
+      "replacedFrom": "LS20260622023553.png"
+    },
+    "cardFrameNormal": {
+      "file": "assets/ui/sprites/cardFrameNormal.png",
+      "x": 390,
+      "y": 590,
+      "w": 121,
+      "h": 151,
+      "use": "normal skill card frame"
+    },
+    "cardFrameAdvanced": {
+      "file": "assets/ui/sprites/cardFrameAdvanced.png",
+      "x": 533,
+      "y": 590,
+      "w": 126,
+      "h": 151,
+      "use": "advanced skill card frame"
+    },
+    "cardFrameSpecial": {
+      "file": "assets/ui/sprites/cardFrameSpecial.png",
+      "x": 688,
+      "y": 590,
+      "w": 126,
+      "h": 151,
+      "use": "special skill card frame"
+    },
+    "cost1": {
+      "file": "assets/ui/sprites/cost1.png",
+      "x": 27,
+      "y": 814,
+      "w": 57,
+      "h": 56,
+      "use": "cost badge 1",
+      "replacedFrom": "LS20260622022957.png"
+    },
+    "cost2": {
+      "file": "assets/ui/sprites/cost2.png",
+      "x": 109,
+      "y": 813,
+      "w": 58,
+      "h": 57,
+      "use": "cost badge 2",
+      "replacedFrom": "LS20260622023000.png"
+    },
+    "cost3": {
+      "file": "assets/ui/sprites/cost3.png",
+      "x": 191,
+      "y": 813,
+      "w": 57,
+      "h": 56,
+      "use": "cost badge 3",
+      "replacedFrom": "LS20260622023018.png"
+    },
+    "cost4": {
+      "file": "assets/ui/sprites/cost4.png",
+      "x": 273,
+      "y": 813,
+      "w": 56,
+      "h": 56,
+      "use": "cost badge 4",
+      "replacedFrom": "LS20260622023021.png"
+    },
+    "cost5": {
+      "file": "assets/ui/sprites/cost5.png",
+      "x": 356,
+      "y": 813,
+      "w": 58,
+      "h": 56,
+      "use": "cost badge 5",
+      "replacedFrom": "LS20260622023037.png"
+    },
+    "cost6": {
+      "file": "assets/ui/sprites/cost6.png",
+      "x": 438,
+      "y": 813,
+      "w": 57,
+      "h": 56,
+      "use": "cost badge 6",
+      "replacedFrom": "LS20260622023039.png"
+    },
+    "cost7": {
+      "file": "assets/ui/sprites/cost7.png",
+      "x": 521,
+      "y": 813,
+      "w": 57,
+      "h": 56,
+      "use": "cost badge 7",
+      "replacedFrom": "LS20260622023057.png"
+    },
+    "cost8": {
+      "file": "assets/ui/sprites/cost8.png",
+      "x": 602,
+      "y": 813,
+      "w": 57,
+      "h": 56,
+      "use": "cost badge 8",
+      "replacedFrom": "LS20260622023059.png"
+    },
+    "cost9": {
+      "file": "assets/ui/sprites/cost9.png",
+      "x": 685,
+      "y": 813,
+      "w": 57,
+      "h": 56,
+      "use": "cost badge 9",
+      "replacedFrom": "LS20260622023111.png"
+    },
+    "cost10": {
+      "file": "assets/ui/sprites/cost10.png",
+      "x": 766,
+      "y": 813,
+      "w": 58,
+      "h": 57,
+      "use": "cost badge 10",
+      "replacedFrom": "LS20260622023113.png"
+    },
+    "artFire": {
+      "file": "assets/ui/sprites/artFire.png",
+      "x": 19,
+      "y": 883,
+      "w": 129,
+      "h": 88,
+      "use": "fire card art"
+    },
+    "artIce": {
+      "file": "assets/ui/sprites/artIce.png",
+      "x": 166,
+      "y": 883,
+      "w": 129,
+      "h": 88,
+      "use": "ice card art"
+    },
+    "artWind": {
+      "file": "assets/ui/sprites/artWind.png",
+      "x": 313,
+      "y": 883,
+      "w": 129,
+      "h": 88,
+      "use": "wind card art"
+    },
+    "artEarth": {
+      "file": "assets/ui/sprites/artEarth.png",
+      "x": 458,
+      "y": 883,
+      "w": 129,
+      "h": 88,
+      "use": "earth card art"
+    },
+    "artThunder": {
+      "file": "assets/ui/sprites/artThunder.png",
+      "x": 607,
+      "y": 883,
+      "w": 129,
+      "h": 88,
+      "use": "thunder card art"
+    },
+    "artLight": {
+      "file": "assets/ui/sprites/artLight.png",
+      "x": 19,
+      "y": 984,
+      "w": 129,
+      "h": 88,
+      "use": "light card art"
+    },
+    "artDark": {
+      "file": "assets/ui/sprites/artDark.png",
+      "x": 166,
+      "y": 984,
+      "w": 129,
+      "h": 88,
+      "use": "dark card art"
+    },
+    "artArcane": {
+      "file": "assets/ui/sprites/artArcane.png",
+      "x": 313,
+      "y": 984,
+      "w": 129,
+      "h": 88,
+      "use": "neutral/arcane card art"
+    },
+    "statusBurn": {
+      "file": "assets/ui/sprites/statusBurn.png",
+      "x": 765,
+      "y": 978,
+      "w": 83,
+      "h": 83,
+      "use": "burn status icon",
+      "replacedFrom": "LS20260622023325.png"
+    },
+    "statusFreeze": {
+      "file": "assets/ui/sprites/statusFreeze.png",
+      "x": 861,
+      "y": 978,
+      "w": 83,
+      "h": 83,
+      "use": "freeze status icon",
+      "replacedFrom": "LS20260622023329.png"
+    },
+    "statusCurse": {
+      "file": "assets/ui/sprites/statusCurse.png",
+      "x": 956,
+      "y": 978,
+      "w": 82,
+      "h": 83,
+      "use": "curse status icon",
+      "replacedFrom": "LS20260622023334.png"
+    },
+    "statusShield": {
+      "file": "assets/ui/sprites/statusShield.png",
+      "x": 1051,
+      "y": 978,
+      "w": 83,
+      "h": 83,
+      "use": "shield status icon",
+      "replacedFrom": "LS20260622023350.png"
+    },
+    "statusLight": {
+      "file": "assets/ui/sprites/statusLight.png",
+      "x": 1148,
+      "y": 978,
+      "w": 82,
+      "h": 83,
+      "use": "light/buff status icon",
+      "replacedFrom": "LS20260622023416.png"
+    },
+    "statusHeal": {
+      "file": "assets/ui/sprites/statusHeal.png",
+      "x": 1241,
+      "y": 978,
+      "w": 83,
+      "h": 83,
+      "use": "heal status icon",
+      "replacedFrom": "LS20260622023440.png"
+    },
+    "speechBubble": {
+      "file": "assets/ui/sprites/speechBubble.png",
+      "x": 508,
+      "y": 990,
+      "w": 206,
+      "h": 99,
+      "use": "dialog speech bubble",
+      "replacedFrom": "LS20260622023522.png"
+    }
+  }
+}

@@ -1,0 +1,483 @@
+{
+  "version": "card_art_v2",
+  "sourceDir": "assets/3",
+  "outputDir": "assets/ui/card_art_v2",
+  "cellGrid": {
+    "columns": 4,
+    "rows": 3
+  },
+  "recommendedSize": "130x170",
+  "safeZone": "center 130x118",
+  "assets": [
+    {
+      "filename": "cardart_fire_burn_basic.png",
+      "group": "offense",
+      "sourceSheet": "元素攻击  输出类总表图.png",
+      "row": 1,
+      "col": 1,
+      "semantic": "火焰燃烧基础攻击",
+      "intendedCards": [
+        "普通攻击",
+        "大火球",
+        "纵火",
+        "真火吞",
+        "炎天噬地"
+      ]
+    },
+    {
+      "filename": "cardart_fire_meteor.png",
+      "group": "offense",
+      "sourceSheet": "元素攻击  输出类总表图.png",
+      "row": 1,
+      "col": 2,
+      "semantic": "火焰陨石攻击",
+      "intendedCards": [
+        "陨石术",
+        "流星火雨",
+        "火焰爆破"
+      ]
+    },
+    {
+      "filename": "cardart_fire_lava_eruption.png",
+      "group": "offense",
+      "sourceSheet": "元素攻击  输出类总表图.png",
+      "row": 1,
+      "col": 3,
+      "semantic": "熔岩爆发攻击",
+      "intendedCards": [
+        "熔岩喷发",
+        "地心烈焰",
+        "炎狱爆裂"
+      ]
+    },
+    {
+      "filename": "cardart_ice_freeze_control.png",
+      "group": "offense",
+      "sourceSheet": "元素攻击  输出类总表图.png",
+      "row": 1,
+      "col": 4,
+      "semantic": "冰冻控制",
+      "intendedCards": [
+        "冰冻术",
+        "寒冰禁锢",
+        "冻结控制"
+      ]
+    },
+    {
+      "filename": "cardart_ice_blade_storm.png",
+      "group": "offense",
+      "sourceSheet": "元素攻击  输出类总表图.png",
+      "row": 2,
+      "col": 1,
+      "semantic": "冰刃风暴",
+      "intendedCards": [
+        "冰刃风暴",
+        "寒霜切割",
+        "冰雪连击"
+      ]
+    },
+    {
+      "filename": "cardart_ice_prison.png",
+      "group": "offense",
+      "sourceSheet": "元素攻击  输出类总表图.png",
+      "row": 2,
+      "col": 2,
+      "semantic": "冰牢禁锢",
+      "intendedCards": [
+        "冰牢",
+        "寒冰囚笼",
+        "冰封禁制"
+      ]
+    },
+    {
+      "filename": "cardart_thunder_burst_chain.png",
+      "group": "offense",
+      "sourceSheet": "元素攻击  输出类总表图.png",
+      "row": 2,
+      "col": 3,
+      "semantic": "雷电连锁爆发",
+      "intendedCards": [
+        "连锁闪电",
+        "雷暴链",
+        "电弧爆发"
+      ]
+    },
+    {
+      "filename": "cardart_thunder_spear.png",
+      "group": "offense",
+      "sourceSheet": "元素攻击  输出类总表图.png",
+      "row": 2,
+      "col": 4,
+      "semantic": "雷霆长矛",
+      "intendedCards": [
+        "雷矛",
+        "雷霆投枪",
+        "闪电穿刺"
+      ]
+    },
+    {
+      "filename": "cardart_thunder_storm_field.png",
+      "group": "offense",
+      "sourceSheet": "元素攻击  输出类总表图.png",
+      "row": 3,
+      "col": 1,
+      "semantic": "雷暴领域",
+      "intendedCards": [
+        "雷暴领域",
+        "风暴召来",
+        "雷云压制"
+      ]
+    },
+    {
+      "filename": "cardart_wind_slash.png",
+      "group": "offense",
+      "sourceSheet": "元素攻击  输出类总表图.png",
+      "row": 3,
+      "col": 2,
+      "semantic": "风刃斩击",
+      "intendedCards": [
+        "风刃",
+        "疾风斩",
+        "裂风切"
+      ]
+    },
+    {
+      "filename": "cardart_wind_spiral_control.png",
+      "group": "offense",
+      "sourceSheet": "元素攻击  输出类总表图.png",
+      "row": 3,
+      "col": 3,
+      "semantic": "旋风控制",
+      "intendedCards": [
+        "旋风术",
+        "风涡控制",
+        "气流束缚"
+      ]
+    },
+    {
+      "filename": "cardart_earth_crush.png",
+      "group": "offense",
+      "sourceSheet": "元素攻击  输出类总表图.png",
+      "row": 3,
+      "col": 4,
+      "semantic": "大地粉碎",
+      "intendedCards": [
+        "岩石粉碎",
+        "大地重击",
+        "裂地冲击"
+      ]
+    },
+    {
+      "filename": "cardart_light_holy_strike.png",
+      "group": "support",
+      "sourceSheet": "治疗  防御  控制  战术类总表图.png",
+      "row": 1,
+      "col": 1,
+      "semantic": "光明圣击",
+      "intendedCards": [
+        "圣光打击",
+        "神圣冲击",
+        "光属性攻击"
+      ]
+    },
+    {
+      "filename": "cardart_light_judgement.png",
+      "group": "support",
+      "sourceSheet": "治疗  防御  控制  战术类总表图.png",
+      "row": 1,
+      "col": 2,
+      "semantic": "光明审判",
+      "intendedCards": [
+        "审判",
+        "天罚",
+        "神圣裁决"
+      ]
+    },
+    {
+      "filename": "cardart_heal_restoration.png",
+      "group": "support",
+      "sourceSheet": "治疗  防御  控制  战术类总表图.png",
+      "row": 1,
+      "col": 3,
+      "semantic": "治疗恢复",
+      "intendedCards": [
+        "治疗术",
+        "恢复",
+        "治愈之光"
+      ]
+    },
+    {
+      "filename": "cardart_purify_cleanse.png",
+      "group": "support",
+      "sourceSheet": "治疗  防御  控制  战术类总表图.png",
+      "row": 1,
+      "col": 4,
+      "semantic": "净化驱散",
+      "intendedCards": [
+        "净化",
+        "驱散",
+        "清除负面状态"
+      ]
+    },
+    {
+      "filename": "cardart_light_revival.png",
+      "group": "support",
+      "sourceSheet": "治疗  防御  控制  战术类总表图.png",
+      "row": 2,
+      "col": 1,
+      "semantic": "光明复苏",
+      "intendedCards": [
+        "复活",
+        "复苏",
+        "生命回归"
+      ]
+    },
+    {
+      "filename": "cardart_shield_protection.png",
+      "group": "support",
+      "sourceSheet": "治疗  防御  控制  战术类总表图.png",
+      "row": 2,
+      "col": 2,
+      "semantic": "护盾防御",
+      "intendedCards": [
+        "护盾",
+        "防御姿态",
+        "保护屏障"
+      ]
+    },
+    {
+      "filename": "cardart_earth_fortress_guard.png",
+      "group": "support",
+      "sourceSheet": "治疗  防御  控制  战术类总表图.png",
+      "row": 2,
+      "col": 3,
+      "semantic": "大地堡垒守护",
+      "intendedCards": [
+        "岩盾",
+        "堡垒守卫",
+        "大地庇护"
+      ]
+    },
+    {
+      "filename": "cardart_charge_buff_empower.png",
+      "group": "support",
+      "sourceSheet": "治疗  防御  控制  战术类总表图.png",
+      "row": 2,
+      "col": 4,
+      "semantic": "蓄力强化",
+      "intendedCards": [
+        "蓄力",
+        "强化",
+        "鼓舞增幅"
+      ]
+    },
+    {
+      "filename": "cardart_tactical_draw.png",
+      "group": "support",
+      "sourceSheet": "治疗  防御  控制  战术类总表图.png",
+      "row": 3,
+      "col": 1,
+      "semantic": "战术抽牌",
+      "intendedCards": [
+        "战术抽牌",
+        "补给",
+        "计划调整"
+      ]
+    },
+    {
+      "filename": "cardart_tactical_command.png",
+      "group": "support",
+      "sourceSheet": "治疗  防御  控制  战术类总表图.png",
+      "row": 3,
+      "col": 2,
+      "semantic": "战术指挥",
+      "intendedCards": [
+        "战术指挥",
+        "团队号令",
+        "策略调度"
+      ]
+    },
+    {
+      "filename": "cardart_dark_curse_control.png",
+      "group": "support",
+      "sourceSheet": "治疗  防御  控制  战术类总表图.png",
+      "row": 3,
+      "col": 3,
+      "semantic": "黑暗诅咒控制",
+      "intendedCards": [
+        "诅咒",
+        "束缚",
+        "黑暗控制"
+      ]
+    },
+    {
+      "filename": "cardart_dark_lifesteal_drain.png",
+      "group": "support",
+      "sourceSheet": "治疗  防御  控制  战术类总表图.png",
+      "row": 3,
+      "col": 4,
+      "semantic": "黑暗吸血汲取",
+      "intendedCards": [
+        "吸血",
+        "生命汲取",
+        "暗影恢复"
+      ]
+    },
+    {
+      "filename": "cardart_summon_guardian.png",
+      "group": "special",
+      "sourceSheet": "召唤  斩杀  破甲  高价值特殊类总表图.png",
+      "row": 1,
+      "col": 1,
+      "semantic": "守护者召唤",
+      "intendedCards": [
+        "召唤守护者",
+        "守卫召来",
+        "护卫随从"
+      ]
+    },
+    {
+      "filename": "cardart_holy_guard_summon.png",
+      "group": "special",
+      "sourceSheet": "召唤  斩杀  破甲  高价值特殊类总表图.png",
+      "row": 1,
+      "col": 2,
+      "semantic": "神圣守卫召唤",
+      "intendedCards": [
+        "圣盾守卫",
+        "神圣守护",
+        "光明召唤"
+      ]
+    },
+    {
+      "filename": "cardart_wind_hunter_summon.png",
+      "group": "special",
+      "sourceSheet": "召唤  斩杀  破甲  高价值特殊类总表图.png",
+      "row": 1,
+      "col": 3,
+      "semantic": "风猎手召唤",
+      "intendedCards": [
+        "风之猎手",
+        "疾风援军",
+        "风灵召唤"
+      ]
+    },
+    {
+      "filename": "cardart_summon_fire_lord.png",
+      "group": "special",
+      "sourceSheet": "召唤  斩杀  破甲  高价值特殊类总表图.png",
+      "row": 1,
+      "col": 4,
+      "semantic": "火焰领主召唤",
+      "intendedCards": [
+        "火焰领主",
+        "炎魔召唤",
+        "火灵支援"
+      ]
+    },
+    {
+      "filename": "cardart_summon_dark_lord.png",
+      "group": "special",
+      "sourceSheet": "召唤  斩杀  破甲  高价值特殊类总表图.png",
+      "row": 2,
+      "col": 1,
+      "semantic": "黑暗领主召唤",
+      "intendedCards": [
+        "黑暗领主",
+        "暗影召唤",
+        "黑暗援军"
+      ]
+    },
+    {
+      "filename": "cardart_pierce_break_armor.png",
+      "group": "special",
+      "sourceSheet": "召唤  斩杀  破甲  高价值特殊类总表图.png",
+      "row": 2,
+      "col": 2,
+      "semantic": "穿刺破甲",
+      "intendedCards": [
+        "破甲",
+        "穿刺",
+        "护甲削弱"
+      ]
+    },
+    {
+      "filename": "cardart_execute_death_slash.png",
+      "group": "special",
+      "sourceSheet": "召唤  斩杀  破甲  高价值特殊类总表图.png",
+      "row": 2,
+      "col": 3,
+      "semantic": "死亡斩杀",
+      "intendedCards": [
+        "斩杀",
+        "死亡斩击",
+        "终结技"
+      ]
+    },
+    {
+      "filename": "cardart_curse_execute_hybrid.png",
+      "group": "special",
+      "sourceSheet": "召唤  斩杀  破甲  高价值特殊类总表图.png",
+      "row": 2,
+      "col": 4,
+      "semantic": "诅咒斩杀混合",
+      "intendedCards": [
+        "诅咒斩杀",
+        "暗影处决",
+        "混合终结"
+      ]
+    },
+    {
+      "filename": "cardart_dark_shadow_tentacle.png",
+      "group": "special",
+      "sourceSheet": "召唤  斩杀  破甲  高价值特殊类总表图.png",
+      "row": 3,
+      "col": 1,
+      "semantic": "暗影触手",
+      "intendedCards": [
+        "暗影触手",
+        "黑暗缠绕",
+        "深渊束缚"
+      ]
+    },
+    {
+      "filename": "cardart_dark_death_orb.png",
+      "group": "special",
+      "sourceSheet": "召唤  斩杀  破甲  高价值特殊类总表图.png",
+      "row": 3,
+      "col": 2,
+      "semantic": "黑暗死亡法球",
+      "intendedCards": [
+        "死亡法球",
+        "暗黑能量",
+        "毁灭之球"
+      ]
+    },
+    {
+      "filename": "cardart_arcane_magic_circle.png",
+      "group": "special",
+      "sourceSheet": "召唤  斩杀  破甲  高价值特殊类总表图.png",
+      "row": 3,
+      "col": 3,
+      "semantic": "奥术魔法阵",
+      "intendedCards": [
+        "魔法阵",
+        "奥术仪式",
+        "能量聚焦"
+      ]
+    },
+    {
+      "filename": "cardart_dual_light_heal_purify.png",
+      "group": "special",
+      "sourceSheet": "召唤  斩杀  破甲  高价值特殊类总表图.png",
+      "row": 3,
+      "col": 4,
+      "semantic": "光明治疗净化双效",
+      "intendedCards": [
+        "治疗净化",
+        "圣光恢复",
+        "双效支援"
+      ]
+    }
+  ]
+}
