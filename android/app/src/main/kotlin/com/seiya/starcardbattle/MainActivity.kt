@@ -93,6 +93,10 @@ class MainActivity : Activity() {
         with(webSettings) {
             javaScriptEnabled = true
             domStorageEnabled = true
+            databaseEnabled = true
+            useWideViewPort = true
+            loadWithOverviewMode = true
+            textZoom = 100
             mediaPlaybackRequiresUserGesture = false
             builtInZoomControls = false
             displayZoomControls = false

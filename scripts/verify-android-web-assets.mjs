@@ -19,6 +19,31 @@ const androidWebRoot = path.join(
 );
 const androidIndex = path.join(androidWebRoot, "index.html");
 const androidAssets = path.join(androidWebRoot, "assets");
+const mainActivity = path.join(
+  repositoryRoot,
+  "android",
+  "app",
+  "src",
+  "main",
+  "kotlin",
+  "com",
+  "seiya",
+  "starcardbattle",
+  "MainActivity.kt",
+);
+
+const androidViewport =
+  '<meta name="viewport" content="width=1920, user-scalable=no">';
+const viewportPattern = /<meta name="viewport"[^>]*>/;
+const requiredWebViewSettings = [
+  "databaseEnabled = true",
+  "useWideViewPort = true",
+  "loadWithOverviewMode = true",
+  "textZoom = 100",
+  "builtInZoomControls = false",
+  "displayZoomControls = false",
+  "mediaPlaybackRequiresUserGesture = false",
+];
 
 const failures = [];
 
@@ -63,15 +88,31 @@ requirePath(sourceIndex, "根目录 index.html");
 requirePath(sourceAssets, "根目录 assets/");
 requirePath(androidIndex, "Android 版 index.html");
 requirePath(androidAssets, "Android 版 assets/");
+requirePath(mainActivity, "Android MainActivity.kt");
 
 if (failures.length === 0) {
-  const [sourceHtml, androidHtml] = await Promise.all([
+  const [sourceHtml, androidHtml, mainActivitySource] = await Promise.all([
     readFile(sourceIndex, "utf8"),
     readFile(androidIndex, "utf8"),
+    readFile(mainActivity, "utf8"),
   ]);
 
-  if ((await sha256(sourceIndex)) !== (await sha256(androidIndex))) {
-    failures.push("Android 版 index.html 与根目录 index.html 内容不一致");
+  if (!androidHtml.includes(androidViewport)) {
+    failures.push("Android 版 index.html 未使用 1920px 桌面横屏 viewport");
+  }
+
+  const normalizedAndroidHtml = androidHtml.replace(
+    viewportPattern,
+    sourceHtml.match(viewportPattern)?.[0] ?? "",
+  );
+  if (normalizedAndroidHtml !== sourceHtml) {
+    failures.push("Android 版 index.html 除 viewport 外与根目录 index.html 内容不一致");
+  }
+
+  for (const requiredSetting of requiredWebViewSettings) {
+    if (!mainActivitySource.includes(requiredSetting)) {
+      failures.push(`MainActivity.kt 缺少 WebView 设置：${requiredSetting}`);
+    }
   }
 
   const references = findConcreteAssetReferences(androidHtml);
