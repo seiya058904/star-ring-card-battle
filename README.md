@@ -3,11 +3,22 @@
 <img width="1493" height="1054" alt="ChatGPT Image 2026年6月23日 21_22_01" src="https://github.com/user-attachments/assets/d2a8f767-5a2a-47d5-93b5-5a5f123db184" />
 
 
+
 A dark-gold pixel fantasy card battle prototype built around a single-file web core.
 It features local assets, fixed character decks, character selection, turn-based combat, card previews, skill effects, status mechanics, summon mechanics, element-themed particles, and an Android WebView wrapper for offline APK testing.
 
 一个暗金像素奇幻风格的卡牌战斗原型，核心玩法基于单文件 Web 版本构建。
 项目包含本地素材、固定角色卡组、角色选择、回合制战斗、卡牌预览、技能效果、状态机制、召唤机制、元素主题粒子特效，以及用于离线 APK 测试的 Android WebView 封装版本。
+
+---
+
+## Online Demo / 在线试玩
+
+You can play the latest web version here:
+👉 https://seiya058904.github.io/star-ring-card-battle/
+
+你可以通过以下地址直接体验当前版本：
+👉 https://seiya058904.github.io/star-ring-card-battle/
 
 ---
 
@@ -218,9 +229,17 @@ Notes:
 
 ## Online Preview / 在线预览
 
-If GitHub Pages or another static hosting service is configured, the web version can be accessed through the deployment URL.
+The project is deployed via GitHub Pages and can be accessed directly through the following link:
 
-如果配置了 GitHub Pages 或其他静态托管服务，可以通过对应部署地址访问 Web 版本。
+```text
+https://seiya058904.github.io/star-ring-card-battle/
+```
+
+项目已通过 GitHub Pages 部署，可通过以下地址直接访问：
+
+```text
+https://seiya058904.github.io/star-ring-card-battle/
+```
 
 Make sure asset paths remain relative, such as:
 
@@ -337,4 +356,3 @@ Future improvements may include:
 No license has been specified yet.
 
 当前暂未指定许可证。
-
