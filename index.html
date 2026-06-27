@@ -5938,7 +5938,6 @@
       if (preloadedImageSrcSet.has(normalizedSrc)) return preloadImagePromiseMap.get(normalizedSrc) || Promise.resolve(true);
       if (preloadImagePromiseMap.has(normalizedSrc)) return preloadImagePromiseMap.get(normalizedSrc);
 
-      preloadedImageSrcSet.add(normalizedSrc);
       const startedAt = performance.now();
       const promise = new Promise(resolve => {
         const img = new Image();
@@ -5950,6 +5949,7 @@
             } else {
               console.debug(PERF_LOG_PREFIX, "image-preloaded", { src: normalizedSrc, reason, elapsedMs });
             }
+            preloadedImageSrcSet.add(normalizedSrc);
             resolve(true);
           };
           if (typeof img.decode === "function") {
