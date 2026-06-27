@@ -8784,6 +8784,7 @@
       const intent = getCardActionIntent(card);
       const visualTargets = getVisualTargets(actorSide, card);
       const result = { text:"", amount:0, kind:card.effectType, intent, element:card.element, tier:card.skillTier, actorId:actor.id, targetId:visualTargets.primary, visualTargets, popups:[] };
+      const textNotes = []; // 用于收集天赋/额外说明，避免被后续 result.text = 覆盖
       const rawCardName = stripCardTaxonomyPrefix(card.baseName || card.name || "");
       // 确保 mechanics 存在——与 mechanicDescription 共用同一来源
       if (!Array.isArray(card.mechanics)) card.mechanics = mechanicsForCard(card.name || "", card.effectType || "attack", card.element || "无", card.skillTier);
@@ -8801,25 +8802,25 @@
       if (actor.race === "兽人族" && actor.hp / actor.maxHp < .5 && ["attack","burn","pierce","execute"].includes(card.effectType)) {
         power = Math.round(power * 1.12);
         result.popups.push({ type:"talent", text:`[狂战血性] 伤害 +12%`, side: actor.id });
-        result.text += `\n[狂战血性] 兽人族天赋：生命低于50%，本次伤害提高12%。`;
+        textNotes.push(`[狂战血性] 兽人族天赋：生命低于50%，本次伤害提高12%。`);
       }
       if (actor.race === "恶魔" && ["attack","burn","curse","lifesteal"].includes(card.effectType)) {
         if (!skillHasLifesteal) {
           card.mechanics = Array.from(new Set([...(card.mechanics || []), "lifesteal"]));
           lifestealFromTalent = true;
           result.popups.push({ type:"talent", text:`[血契] 附加吸血`, side: actor.id });
-          result.text += "\n[血契] 恶魔天赋：为本次攻击附加吸血效果。";
+          textNotes.push(`[血契] 恶魔天赋：为本次攻击附加吸血效果。`);
         }
       }
       if (actor.race === "神人" && intent === "hostile-damage") {
         power = Math.round(power * 1.10);
         result.popups.push({ type:"talent", text:`[神血] 攻击 +10%`, side: actor.id });
-        result.text += "\n[神血] 神人天赋：基础攻击倍数提高，本次伤害提高10%。";
+        textNotes.push(`[神血] 神人天赋：基础攻击倍数提高，本次伤害提高10%。`);
       }
       if (actor.race === "黑暗精灵" && intent === "hostile-damage" && (card.element === "暗" || card.effectType === "curse" || card.mechanics?.includes("curse"))) {
         power = Math.round(power * 1.12);
         result.popups.push({ type:"talent", text:`[诅咒遗脉] 伤害 +12%`, side: actor.id });
-        result.text += "\n[诅咒遗脉] 暗属性与诅咒力量增强，伤害提高12%。";
+        textNotes.push(`[诅咒遗脉] 暗属性与诅咒力量增强，伤害提高12%。`);
       }
       if (target.race === "龙族" && card.element !== "无") {
         power = Math.round(power * .92);
@@ -8875,6 +8876,7 @@
         result.totalDamage = damage;
         result.summonGuard = shared.guard ? { id: shared.guard.id, name: shared.guard.name, amount: shared.summonDamage, ownerId: target.id } : null;
         result.text = `${actor.name}使用「${card.name}」。\n[伤害] 造成 ${formatNumber(damage)} 点${card.element}属性伤害。${trueDamageActive ? "\n[真实伤害] 本次伤害无视护盾，直接作用于生命。" : ""}${elem.text ? "\n" + elem.text : ""}${modifierNote ? "\n" + modifierNote : ""}`;
+        if (textNotes.length) result.text += "\n" + textNotes.join("\n");
         if (card.mechanics?.includes("lifesteal")) {
           const heal = Math.round(Math.max(1, damage) * .28);
           setHpDisplayOverride(actor);
