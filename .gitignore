@@ -17,6 +17,7 @@ tmp/
 android/.gradle/
 android/**/build/
 android/local.properties
+android/build-debug.ps1
 *.apk
 *.aab
 *.keystore
