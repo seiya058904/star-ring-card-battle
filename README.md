@@ -1,6 +1,7 @@
 # Star Ring Card Battle / 星环卡牌战场
 
-<img width="1493" height="1054" alt="ChatGPT Image 2026年6月23日 21_22_01" src="https://github.com/user-attachments/assets/d2a8f767-5a2a-47d5-93b5-5a5f123db184" />
+<img width="1492" height="1054" alt="ChatGPT Image 2026年6月27日 20_47_57" src="https://github.com/user-attachments/assets/9ed0b2ab-7be1-44c2-aaa6-3f510d418fb8" />
+
 
 
 
