@@ -6576,6 +6576,7 @@
       resolveAction(action) {
         if (!this.state || this.state.gameOver) return;
         if (action.type === "playCard" && (this.state.actionLocked || effectsRenderer?._playLock)) return false;
+        if (action.type === "endTurn" && (this.state.actionLocked || effectsRenderer?._playLock || hasPendingOverrides())) return false;
         this.state.actions.push(action);
         if (action.type === "playCard") return this.playCard(action.side, action.cardInstanceId);
         if (action.type === "endTurn") return this.endTurn(action.side);
@@ -7533,7 +7534,7 @@
         `;
         document.getElementById("turnLabel").textContent = gameEngine.state.turn === "player" ? "玩家回合" : "电脑回合";
         document.getElementById("battleRoundLabel").textContent = `第 ${gameEngine.state.round} 回合`;
-        document.getElementById("endTurnBtn").disabled = gameEngine.state.turn !== "player" || gameEngine.state.gameOver;
+        document.getElementById("endTurnBtn").disabled = gameEngine.state.turn !== "player" || gameEngine.state.gameOver || gameEngine.state.actionLocked || effectsRenderer?._playLock || hasPendingOverrides();
         const canPlay = gameEngine.state.player.hand.some(card => card.cost <= gameEngine.state.player.energy);
         document.getElementById("endTurnBtn").classList.toggle("pulse", gameEngine.state.turn === "player" && !canPlay);
         document.querySelectorAll("#playerHand .card").forEach(el => el.addEventListener("click", (event) => {
@@ -9220,13 +9221,15 @@
           </div>
         </div>
       `, { modalClass: "battle-prep-modal", afterRender: () => {
-        document.querySelectorAll("[data-prep-character]").forEach(card => {
+        const root = document.getElementById("battlePrepRoot");
+        if (!root) return;
+        root.querySelectorAll("[data-prep-character]").forEach(card => {
           card.addEventListener("click", () => {
             const deck = this.defaultDecks.find(d => d.characterId === card.dataset.prepCharacter);
             if (!deck) return;
             this.prepSelectedDeck = deck;
-            document.querySelectorAll("[data-prep-character]").forEach(x => x.classList.toggle("selected", x === card));
-            const status = document.getElementById("prepStatus");
+            root.querySelectorAll("[data-prep-character]").forEach(x => x.classList.toggle("selected", x === card));
+            const status = root.querySelector("#prepStatus");
             if (status) status.textContent = `已选择：${deck.characterName}「${deck.characterTitle || deck.name}」 · ${deck.level}级 · ${deck.name}`;
             this.showToast(`已选择角色${deck.characterName}`);
           });
@@ -9732,7 +9735,7 @@
       preloadCardVisualAssetsReady(card, 200).then(() => {});
       originalEffectsPlayStandard(card, result);
       const timing = dramaTimingForCard(card);
-      setTimeout(() => { this._playLock = 0; setCombatInputLocked(false); }, timing.totalMin + 200);
+      setTimeout(() => { this._playLock = 0; setCombatInputLocked(false); uiRenderer.render(); }, timing.totalMin + 200);
     };
 
 
