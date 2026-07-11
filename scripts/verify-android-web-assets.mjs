@@ -8,6 +8,7 @@ const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, "..");
 const sourceIndex = path.join(repositoryRoot, "index.html");
 const sourceAssets = path.join(repositoryRoot, "assets");
+const sourceJs = path.join(repositoryRoot, "js");
 const androidWebRoot = path.join(
   repositoryRoot,
   "android",
@@ -19,6 +20,7 @@ const androidWebRoot = path.join(
 );
 const androidIndex = path.join(androidWebRoot, "index.html");
 const androidAssets = path.join(androidWebRoot, "assets");
+const androidJs = path.join(androidWebRoot, "js");
 const mainActivity = path.join(
   repositoryRoot,
   "android",
@@ -86,8 +88,10 @@ function findConcreteAssetReferences(html) {
 
 requirePath(sourceIndex, "根目录 index.html");
 requirePath(sourceAssets, "根目录 assets/");
+requirePath(sourceJs, "根目录 js/");
 requirePath(androidIndex, "Android 版 index.html");
 requirePath(androidAssets, "Android 版 assets/");
+requirePath(androidJs, "Android 版 js/");
 requirePath(mainActivity, "Android MainActivity.kt");
 
 if (failures.length === 0) {
@@ -150,9 +154,30 @@ if (failures.length === 0) {
     }
   }
 
+  const [sourceJsFiles, androidJsFiles] = await Promise.all([
+    listFiles(sourceJs),
+    listFiles(androidJs),
+  ]);
+  const sourceJsSet = new Set(sourceJsFiles);
+  const androidJsSet = new Set(androidJsFiles);
+  for (const relativePath of sourceJsFiles) {
+    if (!androidJsSet.has(relativePath)) {
+      failures.push(`Android js 缺少文件：js/${relativePath}`);
+      continue;
+    }
+    const sourcePath = path.join(sourceJs, ...relativePath.split("/"));
+    const androidPath = path.join(androidJs, ...relativePath.split("/"));
+    if ((await sha256(sourcePath)) !== (await sha256(androidPath))) {
+      failures.push(`Android js 文件内容不一致：js/${relativePath}`);
+    }
+  }
+  for (const relativePath of androidJsFiles) {
+    if (!sourceJsSet.has(relativePath)) failures.push(`Android js 存在根目录没有的额外文件：js/${relativePath}`);
+  }
+
   if (failures.length === 0) {
     console.log(
-      `Android 网页素材校验通过：${references.length} 个静态引用，${sourceFiles.length} 个素材文件。`,
+      `Android 网页素材校验通过：${references.length} 个静态引用，${sourceFiles.length} 个素材文件，${sourceJsFiles.length} 个 js 文件。`,
     );
   }
 }
