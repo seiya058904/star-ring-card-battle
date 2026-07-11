@@ -5148,6 +5148,9 @@
             <span class="pill">不可编辑</span>
           </div>
           <p class="small-note" style="margin-top:14px;">攻略包含新手流程、角色与固定卡组、元素克制、状态机制、天赋、召唤和战斗技巧。</p>
+          <h3 style="margin:18px 0 8px;">战役专属机制</h3>
+          <p class="small-note">玩家和敌方分别拥有独立星环。每打出一张牌会获得星环格：普通牌通常获得 1 格，高级技能获得 2 格，特殊技能获得 3 格。集满 6 格后，才能在己方回合使用“共鸣”。</p>
+          <p class="small-note">共鸣效果：星耀让下一张牌费用减少 2（最低为 0）；回响抽 2 张牌并获得 1 点能量；守环获得最大生命值 12% 的护盾。星耀激活后如果本回合没有成功出牌，回合结束时减费失效；敌方也会独立积累星环并使用共鸣。</p>
         </aside>
         <div class="panel">
           <h2>📖 攻略内容</h2>
@@ -6614,6 +6617,7 @@
         setHandHoverSuppressed(true, 700);
         preloadCardVisualAssets(card, `play-card-${side}`);
         this.applyCard(actor, target, card);
+        audioManager?.playCard(card);
         uiRenderer.render();
         setTimeout(() => {
           if (this.state) {
@@ -8695,6 +8699,8 @@
       this.draw(this.state.enemy, 5);
       ensureEnemyOpeningPlayableCard(this.state.enemy);
       this.log(`战斗开始：「${this.state.player.name}」对阵「${this.state.enemy.name}${this.state.enemy.title || this.state.enemy.deckName || ""}」。`);
+      audioManager?.preload();
+      audioManager?.play("battle-start");
       setTimeout(() => uiRenderer.showAiDialogue("battleStart"), 350);
       return this.state;
     };
@@ -9124,6 +9130,7 @@
         }
       }
       if (this.state?.turn === "enemy") setTimeout(() => uiRenderer.showAiDialogue("turnEnd"), 80);
+      if (this.state?.turn === side) audioManager?.play(side === "player" ? "turn-end" : "turn-start");
       return originalEndTurnStandard(side);
     };
 

@@ -11,8 +11,13 @@ for (const file of ["js/campaign-data.js", "js/campaign-mode.js"]) {
 const { campaignData, campaignMode } = context;
 const campaignUiSource = await readFile("js/campaign-ui.js", "utf8");
 const gameSource = await readFile("index.html", "utf8");
+const audioSource = await readFile("js/audio-manager.js", "utf8");
 assert.match(campaignUiSource, /mode\.projectedEnergy\(state\.round, state\.enemy\.maxEnergy/);
 assert.match(gameSource, /this\.state\?\.campaign && actor\.id === "player"\).*recordCombatEvent/);
+assert.match(campaignUiSource, /const originalCampaignAi = aiController\.takeTurn\.bind\(aiController\)/);
+assert.match(gameSource, /audioManager\?\.playCard\(card\)/);
+assert.match(gameSource, /audioManager\?\.play\(side === "player" \? "turn-end" : "turn-start"\)/);
+assert.match(audioSource, /addEventListener\("click".*true/);
 assert.equal(campaignData.characters.length, 6);
 assert.equal(new Set(campaignData.characters.map(({ id }) => id)).size, 6);
 assert.equal(campaignData.stages.length, 5);
