@@ -6,6 +6,7 @@ const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, "..");
 const sourceIndex = path.join(repositoryRoot, "index.html");
 const sourceAssets = path.join(repositoryRoot, "assets");
+const sourceJs = path.join(repositoryRoot, "js");
 const androidWebRoot = path.join(
   repositoryRoot,
   "android",
@@ -17,6 +18,7 @@ const androidWebRoot = path.join(
 );
 const androidIndex = path.join(androidWebRoot, "index.html");
 const androidAssets = path.join(androidWebRoot, "assets");
+const androidJs = path.join(androidWebRoot, "js");
 
 const viewportPattern = /<meta name="viewport"[^>]*>/;
 const androidViewport =
@@ -32,6 +34,11 @@ const androidHtml = sourceHtml.replace(viewportPattern, androidViewport);
 await mkdir(androidWebRoot, { recursive: true });
 await writeFile(androidIndex, androidHtml, "utf8");
 await cp(sourceAssets, androidAssets, {
+  recursive: true,
+  force: true,
+  errorOnExist: false,
+});
+await cp(sourceJs, androidJs, {
   recursive: true,
   force: true,
   errorOnExist: false,
