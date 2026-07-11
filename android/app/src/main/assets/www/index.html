@@ -7233,16 +7233,45 @@
 
       openModal(title, bodyHtml, options = {}) {
         const modal = document.getElementById("gameModal");
+        // Save the element that held focus before the modal opened, so we can
+        // restore it on close. Only save when focus is not already inside the
+        // modal (avoids overwriting on nested open sequences).
+        if (!modal.contains(document.activeElement)) {
+          this._lastFocusedBeforeModal = document.activeElement;
+        }
         document.getElementById("modalTitle").textContent = title;
         document.getElementById("modalBody").innerHTML = bodyHtml;
         modal.classList.remove("hidden", "battle-prep-modal", "battle-codex-modal", "settings-modal", "confirm-modal");
         if (options.modalClass) modal.classList.add(options.modalClass);
         modal.setAttribute("aria-hidden", "false");
+        modal.removeAttribute("inert");
         if (options.afterRender) options.afterRender();
+        // Move keyboard focus into the modal so keyboard and screen-reader
+        // users land inside the dialog rather than on the dimmed page behind.
+        const focusTarget = modal.querySelector('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+        if (focusTarget) focusTarget.focus();
       },
 
       closeModal() {
         const modal = document.getElementById("gameModal");
+        // Move focus OUT of the modal BEFORE applying aria-hidden="true".
+        // Otherwise Chrome blocks the attribute and logs:
+        //   "Blocked aria-hidden on an element because its descendant retained focus."
+        if (modal.contains(document.activeElement)) {
+          const restore = this._lastFocusedBeforeModal;
+          this._lastFocusedBeforeModal = null;
+          if (restore && document.body.contains(restore) && restore.offsetParent !== null && typeof restore.focus === "function") {
+            restore.focus();
+          } else {
+            // Fallback: blur the in-modal focus so it leaves the aria-hidden
+            // subtree before the attribute is applied. This is the last resort
+            // when no safe restore target is available.
+            const fallback = document.querySelector('#screen-home.active button:not([disabled]), #screen-battle.active button:not([disabled]), #screen-deck.active button:not([disabled])');
+            if (fallback && fallback.offsetParent !== null) fallback.focus();
+            else if (document.activeElement && typeof document.activeElement.blur === "function") document.activeElement.blur();
+          }
+        }
+        modal.setAttribute("inert", "");
         modal.classList.add("hidden");
         modal.classList.remove("battle-prep-modal", "battle-codex-modal", "settings-modal", "confirm-modal");
         modal.setAttribute("aria-hidden", "true");
@@ -7712,14 +7741,24 @@
       },
       showResult() {
         const state = gameEngine.state;
+        const s = state.combatStats || {};
         this.nav("result");
         document.getElementById("resultTitle").textContent = state.winner === "player" ? "胜利" : "失败";
         document.getElementById("resultText").textContent = state.winner === "player" ? "你击败了电脑对手。可以换一个种族、职业或等级继续测试卡组。" : "电脑赢下了这局。可以尝试更稳定的卡组，或者降低等级差距。";
         document.getElementById("resultStats").innerHTML = [
           ["回合数", state.round],
           ["玩家剩余生命", formatNumber(state.player.hp)],
-          ["电脑剩余生命", formatNumber(state.enemy.hp)],
-          ["行动记录", state.actions.length]
+          ["敌方剩余生命", formatNumber(state.enemy.hp)],
+          ["总伤害", formatNumber(s.damage || 0)],
+          ["最高单次伤害", formatNumber(s.highestDamage || 0)],
+          ["治疗量", formatNumber(s.healing || 0)],
+          ["护盾获得", formatNumber(s.shield || 0)],
+          ["护盾吸收", formatNumber(s.shieldAbsorbed || 0)],
+          ["召唤伤害", formatNumber(s.summonDamage || 0)],
+          ["元素克制", s.elementalAdvantage || 0],
+          ["使用卡牌", s.cards || 0],
+          ["高级技能", s.advanced || 0],
+          ["特殊技能", s.special || 0]
         ].map(([k, v]) => `<div class="stat-tile"><b>${v}</b><span>${k}</span></div>`).join("");
       }
     };
@@ -8598,13 +8637,14 @@
     }
 
     /* 从卡牌机制创建标准状态对象，供 applyCard 统一使用 */
-    function createStatusFromMechanic(mechanic, card, power) {
+    function createStatusFromMechanic(mechanic, card, power, sourceOwnerId) {
       const type = normalizeStatusType(mechanic);
-      if (type === "禁锢") return { type, name: "禁锢", turns: 1, skipAction: true, source: card.name };
-      if (type === "燃烧") return { type, name: "燃烧", turns: 2, power: Math.max(1, Math.round(power * 0.18)), source: card.name, element: card.element };
-      if (type === "诅咒") return { type, name: "诅咒", turns: 3, power: Math.max(1, Math.round(power * 0.12)), source: card.name, element: card.element };
-      if (type === "冻结") return { type, name: "冻结", turns: 1, source: card.name };
-      if (type === "召唤") return { type, name: "召唤", power: Math.max(1, Math.round(power * 0.28)), source: card.name };
+      if (type === "禁锢") return { type, name: "禁锢", turns: 1, skipAction: true, source: card.name, sourceOwnerId };
+      if (type === "燃烧") return { type, name: "燃烧", turns: 2, power: Math.max(1, Math.round(power * 0.18)), source: card.name, sourceOwnerId, element: card.element };
+      if (type === "诅咒") return { type, name: "诅咒", turns: 3, power: Math.max(1, Math.round(power * 0.12)), source: card.name, sourceOwnerId, element: card.element };
+      if (type === "中毒") return { type, name: "中毒", turns: 3, power: Math.max(1, Math.round(power * 0.15)), source: card.name, sourceOwnerId, element: card.element };
+      if (type === "冻结") return { type, name: "冻结", turns: 1, source: card.name, sourceOwnerId };
+      if (type === "召唤") return { type, name: "召唤", power: Math.max(1, Math.round(power * 0.28)), source: card.name, sourceOwnerId };
       return null;
     }
 
@@ -8693,7 +8733,8 @@
       this.state = {
         turn: "player", round: 1, gameOver: false, winner: null, log: [], actions: [],
         player: this.makeFighter(playerDeck.characterName || "玩家", playerDeck, true),
-        enemy: this.makeFighter(enemyDeck.characterName || "电脑", enemyDeck, false)
+        enemy: this.makeFighter(enemyDeck.characterName || "电脑", enemyDeck, false),
+        combatStats: globalThis.campaignMode?.createCombatStats() || { damage: 0, highestDamage: 0, healing: 0, shield: 0, shieldAbsorbed: 0, elementalAdvantage: 0, summonDamage: 0, cards: 0, advanced: 0, special: 0, rounds: 0 }
       };
       this.beginTurn("player");
       this.draw(this.state.enemy, 5);
@@ -8886,7 +8927,7 @@
           target.shield = Math.max(0, target.shield - pierceCut);
         }
         const blocked = trueDamageActive ? 0 : Math.min(target.shield, damage);
-        if (globalThis.campaignMode && this.state?.campaign && target.id === "player" && blocked > 0) globalThis.campaignMode.recordCombatEvent(this.state.campaignStats, { type: "shieldAbsorbed", amount: blocked });
+        if (target.id === "player" && blocked > 0) globalThis.campaignMode?.recordCombatEvent?.(this.state.combatStats, { type: "shieldAbsorbed", amount: blocked });
         if (!trueDamageActive) {
           target.shield = Math.max(0, target.shield - blocked);
           damage = Math.max(0, damage - blocked);
@@ -8906,17 +8947,17 @@
           const hpBefore = actor.hp;
           setHpDisplayOverride(actor);
           actor.hp = Math.min(actor.maxHp, actor.hp + heal);
-          if (this.state?.campaign && actor.id === "player") globalThis.campaignMode.recordCombatEvent(this.state.campaignStats, { type: "heal", amount: actor.hp - hpBefore });
+          if (actor.id === "player") globalThis.campaignMode?.recordCombatEvent?.(this.state.combatStats, { type: "heal", amount: actor.hp - hpBefore });
           result.popups.push({ type:"status heal", text:`吸血 +${formatNumber(heal)}`, side: actor.id });
           result.text += lifestealFromTalent
             ? `\n[吸血｜天赋] 【血契】根据实际伤害回复 ${formatNumber(heal)} 生命。`
             : `\n[吸血｜技能] 「${card.name}」根据实际伤害回复 ${formatNumber(heal)} 生命。`;
         }
-        if (card.mechanics?.includes("burn")) { const st = createStatusFromMechanic("burn", card, power); if (st) { target.statuses.push(st); result.popups.push({ type:"status debuff", text:"燃烧 2 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「燃烧」2回合：每回合开始受到火属性持续伤害。"; } }
+        if (card.mechanics?.includes("burn")) { const st = createStatusFromMechanic("burn", card, power, actor.id); if (st) { target.statuses.push(st); result.popups.push({ type:"status debuff", text:"燃烧 2 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「燃烧」2回合：每回合开始受到火属性持续伤害。"; } }
         if (card.mechanics?.includes("freeze")) { target.statuses.push({ type:"冻结", turns:1, power:0 }); result.popups.push({ type:"status control", text:"冻结 1 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「冻结」1回合：本回合能量恢复降低。"; }
-        if (card.mechanics?.includes("curse")) { const st = createStatusFromMechanic("curse", card, power); if (st) { target.statuses.push(st); result.popups.push({ type:"status debuff", text:"诅咒 3 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「诅咒」3回合：每回合开始受到暗属性持续伤害。"; } }
+        if (card.mechanics?.includes("curse")) { const st = createStatusFromMechanic("curse", card, power, actor.id); if (st) { target.statuses.push(st); result.popups.push({ type:"status debuff", text:"诅咒 3 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「诅咒」3回合：每回合开始受到暗属性持续伤害。"; } }
         if (card.mechanics?.includes("control")) {
-          const st = createStatusFromMechanic("control", card, power);
+          const st = createStatusFromMechanic("control", card, power, actor.id);
           if (st) {
             if (/星界放逐/.test(rawCardName)) st.turns = 2;
             target.statuses.push(st);
@@ -8927,7 +8968,7 @@
         if (card.mechanics?.includes("summon")) {
           const summonResult = upsertSummonEntity(actor, card, power);
           const summon = summonResult.summon;
-          const st = createStatusFromMechanic("summon", card, power);
+          const st = createStatusFromMechanic("summon", card, power, actor.id);
           if (st) {
             result.popups.push({ type:"status", text:summonResult.refreshed ? "召唤强化" : "召唤单位", side: actor.id });
             result.text += summonResult.refreshed
@@ -8954,7 +8995,7 @@
         const hpBefore = actor.hp;
         setHpDisplayOverride(actor);
         actor.hp = Math.min(actor.maxHp, actor.hp + heal);
-        if (this.state?.campaign && actor.id === "player") globalThis.campaignMode.recordCombatEvent(this.state.campaignStats, { type: "heal", amount: actor.hp - hpBefore });
+        if (actor.id === "player") globalThis.campaignMode?.recordCombatEvent?.(this.state.combatStats, { type: "heal", amount: actor.hp - hpBefore });
         let cleansed = false;
         if (card.mechanics?.includes("cleanse")) {
           const statusIndex = actor.statuses.findIndex(s => NEGATIVE_STATUS_TYPES.has(s.type));
@@ -9078,7 +9119,7 @@
         delete summon.reinforcedBy;
         const targetHpBeforeSummon = target.hp;
         target.hp = Math.max(0, target.hp - assistDamage);
-        if (gameEngine.state.campaign && fighter.id === "player") globalThis.campaignMode?.recordCombatEvent?.(gameEngine.state.campaignStats, { type: "damage", amount: Math.min(assistDamage, targetHpBeforeSummon), summon: true });
+        if (fighter.id === "player") globalThis.campaignMode?.recordCombatEvent?.(gameEngine.state.combatStats, { type: "damage", amount: Math.min(assistDamage, targetHpBeforeSummon), summon: true });
         gameEngine.state.campaign && globalThis.checkCampaignHealthThresholds?.(target, targetHpBeforeSummon, { type: "summon", amount: assistDamage });
         gameEngine.state.campaign && globalThis.checkCampaignBossPhase?.(target, targetHpBeforeSummon);
         summonAssistEvents.push({ summon, target, amount: assistDamage });
@@ -9090,10 +9131,21 @@
     }
 
     gameEngine.tickStatuses = function(fighter) {
+      const dotEvents = [];
+      let totalDamage = 0;
       fighter.statuses.forEach(status => {
         if (["燃烧","诅咒","中毒"].includes(status.type)) {
+          const hpBefore = fighter.hp;
           fighter.hp = Math.max(0, fighter.hp - status.power);
-          this.log(`[状态结算] ${fighter.name}因${status.type}受到 ${formatNumber(status.power)} 伤害。`);
+          const actualDamage = hpBefore - fighter.hp;
+          totalDamage += actualDamage;
+          dotEvents.push({ type: status.type, sourceOwnerId: status.sourceOwnerId, actualDamage });
+          // 逐状态记录实际扣血：仅统计玩家来源、施加在敌方身上的持续伤害
+          if (actualDamage > 0 && fighter.id === "enemy" && status.sourceOwnerId === "player") {
+            const stats = this.state?.combatStats;
+            if (stats && globalThis.campaignMode?.recordCombatEvent) globalThis.campaignMode.recordCombatEvent(stats, { type: "damage", amount: actualDamage });
+          }
+          this.log(`[状态结算] ${fighter.name}因${status.type}受到 ${formatNumber(actualDamage)} 伤害。`);
           // 持续伤害浮动数字
           const field = document.getElementById("battlefield");
           if (field) {
@@ -9102,7 +9154,7 @@
             dotText.style.setProperty("--fx-x", fighter.id === "player" ? "28%" : "72%");
             dotText.style.setProperty("--fx-y", fighter.id === "player" ? "58%" : "50%");
             dotText.style.setProperty("--fx-color", "#ff4444");
-            dotText.textContent = `-${formatNumber(status.power)}`;
+            dotText.textContent = `-${formatNumber(actualDamage)}`;
             field.appendChild(dotText);
             setTimeout(() => dotText.remove(), 1200);
           }
@@ -9112,6 +9164,11 @@
       fighter.statuses.forEach(s => { if (s.turns <= 1 && s.type !== '禁锢') this.log(`${fighter.name}的「${s.type}」状态已解除。`); });
       fighter.statuses = fighter.statuses.map(status => ({ ...status, turns: status.turns - 1 })).filter(status => status.turns > 0);
       removeDefeatedSummons(fighter);
+      // 返回本次逐状态结算摘要，供被动（如赫卡莫斯吸血）只按玩家来源持续伤害计算
+      const playerDotDamage = dotEvents
+        .filter(e => e.sourceOwnerId === "player" && ["燃烧","诅咒","中毒"].includes(e.type))
+        .reduce((sum, e) => sum + e.actualDamage, 0);
+      return { totalDamage, playerDotDamage, dotEvents };
     };
 
     const originalEndTurnStandard = gameEngine.endTurn.bind(gameEngine);

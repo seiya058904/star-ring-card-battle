@@ -13,7 +13,48 @@ const campaignUiSource = await readFile("js/campaign-ui.js", "utf8");
 const gameSource = await readFile("index.html", "utf8");
 const audioSource = await readFile("js/audio-manager.js", "utf8");
 assert.match(campaignUiSource, /mode\.projectedEnergy\(state\.round, state\.enemy\.maxEnergy/);
-assert.match(gameSource, /this\.state\?\.campaign && actor\.id === "player"\).*recordCombatEvent/);
+/* Static structure assertions (NOT runtime combat tests). These verify source
+   code patterns, not runtime behavior. They must not be called "integration tests".
+
+   1. Target routing: playCard sets target=opponent; no silent auto-correct.
+   2. skipAction (禁锢) unified check before mode branch and resonance.
+   3. combatStats initialized in gameEngine.start for all modes.
+   4. Sandbox showResult reads combatStats.
+   5. Campaign uses combatStats (same object as campaignStats), no separate creation.
+   6. Campaign playCard wrappers record to combatStats, not a duplicate campaignStats.
+   7. createStatusFromMechanic writes sourceOwnerId; call sites pass actor.id.
+   8. No full target.statuses scan to claim old statuses in applyCard.
+   9. Core tickStatuses records per-status actual DoT damage to combatStats.
+   10. campaign-ui.js has no second source-owner patch or duplicate DoT recording. */
+assert.match(gameSource, /const target = this\.state\[side === "player" \? "enemy" : "player"\]/);
+assert.doesNotMatch(gameSource, /expectedTarget = actor\.id === "player"/);
+assert.match(campaignUiSource, /function skipEnemyControlledTurn\(state\)/);
+assert.match(campaignUiSource, /if \(skipEnemyControlledTurn\(state\)\) return; if \(!state\.campaign\) return originalCampaignAi/);
+assert.match(gameSource, /combatStats: globalThis\.campaignMode\?\.createCombatStats/);
+assert.match(gameSource, /const s = state\.combatStats/);
+assert.match(gameSource, /if \(actor\.id === "player"\) globalThis\.campaignMode\?\.recordCombatEvent\?\.\(this\.state\.combatStats/);
+assert.match(campaignUiSource, /state\.campaignStats = state\.combatStats/);
+assert.doesNotMatch(campaignUiSource, /state\.campaignStats = mode\.createCombatStats/);
+assert.doesNotMatch(campaignUiSource, /mode\.recordCombatEvent\(state\.combatStats, \{ type: "damage", amount: Math\.min\(beforeHp - fighter\.hp/);
+assert.doesNotMatch(campaignUiSource, /target\.statuses\.filter\(status => status\.source === card\.name && !status\.sourceOwnerId\)/);
+assert.match(gameSource, /function createStatusFromMechanic\(mechanic, card, power, sourceOwnerId\)/);
+assert.match(gameSource, /if \(type === "燃烧"\) return \{ type, name: "燃烧"[^}]*sourceOwnerId/);
+assert.match(gameSource, /createStatusFromMechanic\("burn", card, power, actor\.id\)/);
+assert.match(gameSource, /createStatusFromMechanic\("curse", card, power, actor\.id\)/);
+assert.match(gameSource, /createStatusFromMechanic\("control", card, power, actor\.id\)/);
+assert.match(gameSource, /createStatusFromMechanic\("summon", card, power, actor\.id\)/);
+assert.doesNotMatch(campaignUiSource, /state\?\.campaign && fighter\.id === "enemy" && ownDots\.length && fighter\.hp < beforeHp\) mode\.recordCombatEvent\(state\.campaignStats/);
+assert.doesNotMatch(gameSource, /target\.statuses\.forEach\(status => \{[\s\S]*status\.sourceOwnerId = actor\.id/);
+assert.match(gameSource, /const actualDamage = hpBefore - fighter\.hp;[\s\S]*if \(actualDamage > 0 && fighter\.id === "enemy" && status\.sourceOwnerId === "player"\)/);
+assert.match(gameSource, /globalThis\.campaignMode\.recordCombatEvent\(stats, \{ type: "damage", amount: actualDamage \}\)/);
+assert.match(gameSource, /if \(type === "中毒"\) return \{ type, name: "中毒"/);
+/* 11. Core tickStatuses returns a per-status settlement summary (dotEvents +
+   playerDotDamage) so the Heka lifesteal passive only counts player-sourced DoT. */
+assert.match(gameSource, /const dotEvents = \[\];[\s\S]*return \{ totalDamage, playerDotDamage, dotEvents \};/);
+assert.match(gameSource, /const playerDotDamage = dotEvents[\s\S]*\.filter\(e => e\.sourceOwnerId === "player" && \["燃烧","诅咒","中毒"\]\.includes\(e\.type\)\)[\s\S]*\.reduce\(\(sum, e\) => sum \+ e\.actualDamage, 0\)/);
+assert.match(campaignUiSource, /const result = originalTickStatuses\(fighter\); if \(state\?\.campaign\?\.characterId === "heka" && fighter\.id === "enemy" && result\.playerDotDamage > 0\)/);
+assert.doesNotMatch(campaignUiSource, /ownDots\.length/);
+assert.match(campaignUiSource, /const stats = state\.combatStats; if \(side === "player"\)/);
 assert.match(campaignUiSource, /const originalCampaignAi = aiController\.takeTurn\.bind\(aiController\)/);
 assert.match(gameSource, /audioManager\?\.playCard\(card\)/);
 assert.match(gameSource, /audioManager\?\.play\(side === "player" \? "turn-end" : "turn-start"\)/);
