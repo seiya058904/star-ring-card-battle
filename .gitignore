@@ -14,6 +14,7 @@ _temp_*.js
 recovered/
 tmp/
 .claude/settings.local.json
+.workbuddy/
 android/.gradle/
 android/**/build/
 android/local.properties
