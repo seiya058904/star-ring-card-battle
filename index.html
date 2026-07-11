@@ -5043,6 +5043,7 @@
         <!-- Mobile / fallback real-button menu -->
         <div class="home-mobile-menu">
           <button class="home-mobile-btn home-mobile-btn-battle"    data-open-battle-prep="true"><span class="home-mobile-icon">⚔</span> 开始战斗</button>
+          <button class="home-mobile-btn home-mobile-btn-campaign" data-open-campaign="true"><span class="home-mobile-icon">✦</span> 战役模式</button>
           <button class="home-mobile-btn home-mobile-btn-characters" data-open-codex="characters"><span class="home-mobile-icon">📖</span> 角色图鉴</button>
           <button class="home-mobile-btn home-mobile-btn-cards"     data-open-codex="cards"><span class="home-mobile-icon">🃏</span> 卡牌图鉴</button>
           <button class="home-mobile-btn home-mobile-btn-guide"     data-open-codex="guide"><span class="home-mobile-icon">📚</span> 游戏攻略</button>
@@ -6408,7 +6409,8 @@
       shake: true,
       logCollapsed: false,
       dim: "standard",
-      sound: false
+      sound: true,
+      soundVolume: 65
     };
 
     const COMBAT_DRAMA_TIMING = {
@@ -7282,10 +7284,12 @@
                 <option value="off" ${!s.sound ? "selected" : ""}>关</option>
               </select>
             </label>
+            <label class="settings-row">音效音量 <input id="settingSoundVolume" type="range" min="0" max="100" value="${s.soundVolume ?? 65}"><span id="settingSoundVolumeValue">${s.soundVolume ?? 65}%</span></label>
           </div>
-          <p class="small-note" style="margin-top:12px;">音效开关会先保存设置，后续接入音效文件时直接使用</p>
+          <p class="small-note" style="margin-top:12px;">音效素材为本地 CC0 文件，浏览器首次播放需要用户点击。</p>
           <div class="modal-actions">
             <button class="ghost" id="settingsDefaultBtn" type="button">恢复默认</button>
+            <button class="ghost" id="settingsCampaignResetBtn" type="button">重置战役进度</button>
             <button id="settingsSaveBtn" type="button">保存设置</button>
           </div>
         `, { afterRender: () => {
@@ -7295,13 +7299,15 @@
               shake: document.getElementById("settingShake").value === "on",
               logCollapsed: document.getElementById("settingLog").value === "closed",
               dim: document.getElementById("settingDim").value,
-              sound: document.getElementById("settingSound").value === "on"
+              sound: document.getElementById("settingSound").value === "on",
+              soundVolume: Number(document.getElementById("settingSoundVolume").value)
             };
             storageManager.saveSettings(this.settings);
             this.applySettings();
             this.showToast("设置已保存");
           };
-          ["settingAnimation","settingShake","settingLog","settingDim","settingSound"].forEach(id => document.getElementById(id).addEventListener("change", save));
+          ["settingAnimation","settingShake","settingLog","settingDim","settingSound","settingSoundVolume"].forEach(id => document.getElementById(id).addEventListener("change", save));
+          document.getElementById("settingSoundVolume").addEventListener("input", event => { document.getElementById("settingSoundVolumeValue").textContent = `${event.target.value}%`; });
           document.getElementById("settingsSaveBtn").addEventListener("click", () => { save(); this.closeModal(); });
           document.getElementById("settingsDefaultBtn").addEventListener("click", () => {
             this.settings = { ...DEFAULT_GAME_SETTINGS };
@@ -7311,6 +7317,7 @@
             this.openSettings();
             this.showToast("已恢复默认设置");
           });
+          document.getElementById("settingsCampaignResetBtn").addEventListener("click", () => this.openConfirm({ title: "重置战役进度？", message: "六名角色的战役进度和最近记录都会清除。", confirmText: "确认重置", onConfirm: () => { localStorage.removeItem("star-ring-campaign-progress-v1"); this.showToast("战役进度已重置"); } }));
         }});
       },
 
@@ -10146,6 +10153,11 @@
       if (container) container.classList.add("image-load-failed");
     });
   </script>
+
+  <script src="js/campaign-data.js"></script>
+  <script src="js/campaign-mode.js"></script>
+  <script src="js/audio-manager.js"></script>
+  <script src="js/campaign-ui.js"></script>
 
 
   <style id="battle-visual-polish-final">
@@ -14168,6 +14180,19 @@
   .home-mobile-btn:active {
     transform: scale(.97);
   }
+  .home-mobile-btn-campaign { border-color: rgba(255,214,111,.85) !important; background: linear-gradient(180deg, #b4782f, #5c3215) !important; }
+  .campaign-home-button { position:absolute; left:50%; bottom:7%; transform:translateX(-50%); z-index:4; min-width:220px; font-weight:800; }
+  .campaign-home-button:focus-visible { outline:3px solid #fff0a5; outline-offset:4px; }
+  .campaign-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; }
+  .campaign-card,.campaign-stage { border:1px solid rgba(240,196,106,.3); background:rgba(0,0,0,.3); color:#ffe8ad; padding:12px; text-align:left; cursor:pointer; }
+  .campaign-card.selected,.campaign-stage.selected { border-color:#ffd56d; box-shadow:0 0 18px rgba(255,199,79,.25); }
+  .campaign-card h3,.campaign-stage h3 { margin-bottom:6px; }
+  .campaign-hud { position:absolute; top:8px; left:50%; transform:translateX(-50%); z-index:30; width:min(560px,calc(100% - 24px)); display:flex; align-items:center; gap:10px; padding:7px 10px; border:1px solid rgba(255,214,111,.45); background:rgba(18,10,5,.82); color:#ffe5a3; font-size:12px; }
+  .campaign-ring { display:flex; gap:3px; }
+  .campaign-ring i { width:12px; height:12px; border:1px solid #9d7135; background:#291b0e; }
+  .campaign-ring i.on { background:#ffd56d; box-shadow:0 0 8px #f0ae3c; }
+  .campaign-intent { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  @media (max-width:700px) { .campaign-home-button { bottom:4%; min-width:190px; } .campaign-hud { top:4px; font-size:11px; } .campaign-ring i { width:10px; height:10px; } }
   .home-mobile-icon {
     font-size: 22px;
     width: 30px;
