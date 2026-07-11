@@ -8900,7 +8900,7 @@
           const hpBefore = actor.hp;
           setHpDisplayOverride(actor);
           actor.hp = Math.min(actor.maxHp, actor.hp + heal);
-          if (this.state?.campaign) globalThis.campaignMode.recordCombatEvent(this.state.campaignStats, { type: "heal", amount: actor.hp - hpBefore });
+          if (this.state?.campaign && actor.id === "player") globalThis.campaignMode.recordCombatEvent(this.state.campaignStats, { type: "heal", amount: actor.hp - hpBefore });
           result.popups.push({ type:"status heal", text:`吸血 +${formatNumber(heal)}`, side: actor.id });
           result.text += lifestealFromTalent
             ? `\n[吸血｜天赋] 【血契】根据实际伤害回复 ${formatNumber(heal)} 生命。`
@@ -8948,7 +8948,7 @@
         const hpBefore = actor.hp;
         setHpDisplayOverride(actor);
         actor.hp = Math.min(actor.maxHp, actor.hp + heal);
-        if (this.state?.campaign) globalThis.campaignMode.recordCombatEvent(this.state.campaignStats, { type: "heal", amount: actor.hp - hpBefore });
+        if (this.state?.campaign && actor.id === "player") globalThis.campaignMode.recordCombatEvent(this.state.campaignStats, { type: "heal", amount: actor.hp - hpBefore });
         let cleansed = false;
         if (card.mechanics?.includes("cleanse")) {
           const statusIndex = actor.statuses.findIndex(s => NEGATIVE_STATUS_TYPES.has(s.type));
