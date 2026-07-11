@@ -6641,6 +6641,7 @@
             target.shield = Math.max(0, target.shield - shieldPart);
           }
           const blocked = card.effectType === "pierce" ? Math.round(Math.min(target.shield, damage) * .35) : Math.min(target.shield, damage);
+          if (globalThis.campaignMode && this.state?.campaign && target.id === "player" && blocked > 0) globalThis.campaignMode.recordCombatEvent(this.state.campaignStats, { type: "shieldAbsorbed", amount: blocked });
           target.shield = Math.max(0, target.shield - blocked);
           damage = Math.max(0, damage - blocked);
           target.hp = Math.max(0, target.hp - damage);
@@ -8879,6 +8880,7 @@
           target.shield = Math.max(0, target.shield - pierceCut);
         }
         const blocked = trueDamageActive ? 0 : Math.min(target.shield, damage);
+        if (globalThis.campaignMode && this.state?.campaign && target.id === "player" && blocked > 0) globalThis.campaignMode.recordCombatEvent(this.state.campaignStats, { type: "shieldAbsorbed", amount: blocked });
         if (!trueDamageActive) {
           target.shield = Math.max(0, target.shield - blocked);
           damage = Math.max(0, damage - blocked);
@@ -8895,8 +8897,10 @@
         if (textNotes.length) result.text += "\n" + textNotes.join("\n");
         if (card.mechanics?.includes("lifesteal")) {
           const heal = Math.round(Math.max(1, damage) * .28);
+          const hpBefore = actor.hp;
           setHpDisplayOverride(actor);
           actor.hp = Math.min(actor.maxHp, actor.hp + heal);
+          if (this.state?.campaign) globalThis.campaignMode.recordCombatEvent(this.state.campaignStats, { type: "heal", amount: actor.hp - hpBefore });
           result.popups.push({ type:"status heal", text:`吸血 +${formatNumber(heal)}`, side: actor.id });
           result.text += lifestealFromTalent
             ? `\n[吸血｜天赋] 【血契】根据实际伤害回复 ${formatNumber(heal)} 生命。`
@@ -8941,8 +8945,10 @@
       } else if (["heal","revive"].includes(card.effectType)) {
         let heal = Math.round(power * actor.profile.heal * (card.effectType === "revive" && actor.hp / actor.maxHp < .25 ? 1.45 : 1));
         if (/起死回生/.test(rawCardName)) heal = Math.max(0, actor.maxHp - actor.hp);
+        const hpBefore = actor.hp;
         setHpDisplayOverride(actor);
         actor.hp = Math.min(actor.maxHp, actor.hp + heal);
+        if (this.state?.campaign) globalThis.campaignMode.recordCombatEvent(this.state.campaignStats, { type: "heal", amount: actor.hp - hpBefore });
         let cleansed = false;
         if (card.mechanics?.includes("cleanse")) {
           const statusIndex = actor.statuses.findIndex(s => NEGATIVE_STATUS_TYPES.has(s.type));
