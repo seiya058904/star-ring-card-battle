@@ -52,4 +52,30 @@ assert.equal(campaignMode.shouldEnterBossPhase({ hpRatio: .4, phaseTriggered: tr
 assert.equal(campaignMode.recentBattles([{ id: 1 }], Array.from({ length: 25 }, (_, id) => ({ id: id + 2 }))).length, 20);
 assert.deepEqual(Array.from(campaignMode.resultActions({ victory: true, stage: 4 })), ["next", "retry", "route", "home"]);
 assert.deepEqual(Array.from(campaignMode.resultActions({ victory: true, stage: 5 })), ["retry", "route", "home"]);
+const resonanceState = { campaign: { costReduction: 2, enemyCostReduction: 2 } };
+assert.equal(campaignMode.effectiveCardCost(resonanceState, "player", { cost: 7 }), 5);
+assert.equal(campaignMode.effectiveCardCost(resonanceState, "enemy", { cost: 7 }), 5);
+assert.equal(campaignMode.effectiveCardCost({ campaign: {} }, "player", { cost: 1 }), 1);
+assert.equal(campaignMode.effectiveCardCost(resonanceState, "player", { cost: 1 }), 0);
+assert.equal(campaignMode.projectedEnergy(4, 10), 5);
+assert.equal(campaignMode.projectedEnergy(4, 10, 1), 4);
+assert.equal(campaignMode.passiveTriggerState("moluo", { turn: {}, match: {} }, "extraEnergy").match.moluo, true);
+assert.equal(campaignMode.passiveTriggerState("moluo", { turn: {}, match: { moluo: true } }, "extraEnergy"), null);
+let moluoFlags = { turn: {}, match: {} };
+for (let round = 1; round <= 3; round += 1) {
+  const next = campaignMode.passiveTriggerState("moluo", moluoFlags, "extraEnergy");
+  if (round === 1) assert.equal(next.match.moluo, true);
+  else assert.equal(next, null);
+  moluoFlags = next || moluoFlags;
+}
+assert.equal(campaignMode.aiCardScore({ name: "诅咒", effectType: "curse", power: 10, cost: 3 }, { style: "curse", playerHasCurse: false }), 40);
+assert.ok(campaignMode.aiCardScore({ name: "冻结", effectType: "freeze", power: 10, cost: 3 }, { style: "control", handSize: 1 }) > campaignMode.aiCardScore({ name: "普通攻击", effectType: "attack", power: 10, cost: 3 }, { style: "control", handSize: 1 }));
+const stat = campaignMode.createCombatStats();
+campaignMode.recordCombatEvent(stat, { type: "damage", amount: 100 });
+campaignMode.recordCombatEvent(stat, { type: "damage", amount: 40, summon: true });
+campaignMode.recordCombatEvent(stat, { type: "heal", amount: 80 });
+campaignMode.recordCombatEvent(stat, { type: "shield", amount: 50 });
+campaignMode.recordCombatEvent(stat, { type: "shieldAbsorbed", amount: 20 });
+assert.deepEqual({ damage: stat.damage, highestDamage: stat.highestDamage, summonDamage: stat.summonDamage, healing: stat.healing, shield: stat.shield, shieldAbsorbed: stat.shieldAbsorbed }, { damage: 140, highestDamage: 100, summonDamage: 40, healing: 80, shield: 50, shieldAbsorbed: 20 });
+assert.equal(campaignMode.drawCount(5, 7), 2);
 console.log("Campaign verification passed: 6 characters, 5 stages, 30-card decks, progression, mulligan, resonance, scoring.");
