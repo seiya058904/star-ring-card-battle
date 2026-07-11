@@ -6461,6 +6461,12 @@
       return "hostile-damage";
     }
 
+    function effectiveCardCost(state, side, card) {
+      return globalThis.campaignMode?.effectiveCardCost
+        ? globalThis.campaignMode.effectiveCardCost(state, side, card)
+        : Math.max(0, Number(card?.cost || 0));
+    }
+
     function getVisualTargets(actorSide, card) {
       const intent = getCardActionIntent(card);
       const selfSide = actorSide;
@@ -6594,14 +6600,15 @@
         const index = actor.hand.findIndex(card => card.instanceId === cardInstanceId);
         if (index < 0) return false;
         const card = actor.hand[index];
-        if (card.cost > actor.energy) {
-          this.log(`${actor.name}能量不足，无法使用「${card.name}」。`);
+        const effectiveCost = effectiveCardCost(this.state, side, card);
+        if (effectiveCost > actor.energy) {
+          this.log(`${actor.name}能量不足，无法使用「${card.name}」（需要${effectiveCost}点）。`);
           return false;
         }
         /* Lock MUST be set before any state mutation */
         this.state.actionLocked = true;
         setCombatInputLocked(true);
-        actor.energy -= card.cost;
+        actor.energy -= effectiveCost;
         actor.hand.splice(index, 1);
         actor.discardPile.push(card);
         setHandHoverSuppressed(true, 700);
@@ -6742,7 +6749,7 @@
         setTimeout(loop, 420);
       },
       chooseCard(enemy, player) {
-        const playable = enemy.hand.filter(card => safeNumber(card.cost, 99) <= enemy.energy);
+        const playable = enemy.hand.filter(card => effectiveCardCost(this.state, "enemy", card) <= enemy.energy);
         if (!playable.length) {
           const costly = enemy.hand.slice(0, 3).map(c => `${c.name}(费${c.cost})`).join("、");
           console.debug(`[AI] 敌方跳过：能量 ${enemy.energy}/${enemy.maxEnergy}，手牌 ${enemy.hand.length} 张，可用 0 张。示例: ${costly}`);
@@ -6750,7 +6757,7 @@
         }
         const lowHp = enemy.hp / enemy.maxHp < .38;
         const scored = playable.map(card => {
-          let score = card.power / Math.max(1, card.cost || 1);
+          let score = card.power / Math.max(1, effectiveCardCost(this.state, "enemy", card));
           if (lowHp && ["heal", "shield", "defense", "revive"].includes(card.effectType)) score *= 2.3;
           if (player.hp / player.maxHp < .28 && ["attack", "execute", "pierce"].includes(card.effectType)) score *= 1.8;
           if (["draw", "charge"].includes(card.effectType) && enemy.energy < 5) score *= 1.25;
@@ -7530,7 +7537,7 @@
         this.renderDuelUnit("playerUnit", gameEngine.state.player, true);
         this.renderSummons();
         this.renderOpponentHand();
-        document.getElementById("playerHand").innerHTML = gameEngine.state.player.hand.map(card => renderCard(card, card.cost > gameEngine.state.player.energy, gameEngine.state.enemy)).join("");
+        document.getElementById("playerHand").innerHTML = gameEngine.state.player.hand.map(card => renderCard(card, effectiveCardCost(gameEngine.state, "player", card) > gameEngine.state.player.energy, gameEngine.state.enemy)).join("");
         const playerEnergy = gameEngine.state.player.energy;
         const playerMaxEnergy = gameEngine.state.player.maxEnergy;
         document.getElementById("playerDeckCounters").innerHTML = `
@@ -7544,7 +7551,7 @@
         document.getElementById("turnLabel").textContent = gameEngine.state.turn === "player" ? "玩家回合" : "电脑回合";
         document.getElementById("battleRoundLabel").textContent = `第 ${gameEngine.state.round} 回合`;
         document.getElementById("endTurnBtn").disabled = gameEngine.state.turn !== "player" || gameEngine.state.gameOver || gameEngine.state.actionLocked || effectsRenderer?._playLock || hasPendingOverrides();
-        const canPlay = gameEngine.state.player.hand.some(card => card.cost <= gameEngine.state.player.energy);
+        const canPlay = gameEngine.state.player.hand.some(card => effectiveCardCost(gameEngine.state, "player", card) <= gameEngine.state.player.energy);
         document.getElementById("endTurnBtn").classList.toggle("pulse", gameEngine.state.turn === "player" && !canPlay);
         document.querySelectorAll("#playerHand .card").forEach(el => el.addEventListener("click", (event) => {
           event.preventDefault();
@@ -9013,7 +9020,7 @@
       if (actor.id === "enemy" && ["advanced","special"].includes(card.skillTier)) setTimeout(() => uiRenderer.showAiDialogue(card.skillTier === "special" ? "playSpecial" : "playAdvanced"), 120);
       if (target.id === "enemy" && result.amount > 0) setTimeout(() => uiRenderer.showAiDialogue(target.hp / target.maxHp < .3 ? "lowHp" : "takeDamage"), 420);
       this.log(result.text);
-      if (target.hp / target.maxHp < .35 && !target.talentUsed && ["人族","神人"].includes(target.race)) {
+      if (target.hp / target.maxHp < .35 && !target.talentUsed && ["人族","神人"].includes(target.race) && !(this.state?.campaign?.characterId === "lisaya" && target.id === "player")) {
         const gain = Math.round(target.maxHp * .08);
         setHpDisplayOverride(target);
         target.hp = Math.min(target.maxHp, target.hp + gain);
@@ -9057,7 +9064,11 @@
         const assistDamage = Math.max(1, Math.round(summon.power * assistMultiplier));
         delete summon.nextAssistMultiplier;
         delete summon.reinforcedBy;
+        const targetHpBeforeSummon = target.hp;
         target.hp = Math.max(0, target.hp - assistDamage);
+        if (gameEngine.state.campaign && fighter.id === "player") globalThis.campaignMode?.recordCombatEvent?.(gameEngine.state.campaignStats, { type: "damage", amount: Math.min(assistDamage, targetHpBeforeSummon), summon: true });
+        gameEngine.state.campaign && globalThis.checkCampaignHealthThresholds?.(target, targetHpBeforeSummon, { type: "summon", amount: assistDamage });
+        gameEngine.state.campaign && globalThis.checkCampaignBossPhase?.(target, targetHpBeforeSummon);
         summonAssistEvents.push({ summon, target, amount: assistDamage });
         gameEngine.log(`[召唤攻击] ${summon.name} 对${target.name}造成 ${formatNumber(assistDamage)} 伤害${assistMultiplier > 1 ? "（强化协击）" : ""}。`);
         effectsRenderer.showSummonAssistAttack?.({ side: fighter.id, targetSide: target.id, summon, amount: assistDamage });
@@ -10061,26 +10072,27 @@
     }
 
     renderCard = function(card, unplayable, currentTarget = null) {
+      const effectiveCost = effectiveCardCost(gameEngine.state, "player", card);
       const [c1, c2] = cardColors(card);
       const typeName = card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能";
       const rankText = card.skillRank || (card.rankMode === "fixed" ? "固定规格" : card.rankMode === "ultimate" ? "终极" : "");
       const tier = tierNameFor(card);
       const visualTier = inferVisualTier(card);
       const frameStyle = atlasBackgroundStyle(cardFrameSprite(card), 162, 286);
-      const costSprite = card.cost >= 1 && card.cost <= 10 ? `cost${card.cost}` : "";
+      const costSprite = effectiveCost >= 1 && effectiveCost <= 10 ? `cost${effectiveCost}` : "";
       const costStyle = costSprite ? `--cost-sprite-img:url('assets/ui/sprites/${costSprite}.png')` : "";
       const artStyle = cardArtBackgroundStyle(card);
       const advantageHint = cardHasAdvantageAgainst(card, currentTarget) ? `<div class="card-advantage-badge">克制 +20%</div>` : "";
-      const orbitHtml = card.cost >= 8 ? `
+      const orbitHtml = effectiveCost >= 8 ? `
         <div class="card-orbit-system" aria-hidden="true">
-          <span class="orbit orbit-1"></span>${card.cost >= 9 ? '<span class="orbit orbit-2"></span>' : ''}${card.cost >= 10 ? '<span class="orbit orbit-3"></span>' : ''}
+          <span class="orbit orbit-1"></span>${effectiveCost >= 9 ? '<span class="orbit orbit-2"></span>' : ''}${effectiveCost >= 10 ? '<span class="orbit orbit-3"></span>' : ''}
         </div>` : '';
       return `
-        <div class="card ${unplayable ? "unplayable" : ""} card-tier-${visualTier}" data-visual-tier="${visualTier}" data-instance-id="${card.instanceId || ""}" data-tier="${tier}" data-drama-tier="${dramaTierNameFor(card)}" data-cost="${card.cost}" data-element="${card.element}" data-effect="${card.effectType}" data-symbol="${card.mark || "✦"}" style="--c1:${c1};--c2:${c2};${frameStyle}">
+        <div class="card ${unplayable ? "unplayable" : ""} card-tier-${visualTier}" data-visual-tier="${visualTier}" data-instance-id="${card.instanceId || ""}" data-tier="${tier}" data-drama-tier="${dramaTierNameFor(card)}" data-cost="${effectiveCost}" data-element="${card.element}" data-effect="${card.effectType}" data-symbol="${card.mark || "✦"}" style="--c1:${c1};--c2:${c2};${frameStyle}">
           ${orbitHtml}
           <div class="card-top">
             <div class="card-name">${formatCardTitle(card)}</div>
-            ${costSprite ? `<div class="card-cost" style="${costStyle}" aria-label="${card.cost} 能量"></div>` : ""}
+            ${costSprite ? `<div class="card-cost" style="${costStyle}" aria-label="${effectiveCost} 能量"></div>` : `<div class="card-cost">${effectiveCost}</div>`}
           </div>
           <div class="card-meta">
             <span class="pill">${card.element}</span>
