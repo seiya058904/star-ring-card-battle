@@ -26,9 +26,26 @@ Web published at: `https://seiya058904.github.io/star-ring-card-battle/`
   - `ui/` — battle UI atlas (`battle-ui-atlas.png`) with per-sprite exports in `ui/sprites/` (element art, card frames, cost badges, status icons)
   - `ui/sprites/SPRITES.md` — sprite coordinate contact sheet documenting atlas positions
   - `asset-manifest.json`, `sprite-atlas-map.json` — sprite cropping metadata (for documentation only; not referenced from index.html)
-- **`scripts/`** — Node.js scripts for Android asset management
+- **`js/`** — external `<script>` files loaded after the main block (lines 10345+). Each runs in its own scope but accesses `index.html` globals via `globalThis`:
+  - `battle-rules.js` — energy formula, hand limit, round energy scaling
+  - `fixed-card-library.js` — 6 fixed character definitions with 30-card decks each
+  - `campaign-data.js` — campaign stages, enemies, difficulty modifiers
+  - `campaign-mode.js` — campaign progression, scoring, intent system, star ring resonance
+  - `campaign-ui.js` — campaign HUD, stage selection, passive overlays, wraps `gameEngine`/`uiRenderer` methods
+  - `audio-manager.js` — Web Audio synthesized sound bank + file-based fallback; no runtime dependency on external audio files
+  - `fixed-game-rules.js` — **critical override layer**: rewrites `gameEngine.applyCard`, `playCard`, `endTurn`, `beginTurn`, `tickStatuses`, `statusMultiplier`, `resolveDamage`, `draw`, `applyStatus`, and `aiController.chooseCard`. All race talents, card mechanics, summon logic, and status interactions live here. Any gameplay change MUST be checked against this file.
+- **`scripts/`** — Node.js verification and sync scripts:
   - `sync-android-web-assets.mjs` — copies root `index.html` + `assets/` to `android/app/src/main/assets/www/`, replaces viewport with `width=1920` desktop variant
   - `verify-android-web-assets.mjs` — validates Android web copy matches root (SHA-256 asset comparison, viewport check, asset reference resolution, WebView setting audit)
+  - `verify-fixed-card-library.mjs` — validates fixed character decks and card generation
+  - `verify-campaign.mjs` — validates campaign mode logic and progression
+  - `verify-special-card-behavior.mjs` — validates special card name effects and mechanics
+  - `verify-audio-library.mjs` — validates audio metadata and fallback behavior
+  - `verify-battle-start-smoke.mjs` — smoke test for battle initialization
+  - `verify-campaign-display-smoke.mjs` — smoke test for campaign UI rendering
+  - `verify-battle-effects.mjs` — validates battle visual effects
+- **`docs/`** — audit notes, art reports, design specs, and plan documents
+- **`AUDIO-LICENSES.md`** — CC0 audio source attribution
 - **`android/`** — Android WebView wrapper project:
   - `app/build.gradle` — app-level Gradle (Groovy DSL): AGP 8.5.2, Kotlin 1.9.24, compileSdk=34, minSdk=23, targetSdk=34
   - `build.gradle` — root Gradle declaring plugin versions
@@ -106,6 +123,18 @@ Visual functions (`renderCard`, `renderFighter`, `renderCardPreview`, `cardColor
 - `renderFighter` (final ~9750) — HUD status icons, enemy hand display
 - `renderCardPreview` (final ~9829) — art box, cost badge, detail grid
 - `skillIconFor` — element+effect-type icon lookup, redefined multiple times
+
+### globalThis Exposure Pattern
+The main `<script>` block exposes key objects to `globalThis` at line ~10334 via `Object.assign(globalThis, { gameEngine, uiRenderer, aiController, storageManager, deckBuilder, effectsRenderer, shareOwnerDamageWithSummon, upsertSummonEntity })`. Additionally, `globalThis.ASSETS = ASSETS` is set at line ~5892. External scripts in `js/` access these via `globalThis` or bare names (resolved to `window` in browser global scope).
+
+### External Script Override Chain
+`js/fixed-game-rules.js` loads AFTER the main block and overrides core `gameEngine` methods. The load order is:
+1. Main `<script>` block defines originals + monkey-patches
+2. `js/battle-rules.js` → `js/fixed-card-library.js` → `js/campaign-data.js` → `js/campaign-mode.js` → `js/audio-manager.js` → `js/fixed-game-rules.js` → `js/campaign-ui.js`
+3. `fixed-game-rules.js` rewrites `applyCard`, `playCard`, `endTurn`, `beginTurn`, `tickStatuses`, `statusMultiplier`, `resolveDamage`, `draw`, `applyStatus`
+4. `campaign-ui.js` further wraps some methods for campaign-specific passives
+
+**Any change to game logic must account for this override chain.** The `fixed-game-rules.js` version is what actually runs in production.
 
 ## CSS Architecture
 
@@ -218,12 +247,14 @@ Commit prefixes: `feat:`, `fix:`, `balance:`, `docs:`, `assets:`, `chore:`
 ## Common Operations
 - **Run**: open `index.html` in browser or `python -m http.server 8000`
 - **Test**: manual browser testing — check console for errors; no test framework
+- **Verify all**: `node scripts/verify-fixed-card-library.mjs && node scripts/verify-campaign.mjs && node scripts/verify-special-card-behavior.mjs && node scripts/verify-audio-library.mjs`
 - **Add character**: add entry to `DEFAULT_CHARACTER_TEMPLATES`
 - **Add skill names**: add to `DEFAULT_SKILL_NAMES.normal/advanced/special`
 - **Add deck archetype**: add to `DEFAULT_DECK_ARCHETYPES`
 - **Add asset**: place in `assets/` subdirectory, register path in `ASSETS`
 - **Edit CSS**: check `battle-visual-polish-final` first — the active block; older blocks above it are historical
 - **Sync Android web copy**: `node scripts/sync-android-web-assets.mjs && node scripts/verify-android-web-assets.mjs`
+- **Change game logic**: edit `js/fixed-game-rules.js` (the active override), not the originals in `index.html`
 
 ## Safety Rules
 - Never `git push --force` or `git reset --hard` on main
