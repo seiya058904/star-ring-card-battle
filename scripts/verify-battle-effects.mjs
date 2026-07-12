@@ -23,6 +23,9 @@ assert.match(html, /effect\?\.type === "status" && Number\.isFinite\(effect\?\.b
 assert.match(fixedRules, /const recipient = \["增幅", "减伤", "闪避", "连锁", "复生"\]\.includes\(effect\.status\) \? actor : target/);
 assert.match(fixedRules, /const shared = instantKill/);
 assert.match(html, /resolveCardEffectAmount/);
+assert.match(html, /Math\.max\(0, Math\.round\(resolveEffectAmount\(effect, actor, card\)/);
+assert.match(html, /getCardActionIntent\(card\)\.startsWith\("friendly"\) \? "自身" : "敌方单体"/);
+assert.match(html, /status: "状态"/);
 assert.match(html, /\["复生", "增幅", "减伤", "闪避", "连锁"\]/);
 assert.match(html, /s\.persistent \? "本场" : s\.turns/);
 

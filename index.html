@@ -6234,7 +6234,7 @@
       return 0;
     }
     function resolveCardEffectAmount(effect, actor, card) {
-      return resolveEffectAmount(effect, actor, card) * (Number(card?.effectMultiplier) || 1);
+      return Math.max(0, Math.round(resolveEffectAmount(effect, actor, card) * (Number(card?.effectMultiplier) || 1)));
     }
     globalThis.resolveCardEffectAmount = resolveCardEffectAmount;
     // 获取一张卡牌的主数值（兼容新旧系统）
@@ -7966,7 +7966,7 @@
 
     /* ===== Standard fixed role/card system refactor ===== */
     const EFFECT_TYPE_LABELS_CN = {
-      attack: "攻击", defense: "防御", heal: "治疗", draw: "抽牌", charge: "蓄力",
+      attack: "攻击", damage: "伤害", status: "状态", defense: "防御", heal: "治疗", draw: "抽牌", charge: "蓄力",
       burn: "燃烧", freeze: "冻结", curse: "诅咒", summon: "召唤", revive: "复活",
       buff: "增益", debuff: "削弱", shield: "护盾", execute: "斩杀", control: "控制",
       lifesteal: "吸血", pierce: "穿透"
@@ -8708,12 +8708,14 @@
     /* 状态 tooltip 说明生成器 */
     function describeStatus(type, turns, power, source, maxHp) {
       const map = {
-        "增幅": { label:"增益", desc: p => `造成伤害提高 ${Math.round((p||0.25)*100)}%` },
-        "虚弱": { label:"减益", desc: p => `受到伤害提高 ${Math.round((p||0.2)*100)}%` },
+        "增幅": { label:"增益", desc: p => `下一次攻击额外造成 ${formatNumber(p||0)} 点伤害` },
+        "虚弱": { label:"减益", desc: p => `接下来受到攻击时额外受到 ${formatNumber(p||0)} 点伤害` },
         "削弱": { label:"减益", desc: p => `受到伤害提高 ${Math.round((p||0.2)*100)}%` },
         "破甲": { label:"减益", desc: p => `受到伤害提高 ${Math.round((p||0.2)*100)}%` },
-        "减伤": { label:"增益", desc: p => `受到伤害降低 ${Math.round((p||0.18)*100)}%` },
-        "闪避": { label:"增益", desc: p => `受到伤害降低 ${Math.round((p||0.35)*100)}%` },
+        "减伤": { label:"增益", desc: p => `下一次受到攻击时减少 ${formatNumber(p||0)} 点伤害` },
+        "闪避": { label:"增益", desc: p => `下一次受到攻击时减少 ${formatNumber(p||0)} 点伤害` },
+        "连锁": { label:"增益", desc: p => `下一次攻击额外造成 ${formatNumber(p||0)} 点伤害` },
+        "复生": { label:"增益", desc: p => `下一次受到致命伤害时恢复 ${formatNumber(p||0)} 生命` },
         "蓄力": { label:"增益", desc: p => `下一次攻击/燃烧/穿透/斩杀伤害提高 ${Math.round((p||0.25)*100)}%` },
         "禁锢": { label:"控制", desc: () => "本回合无法行动，不能出牌" },
         "冻结": { label:"控制", desc: () => "本回合能量恢复降低" },
@@ -10101,7 +10103,7 @@
       const typeName = card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能";
       const rankText = card.skillRank || (card.rankMode === "fixed" ? "固定规格" : card.rankMode === "ultimate" ? "终极" : "");
       const artBg = cardArtBackgroundStyle(card);
-      const target = card.effectType === "heal" || card.effectType === "defense" || card.effectType === "shield" || card.effectType === "buff" ? "自身" : "单体";
+      const target = getCardActionIntent(card).startsWith("friendly") ? "自身" : "敌方单体";
       return `
         <div class="preview-card-title"><span>${formatCardTitle(card)}</span><span>${card.cost} 能量</span></div>
         <div class="preview-card-meta">
@@ -10251,7 +10253,7 @@
       if (!card) return `<div class="preview-empty">悬停手牌查看完整说明</div>`;
       const typeName = card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能";
       const rankText = card.skillRank || (card.rankMode === "fixed" ? "固定规格" : card.rankMode === "ultimate" ? "终极" : "");
-      const target = card.effectType === "heal" || card.effectType === "defense" || card.effectType === "shield" || card.effectType === "buff" ? "自身" : "单体";
+      const target = getCardActionIntent(card).startsWith("friendly") ? "自身" : "敌方单体";
       const artStyle = cardArtBackgroundStyle(card);
       const costSprite = card.cost >= 1 && card.cost <= 10 ? `cost${card.cost}` : "";
       const advantageLine = currentAdvantageText(card, gameEngine.state?.enemy);
