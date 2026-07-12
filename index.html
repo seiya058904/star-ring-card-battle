@@ -5507,6 +5507,12 @@
         return "cardart_heal_restoration.png";
       }
       if (/\u4e0d\u706d\u9b54\u8eaf|\u9b54\u8eaf/.test(name)) return "cardart_dark_lifesteal_drain.png";
+      if (cardArtHasMechanic(card, ["attack", "damage", "pierce", "execute", "lifesteal"])) {
+        if (elementKey === "ice") return "cardart_ice_blade_storm.png";
+        if (elementKey === "fire") return "cardart_fire_lava_eruption.png";
+        if (elementKey === "thunder") return "cardart_thunder_spear.png";
+        return elementKey === "dark" ? "cardart_dark_shadow_tentacle.png" : "cardart_arcane_magic_circle.png";
+      }
       if (cardArtHasMechanic(card, ["shield", "defense", "guard", "damageReduction"])) {
         if (elementKey === "earth" || cardArtHasMechanic(card, ["fortify"])) return "cardart_earth_fortress_guard.png";
         return "cardart_shield_protection.png";
@@ -6206,8 +6212,10 @@
     // 统一效果数值解析：新系统 ratio（等级缩放）→ 旧 system amount → 最旧 card.power
     function resolveEffectAmount(effect, actor, card) {
       // ratio = 等级缩放字段（损伤/治疗/护盾/状态都用它）
+      const base = typeof levelHp === "function" ? levelHp(actor?.level || 50) : 1e6;
+      if (effect?.type === "status" && Number.isFinite(effect?.burnRatio))
+        return Math.max(0, Math.round(base * effect.burnRatio));
       if (Number.isFinite(effect?.ratio)) {
-        const base = typeof levelHp === "function" ? levelHp(actor?.level || 50) : 1e6;
         const prof = actor?.profile || { damage: 1, heal: 1, defense: 1 };
         if (effect.type === "damage" || effect.type === "bonusDamage")
           return Math.max(0, Math.round(base * effect.ratio * (prof.damage || 1)));
@@ -6215,8 +6223,6 @@
           return Math.max(0, Math.round(base * effect.ratio * (prof.heal || 1)));
         if (effect.type === "shield")
           return Math.max(0, Math.round(base * effect.ratio * (prof.defense || 1)));
-        if (effect.type === "status" && effect.burnRatio !== undefined)
-          return Math.max(0, Math.round(base * effect.burnRatio));
         // 增幅/减伤/闪避/虚弱/连锁等状态：ratio 代表等级缩放后的绝对值
         return Math.max(0, Math.round(base * effect.ratio * (prof.damage || 1)));
       }
@@ -6956,20 +6962,22 @@
           targetUnit?.classList.remove("hit", "heal-impact", "shield-impact", "status-impact");
           void targetUnit?.offsetWidth;
           targetUnit?.classList.add(impactClass);
-          if (result.amount > 0) {
+          const impactSound = audioManager?.cardImpactSoundEvent?.(card, result);
+          if (impactSound) audioManager.play(impactSound);
+          const visualAmounts = result.visualAmounts?.length ? result.visualAmounts : result.amount > 0 ? [{ amount: result.amount, side: numberSide, type: card.effectType }] : [];
+          field.querySelectorAll(".float-text").forEach(el => el.remove());
+          visualAmounts.filter(item => item.amount > 0).forEach((item, index) => {
             const text = document.createElement("div");
+            const side = item.side || numberSide;
+            const effectType = item.type || card.effectType;
             text.className = `float-text ${drama.tier} ${result.intent || ""}`;
-            const targetX = numberSide === "player" ? "28%" : "72%";
-            const targetY = numberSide === "player" ? "58%" : "50%";
-            text.style.setProperty("--fx-x", targetX);
-            text.style.setProperty("--fx-y", targetY);
-            text.style.setProperty("--fx-color", this.textColor(card.effectType, card.element));
-            text.textContent = this.valuePrefix(card.effectType) + formatNumber(result.amount);
-            // Remove any stale float-text before appending new one
-            field.querySelectorAll(".float-text").forEach(el => el.remove());
+            text.style.setProperty("--fx-x", side === "player" ? "28%" : "72%");
+            text.style.setProperty("--fx-y", `calc(${side === "player" ? "58%" : "50%"} + ${index * 24}px)`);
+            text.style.setProperty("--fx-color", this.textColor(effectType, card.element));
+            text.textContent = this.valuePrefix(effectType) + formatNumber(item.amount);
             field.appendChild(text);
-            setTimeout(() => text.remove(), drama.numbers);
-          }
+            setTimeout(() => text.remove(), drama.numbers + index * 80);
+          });
           this.showMechanicPopups(result, drama);
           if (result.summonGuard?.amount > 0) this.showSummonGuardDamage(result.summonGuard);
           this.showTargetImpact(result, card, drama);
@@ -10299,8 +10307,8 @@
   <script src="js/campaign-data.js"></script>
   <script src="js/campaign-mode.js"></script>
   <script src="js/audio-manager.js"></script>
-  <script src="js/campaign-ui.js"></script>
   <script src="js/fixed-game-rules.js"></script>
+  <script src="js/campaign-ui.js"></script>
 
 
   <style id="battle-visual-polish-final">

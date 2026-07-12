@@ -7,9 +7,9 @@
   const STATUS_LABELS = { "燃烧":"每回合开始造成持续伤害（最多3层）", "诅咒":"每回合开始造成持续伤害（取最高值）", "冻结":"下回合能量 -1", "禁锢":"本回合不能行动，结束后获得控制抗性", "增幅":"伤害提高", "虚弱":"受到伤害提高", "减伤":"受到伤害降低", "闪避":"有概率闪避攻击", "连锁":"下一次伤害提高" };
   const rounded = value => Math.max(0, Math.round(Number(value) || 0));
   // 战斗时按等级 × ratio × 职业档案算出实际数值
-  const effectAmount = (fighter, effect) => {
+  const effectAmount = (fighter, effect, card = null) => {
     const fn = typeof globalThis.resolveEffectAmount === "function" ? globalThis.resolveEffectAmount : (e, a, c) => Math.max(0, Math.round(Number(e?.amount || 0)));
-    return fn(effect, fighter, null);
+    return fn(effect, fighter, card) * (Number(card?.effectMultiplier) || 1);
   };
 
   global.fixedCardDescription = function fixedCardDescription(card, ctx) {
@@ -136,13 +136,16 @@
   };
 
   gameEngine.applyCard = function(actor, target, card) {
+    const expectedTarget = this.state?.[actor.id === "player" ? "enemy" : "player"];
+    if (expectedTarget && target !== expectedTarget) target = expectedTarget;
+    setHpDisplayOverride(actor); setHpDisplayOverride(target);
     const effectType = card.effectType || "";
     const defaultIntent = typeof getCardActionIntent === "function" ? getCardActionIntent(card) : "hostile-damage";
-    const result = { text: `${actor.name}使用「${card.name}」。`, amount: 0, kind: card.effectType, element: card.element, tier: card.skillTier, intent: defaultIntent, actorId: actor.id, targetId: actor.id, popups: [] };
+    const result = { text: `${actor.name}使用「${card.name}」。`, amount: 0, kind: card.effectType, element: card.element, tier: card.skillTier, intent: defaultIntent, actorId: actor.id, targetId: actor.id, popups: [], visualAmounts: [], visualTargets: { number: actor.id, impact: actor.id, shake: false } };
     for (const effect of card.effects || []) {
       if (effect.type === "damage") {
         result.targetId = target.id; // 伤害动画打向敌方
-        const baseAmount = effectAmount(actor, effect);
+        const baseAmount = effectAmount(actor, effect, card);
         // 等级缩放实数值增幅：来自 actor 的 增幅/连锁，target 的 虚弱
         const boostFromActor = actor.statuses.filter(s => s.type === "增幅" || s.type === "连锁").reduce((sum, s) => sum + (s.power || 0), 0);
         const boostFromWeaken = target.statuses.filter(s => s.type === "虚弱").reduce((sum, s) => sum + (s.power || 0), 0);
@@ -150,6 +153,8 @@
         const totalAmount = Math.max(0, (baseAmount + boostFromActor + boostFromWeaken) * multiplier);
         const settlement = this.resolveDamage({ source: actor, target, amount: totalAmount, element: card.element, pierce: effect.pierce || 0 });
         result.amount += settlement.total;
+        result.visualAmounts.push({ amount: settlement.total, side: target.id, type: "damage" });
+        result.visualTargets = { number: target.id, impact: target.id, shake: settlement.total > 0 };
         result.text += settlement.dodged ? ` ${target.name}闪避了攻击。` : ` 造成${formatNumber(settlement.total)}伤害。`;
         // 消耗层数：增幅/连锁（攻击方），虚弱（受击方）
         actor.statuses.forEach(s => { if (s.type === "增幅" || s.type === "连锁") s.charges = (s.charges || 1) - 1; });
@@ -157,15 +162,23 @@
         actor.statuses = actor.statuses.filter(s => (s.charges === undefined || s.charges > 0) && s.turns > 0);
         target.statuses = target.statuses.filter(s => (s.charges === undefined || s.charges > 0) && s.turns > 0);
       } else if (effect.type === "heal") {
-        const requested = effectAmount(actor, effect); const before = actor.hp;
+        const requested = effectAmount(actor, effect, card); const before = actor.hp;
         actor.hp = Math.min(actor.maxHp, actor.hp + requested);
         const actual = actor.hp - before;
         result.amount += actual;
+        result.visualAmounts.push({ amount: actual, side: actor.id, type: "heal" });
+        result.targetId = actor.id;
+        result.visualTargets = { number: actor.id, impact: actor.id, shake: false };
+        result.popups.push({ type: "status heal", text: `恢复 +${formatNumber(actual)}`, side: actor.id });
         if (actor.id === "player" && this.state.combatStats) { this.state.combatStats.healing += actual; this.state.combatStats.overheal = (this.state.combatStats.overheal || 0) + requested - actual; }
         result.text += ` 恢复${formatNumber(actual)}生命。`;
       } else if (effect.type === "shield") {
-        const amount = effectAmount(actor, effect); actor.shield += amount;
+        const amount = effectAmount(actor, effect, card); actor.shield += amount;
         result.amount += amount;
+        result.visualAmounts.push({ amount, side: actor.id, type: "shield" });
+        result.targetId = actor.id;
+        result.visualTargets = { number: actor.id, impact: actor.id, shake: false };
+        result.popups.push({ type: "status shield", text: `护盾 +${formatNumber(amount)}`, side: actor.id });
         if (actor.id === "player" && this.state.combatStats) this.state.combatStats.shield += amount;
         result.text += ` 获得${formatNumber(amount)}护盾。`;
       } else if (effect.type === "draw") {
@@ -175,7 +188,7 @@
       } else if (effect.type === "status") {
         const recipient = ["增幅", "减伤", "闪避", "连锁"].includes(effect.status) ? actor : target;
         result.targetId = recipient.id; // 状态动画作用于实际接收方
-        const statusPower = effect.burnRatio !== undefined ? effectAmount(actor, effect) : (effect.ratio ?? effect.amount ?? effect.power ?? 0);
+        const statusPower = effect.burnRatio !== undefined ? effectAmount(actor, effect, card) : (effect.ratio ?? effect.amount ?? effect.power ?? 0) * (Number(card.effectMultiplier) || 1);
         const status = this.applyStatus(recipient, { ...effect, power: statusPower, sourceOwnerId: actor.id, source: card.name });
         if (status) {
           result.text += ` ${recipient.name}获得${status.type}${status.turns}回合。`;
@@ -183,11 +196,14 @@
           if (effect.ratio && statusPower > 0) result.popups.push({ type: "status flat", text: `+${formatNumber(statusPower)} ${status.type}`, side: recipient.id });
         }
       } else if (effect.type === "summon") {
-        const power = effectAmount(actor, effect);
+        const power = effectAmount(actor, effect, card);
         const summon = { id: deterministicId("summon"), name: `${card.name}召唤物`, ownerId: actor.id, power: Math.max(1, rounded(power * .3)), maxHp: rounded(actor.maxHp * .35), hp: rounded(actor.maxHp * .35) };
         actor.summons = [summon]; result.text += ` 召唤${summon.name}。`;
       }
     }
+    const hasDamage = result.visualAmounts.some(item => item.type === "damage" && item.amount > 0);
+    result.targetId = hasDamage ? target.id : actor.id;
+    result.visualTargets = { number: hasDamage ? target.id : actor.id, impact: hasDamage ? target.id : actor.id, shake: hasDamage };
     this.log(result.text);
     effectsRenderer?.play?.(card, result);
     return result;
@@ -239,7 +255,7 @@
     actor.energy -= cost; actor.hand.splice(index, 1);
     (card.afterPlay === "exhaust" ? actor.exhaustPile : actor.discardPile).push(card);
     this.applyCard(actor, target, card);
-    if (actor.id === "player") audioManager?.playCard(card);
+    audioManager?.playCard(card);
     if (actor.id === "player" && state.combatStats) { state.combatStats.cards += 1; if (card.tier === "advanced") state.combatStats.advanced += 1; if (card.tier === "special") state.combatStats.special += 1; }
     this.checkGameOver(); uiRenderer.render(); return true;
   };
@@ -300,7 +316,7 @@
     };
   }
   uiRenderer.openBattlePrep = function() {
-    const options = library.characterDefinitions.map(character => `<button class="campaign-card" type="button" data-fixed-character="${character.id}"><h3>${escapeHtml(character.name)}</h3><small>${escapeHtml(character.race)} · ${escapeHtml(character.profession)} · ${character.deck.length} 张固定卡</small></button>`).join("");
+    const options = library.characterDefinitions.map(character => `<button class="campaign-card" type="button" data-fixed-character="${character.id}"><h3>${escapeHtml(character.name)}</h3><small>${escapeHtml(character.race)} · ${escapeHtml(character.profession)} · 等级 ${character.level} · 属性 ${escapeHtml(character.elements.join("、"))} · ${character.deck.length} 张固定卡</small></button>`).join("");
     this.openModal("选择固定角色", `<p class="small-note">沙盒与战役共用同一套角色卡组；卡组不可生成或修改。</p><div class="campaign-grid">${options}</div>`, { modalClass: "campaign-modal", afterRender: () => document.querySelectorAll("[data-fixed-character]").forEach(button => button.addEventListener("click", () => { this.selectedDeck = library.createRuntimeDeck(button.dataset.fixedCharacter); this.closeModal(); this.startBattle(); })) });
   };
   uiRenderer.startBattle = async function() {

@@ -64,7 +64,7 @@
     [1, [effect("damage", { ratio: BASE_RATIO(.38) })]], [1, [effect("shield", { ratio: BASE_RATIO(.32) })]],
     [1, [effect("energy", { amount: 1 })]], [2, [effect("heal", { ratio: BASE_RATIO(.30) })]],
     [2, [effect("draw", { amount: 2 })]], [2, [effect("damage", { ratio: BASE_RATIO(.52), pierce: .35 })]],
-    [2, [effect("shield", { ratio: BASE_RATIO(.26) }), effect("status", { status: "增幅", amount: .12, turns: 1 })]],
+    [2, [effect("damage", { ratio: BASE_RATIO(.52) }), effect("status", { status: "增幅", amount: .12, turns: 1 })]],
     [3, [effect("damage", { ratio: BASE_RATIO(.72) })]], [3, [effect("shield", { ratio: BASE_RATIO(.62) })]],
     [2, [effect("damage", { ratio: BASE_RATIO(.24) }), effect("status", { status: "虚弱", amount: .14, turns: 2 })]],
     [2, [effect("energy", { amount: 2 })]], [2, [effect("status", { status: "闪避", amount: .35, turns: 1 })]],
@@ -72,7 +72,14 @@
   ];
 
   // 效果构造：普通（cost 2–7）/ 高级（cost 8–10），全部 ratio 系数、战斗时按等级重算
-  const buildEffects = (tierName, cost, element, variant) => {
+  const semanticEffectType = name => {
+    const value = String(name || "");
+    if (/治愈|治疗|回复|急救/u.test(value)) return "heal";
+    if (/护盾|防御|屏障|壁垒|铠甲|庇护|守护|磐石/u.test(value)) return "shield";
+    if (/斩|击|箭|刺|爆|裁决|穿刺|突袭|重击|刀|剑|锤|落雷|雷霆|风暴|反击/u.test(value)) return "damage";
+    return "";
+  };
+  const buildEffects = (tierName, cost, element, variant, name = "") => {
     const status = statusFor(element);
     const dot = ["燃烧", "诅咒"].includes(status);
     const r = (n) => BASE_SCALE * COST_MULTIPLIER[cost] * n;
@@ -88,6 +95,10 @@
     const healE = n => effect("heal", { ratio: r(n), element });
     const statusDot = (st, amt, turns) => effect("status", { status: st, burnRatio: amt, turns });
     const statusFlat = (st, amt, turns, charges) => effect("status", { status: st, ratio: BASE_SCALE * COST_MULTIPLIER[cost] * amt, turns, charges });
+    const semantic = semanticEffectType(name);
+    if (semantic === "heal") return [healE(tierName === "normal" ? .9 : 1.05)];
+    if (semantic === "shield") return [shieldE(tierName === "normal" ? .9 : 1.05)];
+    if (semantic === "damage") return [dmg(tierName === "normal" ? 1.0 : 1.1)];
     if (tierName === "normal") {
       switch (variant % 4) {
         case 0: return [dmg(1.0)];
@@ -161,8 +172,10 @@
     { let c = 2; while (normalCosts.length < plan.normal) { normalCosts.push(c); c = c >= 7 ? 2 : c + 1; } }
     for (let i = 0; i < plan.normal; i += 1) {
       const cost = normalCosts[i];
-      const element = elements[i % elements.length];
-      deck.push(register({ id: `${character.id}-skill-${deck.length + 1}`, name: pickName("normal", element), tier: "normal", element, cost, afterPlay: "discard", effects: buildEffects("normal", cost, element, i) }));
+      const name = pickName("normal", elements[i % elements.length]);
+      const semanticElement = inferElement(name);
+      const element = semanticElement && (character.elements.includes("全系") || elements.includes(semanticElement)) ? semanticElement : elements[i % elements.length];
+      deck.push(register({ id: `${character.id}-skill-${deck.length + 1}`, name, tier: "normal", element, cost, afterPlay: "discard", effects: buildEffects("normal", cost, element, i, name) }));
     }
     // 高级技能卡（advanced + special）：cost 8..maxHighCost(level)
     if (plan.advanced + plan.special > 0) {
@@ -176,13 +189,17 @@
       const specialCosts = seq.slice(plan.advanced);
       for (let i = 0; i < plan.advanced; i += 1) {
         const cost = advancedCosts[i];
-        const element = elements[(plan.normal + i) % elements.length];
-        deck.push(register({ id: `${character.id}-skill-${deck.length + 1}`, name: pickName("advanced", element), tier: "advanced", element, cost, afterPlay: "discard", effects: buildEffects("advanced", cost, element, i) }));
+        const name = pickName("advanced", elements[(plan.normal + i) % elements.length]);
+        const semanticElement = inferElement(name);
+        const element = semanticElement && (character.elements.includes("全系") || elements.includes(semanticElement)) ? semanticElement : elements[(plan.normal + i) % elements.length];
+        deck.push(register({ id: `${character.id}-skill-${deck.length + 1}`, name, tier: "advanced", element, cost, afterPlay: "discard", effects: buildEffects("advanced", cost, element, i, name) }));
       }
       for (let i = 0; i < plan.special; i += 1) {
         const cost = specialCosts[i];
-        const element = elements[(plan.normal + plan.advanced + i) % elements.length];
-        deck.push(register({ id: `${character.id}-skill-${deck.length + 1}`, name: pickName("special", element), tier: "special", element, cost, afterPlay: "exhaust", effects: buildEffects("special", cost, element, i) }));
+        const name = pickName("special", elements[(plan.normal + plan.advanced + i) % elements.length]);
+        const semanticElement = inferElement(name);
+        const element = semanticElement && (character.elements.includes("全系") || elements.includes(semanticElement)) ? semanticElement : elements[(plan.normal + plan.advanced + i) % elements.length];
+        deck.push(register({ id: `${character.id}-skill-${deck.length + 1}`, name, tier: "special", element, cost, afterPlay: "exhaust", effects: buildEffects("special", cost, element, i, name) }));
       }
     }
     return Object.freeze({ ...character, elements: Object.freeze(character.elements.slice()), allowedElements: Object.freeze(elements.slice()), deck: Object.freeze(deck) });

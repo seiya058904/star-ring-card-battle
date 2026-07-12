@@ -12,6 +12,7 @@ for (const file of ["js/battle-rules.js", "js/fixed-card-library.js"]) vm.runInC
 
 const { fixedCardLibrary, battleRules } = context;
 const resolverSource = await readFile("js/fixed-game-rules.js", "utf8");
+const librarySource = await readFile("js/fixed-card-library.js", "utf8");
 assert.equal(fixedCardLibrary.characterDefinitions.length, 30);
 assert.equal(new Set(Object.keys(fixedCardLibrary.cards)).size, Object.keys(fixedCardLibrary.cards).length);
 for (const character of fixedCardLibrary.characterDefinitions) {
@@ -34,6 +35,17 @@ for (const character of fixedCardLibrary.characterDefinitions) {
       // 非 DOT 状态（增幅/减伤/闪避/连锁/虚弱，以及变体3的燃烧/诅咒乘数版本）
       if (effect.type === "status" && effect.burnRatio === undefined) assert.ok(Number.isFinite(effect.ratio) || Number.isFinite(effect.amount), `${cardId} 非dot状态需要 ratio 或 amount`);
     }
+    const effectTypes = new Set(card.effects.map(effect => effect.type));
+    if (/治愈|治疗|回复|急救/u.test(card.name)) assert.ok(effectTypes.has("heal") || effectTypes.has("revive"), `${cardId} 治疗名称必须有治疗效果`);
+    if (/护盾|防御|屏障|壁垒|铠甲|庇护|守护|磐石/u.test(card.name)) assert.ok(effectTypes.has("shield"), `${cardId} 防御名称必须有护盾效果`);
+    if (/斩|击|箭|刺|爆|裁决|穿刺|突袭|重击|刀|剑|锤|落雷|雷霆|风暴|反击/u.test(card.name)) assert.ok(effectTypes.has("damage"), `${cardId} 攻击名称必须有伤害效果`);
+    for (const effect of card.effects) {
+      if (effect.type === "status" && effect.burnRatio !== undefined) {
+        assert.ok(["燃烧", "诅咒"].includes(effect.status), `${cardId} DOT 状态类型必须正确`);
+        assert.ok(effect.burnRatio > 0, `${cardId} DOT 数值必须大于0`);
+      }
+    }
+    if (/冰|霜|寒|冻/u.test(card.name)) assert.ok(!card.effects.some(effect => effect.type === "status" && effect.status === "燃烧"), `${cardId} 冰系名称不能生成燃烧`);
   }
   assert.equal(new Set(names).size, names.length, `${character.id} 卡牌名称必须唯一`);
 }
@@ -46,6 +58,10 @@ assert.match(resolverSource, /if \(existing\.length >= 3\)/);
 assert.match(resolverSource, /controlImmuneTurns/);
 assert.match(resolverSource, /resolveDamage\(\{ source: fighter, target, amount: summon\.power/);
 assert.match(resolverSource, /const total = ownerDamage \+ summonDamage/);
-assert.match(resolverSource, /const effectAmount = \(fighter, effect\) => \{/);
+assert.match(resolverSource, /const effectAmount = \(fighter, effect(?:, card = null)?\) => \{/);
 assert.doesNotMatch(resolverSource, /maxHp \* Number\(effect\.ratio/);
+assert.match(resolverSource, /等级 \$\{character\.level\}/);
+assert.match(resolverSource, /character\.elements\.join\("、"\)/);
+assert.match(librarySource, /semanticEffectType/);
+assert.match(librarySource, /const semanticElement = inferElement\(name\)/);
 console.log("固定角色、卡牌与通用规则验证通过。");
