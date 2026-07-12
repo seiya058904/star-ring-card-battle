@@ -4,7 +4,7 @@
   const { battleRules: rules, fixedCardLibrary: library, gameEngine, uiRenderer, aiController } = global;
   if (!rules || !library || !gameEngine) throw new Error("固定战斗规则加载顺序错误");
 
-  const STATUS_LABELS = { "燃烧":"每回合开始造成持续伤害（最多3层）", "诅咒":"每回合开始造成持续伤害（取最高值）", "冻结":"下回合能量 -1", "禁锢":"本回合不能行动，结束后获得控制抗性", "增幅":"伤害提高", "虚弱":"受到伤害提高", "减伤":"受到伤害降低", "闪避":"固定点数减伤（一次）", "连锁":"下一次伤害提高", "复生":"下一次受到致命伤害时复苏" };
+  const STATUS_LABELS = { "燃烧":"每回合开始造成持续伤害（最多3层）", "诅咒":"每回合开始造成持续伤害（取最高值）", "冻结":"下回合能量 -1", "禁锢":"本回合不能行动，结束后获得控制抗性", "增幅":"伤害提高", "虚弱":"受到伤害提高", "减伤":"受到伤害降低", "灵巧防御":"固定点数减伤（一次）", "连锁":"下一次伤害提高", "复生":"下一次受到致命伤害时复苏", "真实":"造成伤害时无视护盾", "抽牌压制":"回合开始时少抽牌" };
   const rounded = value => Math.max(0, Math.round(Number(value) || 0));
   // 战斗时按等级 × ratio × 职业档案算出实际数值
   const effectAmount = (fighter, effect, card = null) => {
@@ -24,7 +24,8 @@
       if (effect.type === "damage") {
         const v = descValue(effect);
         const pierce = effect.pierceAmountRatio ? descValue({ type: "damage", ratio: effect.pierceAmountRatio }) : 0;
-        return `造成 ${typeof v === "number" ? formatNumber(v) : v} 伤害${effect.pierce ? "（穿透护盾）" : pierce ? `（其中 ${formatNumber(pierce)} 无视护盾）` : ""}`;
+        const slay = effect.slayRace ? `（对${effect.slayRace}造成${effect.slayMultiplier || 2}倍伤害）` : "";
+        return `造成 ${typeof v === "number" ? formatNumber(v) : v} 伤害${effect.pierce ? "（穿透护盾）" : pierce ? `（其中 ${formatNumber(pierce)} 无视护盾）` : ""}${slay}`;
       }
       if (effect.type === "heal") {
         if (effect.percentageOfMax) {
@@ -35,6 +36,10 @@
         return `恢复 ${typeof v === "number" ? formatNumber(v) : v} 生命`;
       }
       if (effect.type === "shield") {
+        if (effect.percentageOfMax) {
+          const pct = Math.round((effect.ratio || 0) * 100);
+          return `获得最大生命值 ${pct}% 的护盾（不自动衰减）`;
+        }
         const v = descValue(effect);
         return `获得 ${typeof v === "number" ? formatNumber(v) : v} 护盾（不自动衰减）`;
       }
@@ -45,7 +50,9 @@
           const v = descValue(effect);
           return `施加${effect.status}${effect.turns}回合：每回合 ${typeof v === "number" ? formatNumber(v) : 0} 伤害`;
         }
-        const pointStatus = ["增幅", "虚弱", "减伤", "闪避", "连锁", "复生"].includes(effect.status);
+        if (effect.status === "真实") return `获得真实伤害${effect.turns || 2}回合：造成伤害时无视护盾`;
+        if (effect.status === "抽牌压制") return `使目标${effect.turns || 3}回合内每回合少抽 ${effect.amount || 1} 张牌`;
+        const pointStatus = ["增幅", "虚弱", "减伤", "灵巧防御", "连锁", "复生"].includes(effect.status);
         const value = pointStatus ? descValue(effect) : 0;
         const detail = pointStatus ? effect.status === "复生" ? `${STATUS_LABELS[effect.status]}，恢复${formatNumber(value)}生命` : `${STATUS_LABELS[effect.status]} ${formatNumber(value)}点` : STATUS_LABELS[effect.status];
         return effect.persistent ? `本场下一次受到致命伤害时，恢复${formatNumber(value)}生命` : `施加${effect.status}${effect.turns ? `${effect.turns}回合` : ""}${detail ? `：${detail}` : ""}`;
@@ -101,14 +108,14 @@
       return null;
     }
     const existing = target.statuses.filter(status => status.type === type);
-    const next = { type, turns: incoming.persistent ? null : Math.max(1, Number(incoming.turns) || 1), persistent: Boolean(incoming.persistent), power: Number(incoming.power || 0), charges: incoming.charges, sourceOwnerId: incoming.sourceOwnerId, source: incoming.source || "固定卡牌" };
+    const next = { type, turns: incoming.persistent ? null : Math.max(1, Number(incoming.turns) || 1), persistent: Boolean(incoming.persistent), power: Number(incoming.power || 0), amount: Number(incoming.amount || 0), charges: incoming.charges, sourceOwnerId: incoming.sourceOwnerId, source: incoming.source || "固定卡牌" };
     if (type === "燃烧") {
       if (existing.length >= 3) { existing.sort((a, b) => a.power - b.power)[0].power = Math.max(existing[0].power, next.power); existing.forEach(status => status.turns = Math.max(status.turns, next.turns)); return existing[0]; }
       target.statuses.push(next); return next;
     }
-    if (["诅咒", "冻结", "禁锢", "增幅", "虚弱", "减伤", "闪避", "连锁", "复生"].includes(type)) {
+    if (["诅咒", "冻结", "禁锢", "增幅", "虚弱", "减伤", "灵巧防御", "连锁", "复生", "真实", "抽牌压制"].includes(type)) {
       const current = existing[0];
-      if (current) { current.power = Math.max(current.power || 0, next.power || 0); current.persistent ||= next.persistent; current.turns = current.persistent ? null : Math.max(current.turns || 0, next.turns); current.charges = Math.max(current.charges || 1, next.charges || 1); current.sourceOwnerId = next.sourceOwnerId || current.sourceOwnerId; return current; }
+      if (current) { current.power = Math.max(current.power || 0, next.power || 0); current.amount = Math.max(current.amount || 0, next.amount || 0); current.persistent ||= next.persistent; current.turns = current.persistent ? null : Math.max(current.turns || 0, next.turns); current.charges = Math.max(current.charges || 1, next.charges || 1); current.sourceOwnerId = next.sourceOwnerId || current.sourceOwnerId; return current; }
     }
     target.statuses.push(next);
     return next;
@@ -118,11 +125,11 @@
     const state = this.state;
     if (!state || !target || target.hp <= 0) return { total: 0, ownerDamage: 0, summonDamage: 0, blocked: 0, dodged: false };
     let damage = rounded(amount);
-    // 实数值减伤（等级缩放后的绝对值），来自 减伤/闪避 状态
-    const reductions = target.statuses.filter(s => (s.type === "减伤" || s.type === "闪避") && (s.charges === undefined || s.charges > 0));
+    // 实数值减伤（等级缩放后的绝对值），来自 减伤/灵巧防御 状态
+    const reductions = target.statuses.filter(s => (s.type === "减伤" || s.type === "灵巧防御") && (s.charges === undefined || s.charges > 0));
     const flatReduction = sourceKind === "dot" ? 0 : reductions.reduce((sum, s) => sum + (s.power || 0), 0);
     damage = Math.max(0, damage - flatReduction);
-    // 消耗减伤/闪避的层数（仅非 DOT 伤害）
+    // 消耗减伤/灵巧防御的层数（仅非 DOT 伤害）
     if (sourceKind !== "dot") reductions.forEach(s => { if (s.charges !== undefined) s.charges -= 1; });
     target.statuses = target.statuses.filter(s => s.charges === undefined || s.charges > 0);
     if (element !== "无" && typeof elementMultiplier === "function") damage = rounded(damage * (elementMultiplier(element, target).multiplier || 1));
@@ -173,9 +180,14 @@
         const boostFromWeaken = target.statuses.filter(s => s.type === "虚弱").reduce((sum, s) => sum + (s.power || 0), 0);
         const multiplier = this.statusMultiplier(actor, target, card);
         const executeBonus = effect.execute && target.hp / target.maxHp < .3 ? 1.55 : 1;
-        const totalAmount = Math.max(0, (baseAmount + boostFromActor + boostFromWeaken) * multiplier * executeBonus);
+        // 种族特攻（锁龙/斩魔剑）：对指定种族造成倍数伤害
+        const slayBonus = effect.slayRace && target.race === effect.slayRace ? (effect.slayMultiplier || 2) : 1;
+        const totalAmount = Math.max(0, (baseAmount + boostFromActor + boostFromWeaken) * multiplier * executeBonus * slayBonus);
+        // 真实伤害（伤害真实化）：持续期间无视护盾
+        const trueDamage = actor.statuses.some(s => s.type === "真实");
         const pierceAmount = effect.pierceAmountRatio ? effectAmount(actor, { type: "damage", ratio: effect.pierceAmountRatio }, card) : 0;
-        const settlement = this.resolveDamage({ source: actor, target, amount: totalAmount, element: card.element, pierce: effect.pierce || 0, pierceAmount, execute: Boolean(effect.execute) });
+        const settlement = this.resolveDamage({ source: actor, target, amount: totalAmount, element: card.element, pierce: trueDamage ? 1 : (effect.pierce || 0), pierceAmount, execute: Boolean(effect.execute) });
+        if (slayBonus > 1) result.text += ` 【对${effect.slayRace}特攻】`;
         result.amount += settlement.total;
         result.visualAmounts.push({ amount: settlement.total, side: target.id, type: "damage" });
         result.visualTargets = { number: target.id, impact: target.id, shake: settlement.total > 0 };
@@ -197,7 +209,7 @@
         if (actor.id === "player" && this.state.combatStats) { this.state.combatStats.healing += actual; this.state.combatStats.overheal = (this.state.combatStats.overheal || 0) + requested - actual; }
         result.text += ` 恢复${formatNumber(actual)}生命。`;
       } else if (effect.type === "shield") {
-        const amount = effectAmount(actor, effect, card); actor.shield += amount;
+        const amount = effect.percentageOfMax ? Math.round(actor.maxHp * effect.ratio) : effectAmount(actor, effect, card); actor.shield += amount;
         result.amount += amount;
         result.visualAmounts.push({ amount, side: actor.id, type: "shield" });
         result.targetId = actor.id;
@@ -210,10 +222,10 @@
       } else if (effect.type === "energy") {
         const gained = Math.min(actor.maxEnergy - actor.energy, effect.amount || 0); actor.energy += gained; result.text += ` 获得${gained}点能量。`;
       } else if (effect.type === "status") {
-        const recipient = ["增幅", "减伤", "闪避", "连锁", "复生"].includes(effect.status) ? actor : target;
+        const recipient = ["增幅", "减伤", "灵巧防御", "连锁", "复生", "真实"].includes(effect.status) ? actor : target;
         result.targetId = recipient.id; // 状态动画作用于实际接收方
         const statusPower = effectAmount(actor, effect, card);
-        const status = this.applyStatus(recipient, { ...effect, power: statusPower, sourceOwnerId: actor.id, source: card.name });
+        const status = this.applyStatus(recipient, { ...effect, power: statusPower, amount: effect.amount || 0, sourceOwnerId: actor.id, source: card.name });
         if (status) {
           result.text += status.persistent ? ` ${recipient.name}获得复生。` : ` ${recipient.name}获得${status.type}${status.turns}回合。`;
           if (["燃烧", "诅咒"].includes(status.type) && statusPower > 0) result.popups.push({ type: "status dot", text: `${status.type} ${formatNumber(statusPower)}/回合`, side: recipient.id });
@@ -272,9 +284,12 @@
     const fighter = state[side]; fighter.turnFlags = { firstHit: true };
     const freeze = fighter.statuses.some(status => status.type === "冻结");
     fighter.energy = rules.roundEnergy(state.round, fighter.maxEnergy, freeze ? 1 : 0);
+    // 抽牌压制（递种）：回合开始时少抽牌，读取需在 tickStatuses 递减前，保证覆盖完整回合数
+    const drawPenalty = fighter.statuses.filter(s => s.type === "抽牌压制").reduce((max, s) => Math.max(max, s.amount || 1), 0);
     this.tickStatuses(fighter);
     this.checkGameOver(); if (state.gameOver) return false;
-    if (!fighter.skipAction) this.draw(fighter, Math.max(0, 5 - fighter.hand.length));
+    if (!fighter.skipAction) this.draw(fighter, Math.max(0, 5 - fighter.hand.length - drawPenalty));
+    if (drawPenalty && !fighter.skipAction) this.log(`[抽牌压制] ${fighter.name} 本回合少抽 ${drawPenalty} 张牌。`);
     this.log(`${fighter.name}进入第${state.round}回合，能量恢复到${fighter.energy}。`);
     return true;
   };
@@ -308,7 +323,7 @@
     const next = side === "player" ? "enemy" : "player"; if (side === "enemy") state.round += 1; state.turn = next;
     this.beginTurn(next); uiRenderer.render();
     const captured = state; const session = this.sessionId;
-    if (next === "enemy") setTimeout(() => { if (this.isActiveBattle(captured, session) && !captured.gameOver) aiController.takeTurn(); }, 520);
+    if (next === "enemy") setTimeout(() => { if (this.isActiveBattle(captured, session) && !captured.gameOver) aiController.takeTurn(); }, globalThis.battleSpeedDelay ? globalThis.battleSpeedDelay(520) : 520);
     return true;
   };
 
@@ -335,8 +350,11 @@
     global.storageManager.saveCustomCard = () => false;
   }
   if (global.deckBuilder) {
+    // 统一启动流程：deckBuilder 的全部入口都只服务于固定 30 张卡系统，
+    // 旧 24 张运行时卡组路径（内联 legacy defaultDecks/createCharacterDeck）不再作为有效来源。
     global.deckBuilder.createDeck = () => library.createRuntimeDeck(library.characterDefinitions[0].id);
     global.deckBuilder.createCharacterDeck = character => library.createRuntimeDeck(character?.id || library.characterDefinitions[0].id);
+    global.deckBuilder.defaultDecks = () => library.characterDefinitions.map(character => library.createRuntimeDeck(character.id));
     global.deckBuilder.pickEnemyFor = playerDeck => {
       const playerLevel = playerDeck.level || 50;
       const candidates = library.characterDefinitions.filter(c => c.id !== playerDeck.characterId);

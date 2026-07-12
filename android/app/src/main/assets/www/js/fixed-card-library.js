@@ -25,11 +25,12 @@
     "暗": ["影噬突袭", "夜幕缠绕", "幽魂低语", "冥影护甲", "暗蚀裂斩", "深渊回响", "噬魂印记", "终夜裁决"]
   };
   const ROMAN = ["", "Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ", "Ⅴ", "Ⅵ", "Ⅶ", "Ⅷ", "Ⅸ", "Ⅹ"];
+  const ROMAN_RE_SPECIAL = /[Ⅰ-ⅩⅤⅥⅦⅧⅨⅩ]+$/u;
 
   // 等级缩放基准比例：levelHp(level) × ratio × profile.multiplier 算出实际数值
   const BASE_SCALE = 0.06;
 
-  const statusFor = element => ({ "火":"燃烧", "冰":"冻结", "风":"闪避", "土":"减伤", "雷":"连锁", "光":"增幅", "暗":"诅咒" })[element];
+  const statusFor = element => ({ "火":"燃烧", "冰":"冻结", "风":"灵巧防御", "土":"减伤", "雷":"连锁", "光":"增幅", "暗":"诅咒" })[element];
 
   // 元素推断：从名字关键字识别其主元素，通用名返回 ""
   const ELEMENT_KEYWORDS = {
@@ -67,7 +68,7 @@
     [2, [effect("damage", { ratio: BASE_RATIO(.52) }), effect("status", { status: "增幅", ratio: BASE_SCALE * .50 * .12, turns: 1 })]],
     [3, [effect("damage", { ratio: BASE_RATIO(.72) })]], [3, [effect("shield", { ratio: BASE_RATIO(.62) })]],
     [2, [effect("damage", { ratio: BASE_RATIO(.24) }), effect("status", { status: "虚弱", ratio: BASE_SCALE * .50 * .14, turns: 2 })]],
-    [2, [effect("energy", { amount: 2 })]], [2, [effect("status", { status: "闪避", ratio: BASE_SCALE * .50 * .35, turns: 1, charges: 1 })]],
+    [2, [effect("energy", { amount: 2 })]], [2, [effect("status", { status: "灵巧防御", ratio: BASE_SCALE * .50 * .35, turns: 1, charges: 1 })]],
     [1, [effect("draw", { amount: 1 }), effect("energy", { amount: 1 })]], [3, [effect("damage", { ratio: BASE_RATIO(.58), pierceAmountRatio: BASE_SCALE * .24 })]]
   ];
 
@@ -87,7 +88,7 @@
     const sTurns = dot ? (tierName !== "normal" ? 3 : 2) : (tierName !== "normal" ? 2 : 1);
     const sMult = tierName !== "normal" ? 1.4 : 1;
     // 状态乘数转 ratio（等级缩放）：statusAmount * BASE_SCALE * COST_MULTIPLIER[cost]
-    const statusAmount = dot ? burnBase : (status === "闪避" ? .32 : status === "减伤" ? .14 : status === "连锁" ? .18 : .14) * sMult;
+    const statusAmount = dot ? burnBase : (status === "灵巧防御" ? .32 : status === "减伤" ? .14 : status === "连锁" ? .18 : .14) * sMult;
     const statusRatio = statusAmount * COST_MULTIPLIER[cost]; // 含 BASE_SCALE 乘在里面更便于比较，但用统一 BASE_SCALE
     // 效果工厂
     const dmg = n => effect("damage", { ratio: r(n), element });
@@ -97,15 +98,35 @@
     const statusFlat = (st, amt, turns, charges) => effect("status", { status: st, ratio: BASE_SCALE * COST_MULTIPLIER[cost] * amt, turns, charges });
     const semantic = semanticEffectType(name);
     if (tierName === "special") {
-      if (name.startsWith("时间回溯")) return [healE(.85), effect("cleanse")];
-      if (name.startsWith("时间禁锢")) return [dmg(1.05), effect("status", { status: "禁锢", turns: 1 })];
-      if (name.startsWith("起死回生")) return [effect("heal", { ratio: .5, percentageOfMax: true })];
-      if (name.startsWith("恶魔契约")) return [dmg(1.25), effect("status", { status: "增幅", ratio: r(.22), turns: 2, charges: 2 })];
-      if (name.startsWith("不灭魔躯")) return [shieldE(1.2), effect("status", { status: "减伤", ratio: r(.2), turns: 2, charges: 1 })];
-      if (name.startsWith("绝对死亡")) return [effect("damage", { ratio: r(1.3), execute: true, element })];
-      if (name.startsWith("伤害真实化")) return [effect("damage", { ratio: r(1.25), pierce: 1, element })];
-      if (name.startsWith("魔法极致化")) return [dmg(1.2), effect("status", { status: "增幅", ratio: r(.2), turns: 2, charges: 2 })];
-      if (name.startsWith("元素圣体")) return [shieldE(1.05), effect("status", { status: "增幅", ratio: r(.18), turns: 2, charges: 2 })];
+      // 唯一特殊卡规则表：名字（去罗马数字后基名）→ 效果构造。
+      // 这是特殊卡语义的单一事实来源；说明、执行与 AI 估值全部从这里生成的 effects 派生，
+      // 不再依赖名字正则或旧 mechanicsForCard()。
+      const base = name.replace(ROMAN_RE_SPECIAL, "");
+      const slayer = (n, race) => effect("damage", { ratio: r(n), element, slayRace: race, slayMultiplier: 2 });
+      const SPECIAL_CARD_RULES = {
+        "时间回溯": () => [healE(.85), effect("cleanse")],
+        "时间禁锢": () => [dmg(1.05), effect("status", { status: "禁锢", turns: 1 })],
+        "起死回生": () => [effect("heal", { ratio: .5, percentageOfMax: true })],
+        "恶魔契约": () => [dmg(1.25), effect("status", { status: "增幅", ratio: r(.22), turns: 2, charges: 2 })],
+        "不灭魔躯": () => [shieldE(1.2), effect("status", { status: "减伤", ratio: r(.2), turns: 2, charges: 1 })],
+        "绝对死亡": () => [effect("damage", { ratio: r(1.3), execute: true, element })],
+        "魔法极致化": () => [dmg(1.2), effect("status", { status: "增幅", ratio: r(.2), turns: 2, charges: 2 })],
+        "元素圣体": () => [shieldE(1.05), effect("status", { status: "增幅", ratio: r(.18), turns: 2, charges: 2 })],
+        // 恢复：持续 2 回合无视护盾（真实伤害），而非一次性穿透。附带自身增幅。
+        "伤害真实化": () => [effect("status", { status: "真实", turns: 2 }), effect("status", { status: "增幅", ratio: r(.12), turns: 2, charges: 2 })],
+        // 恢复：禁锢 2 回合 + 自身增伤、减伤各 2 回合。
+        "统治": () => [effect("status", { status: "禁锢", turns: 2 }), effect("status", { status: "增幅", ratio: r(.14), turns: 2, charges: 2 }), effect("status", { status: "减伤", ratio: r(.14), turns: 2, charges: 2 })],
+        // 恢复：获得最大生命 50% 护盾 + 减伤 3 回合。
+        "防御极致化": () => [effect("shield", { ratio: .5, percentageOfMax: true, element }), effect("status", { status: "减伤", ratio: r(.16), turns: 3, charges: 3 })],
+        // 恢复：对龙族造成 2 倍伤害。
+        "锁龙": () => [slayer(1.15, "龙族")],
+        // 恢复：对恶魔造成 2 倍伤害。
+        "斩魔剑": () => [slayer(1.15, "恶魔")],
+        // 恢复：让敌方连续 3 回合少抽 1 张牌。
+        "递种": () => [effect("status", { status: "抽牌压制", turns: 3, amount: 1 })]
+      };
+      const rule = SPECIAL_CARD_RULES[base];
+      if (rule) return rule();
     }
     if (semantic === "heal") return [healE(tierName === "normal" ? .9 : 1.05)];
     if (semantic === "shield") return [shieldE(tierName === "normal" ? .9 : 1.05)];

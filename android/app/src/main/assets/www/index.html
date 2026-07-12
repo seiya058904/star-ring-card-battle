@@ -6213,6 +6213,11 @@
     function resolveEffectAmount(effect, actor, card) {
       // ratio = 等级缩放字段（损伤/治疗/护盾/状态都用它）
       const base = typeof levelHp === "function" ? levelHp(actor?.level || 50) : 1e6;
+      // 最大生命百分比（起死回生 heal / 防御极致化 shield）：执行与 AI 估值共用此解析，避免低估
+      if (effect?.percentageOfMax && (effect.type === "heal" || effect.type === "shield")) {
+        const maxHp = Number(actor?.maxHp) || (typeof levelHp === "function" ? levelHp(actor?.level || 50) : 0);
+        return Math.max(0, Math.round(maxHp * (Number(effect.ratio) || 0)));
+      }
       if (effect?.type === "status" && Number.isFinite(effect?.burnRatio))
         return Math.max(0, Math.round(base * effect.burnRatio));
       if (Number.isFinite(effect?.ratio)) {
@@ -6224,7 +6229,7 @@
         if (effect.type === "shield")
           return Math.max(0, Math.round(base * effect.ratio * (prof.defense || 1)));
         // 状态点数按实际职业分支缩放，避免防御/复生沿用伤害系数
-        const multiplier = ["减伤", "闪避"].includes(effect.status) ? prof.defense : effect.status === "复生" || effect.type === "revive" ? prof.heal : prof.damage;
+        const multiplier = ["减伤", "闪避", "灵巧防御"].includes(effect.status) ? prof.defense : effect.status === "复生" || effect.type === "revive" ? prof.heal : prof.damage;
         return Math.max(0, Math.round(base * effect.ratio * (multiplier || 1)));
       }
       // 旧 system：effect.amount 为绝对数值
@@ -6461,8 +6466,19 @@
       logCollapsed: false,
       dim: "standard",
       sound: true,
-      soundVolume: 65
+      soundVolume: 65,
+      battleSpeed: "normal"
     };
+
+    // 战斗速度档位：标准 / 快速 / 极快。因子越小战斗推进越快。
+    function getBattleSpeedFactor() {
+      const v = (uiRenderer && uiRenderer.settings && uiRenderer.settings.battleSpeed)
+        || (storageManager && storageManager.getSettings && storageManager.getSettings().battleSpeed)
+        || "normal";
+      return v === "ultra" ? 0.3 : v === "fast" ? 0.55 : 1;
+    }
+    globalThis.getBattleSpeedFactor = getBattleSpeedFactor;
+    globalThis.battleSpeedDelay = ms => Math.round((Number(ms) || 0) * getBattleSpeedFactor());
 
     const COMBAT_DRAMA_TIMING = {
       normal: { enter: 280, focus: 400, charge: 230, cast: 280, impact: 230, numbers: 900, outro: 280, totalMin: 1700 },
@@ -6503,8 +6519,8 @@
 
     function getCardActionIntent(card) {
       const type = String(card?.effectType || card?.type || "").toLowerCase();
-      const hasHostileEffect = card?.effects?.some(effect => effect.type === "damage" || ["燃烧", "诅咒", "冻结", "禁锢", "虚弱"].includes(effect.status));
-      if (!hasHostileEffect && card?.effects?.some(effect => effect.type === "status" && ["复生", "增幅", "减伤", "闪避", "连锁"].includes(effect.status))) return "friendly-buff";
+      const hasHostileEffect = card?.effects?.some(effect => effect.type === "damage" || ["燃烧", "诅咒", "冻结", "禁锢", "虚弱", "抽牌压制"].includes(effect.status));
+      if (!hasHostileEffect && card?.effects?.some(effect => effect.type === "status" && ["复生", "增幅", "减伤", "闪避", "灵巧防御", "连锁", "真实"].includes(effect.status))) return "friendly-buff";
       if (["attack", "damage", "strike", "burn", "freeze", "curse", "execute", "lifesteal", "pierce"].includes(type)) return "hostile-damage";
       if (["heal", "recover", "revive"].includes(type)) return "friendly-heal";
       if (["defense", "shield", "guard", "block", "armor"].includes(type)) return "friendly-shield";
@@ -7385,6 +7401,13 @@
                 <option value="off" ${!s.sound ? "selected" : ""}>关</option>
               </select>
             </label>
+            <label class="settings-row">战斗速度
+              <select id="settingBattleSpeed">
+                <option value="normal" ${s.battleSpeed === "normal" ? "selected" : ""}>标准</option>
+                <option value="fast" ${s.battleSpeed === "fast" ? "selected" : ""}>快速</option>
+                <option value="ultra" ${s.battleSpeed === "ultra" ? "selected" : ""}>极快</option>
+              </select>
+            </label>
             <label class="settings-row">音效音量 <input id="settingSoundVolume" type="range" min="0" max="100" value="${s.soundVolume ?? 65}"><span id="settingSoundVolumeValue">${s.soundVolume ?? 65}%</span></label>
           </div>
           <p class="small-note" style="margin-top:12px;">音效素材为本地 CC0 文件，浏览器首次播放需要用户点击。</p>
@@ -7401,13 +7424,14 @@
               logCollapsed: document.getElementById("settingLog").value === "closed",
               dim: document.getElementById("settingDim").value,
               sound: document.getElementById("settingSound").value === "on",
-              soundVolume: Number(document.getElementById("settingSoundVolume").value)
+              soundVolume: Number(document.getElementById("settingSoundVolume").value),
+              battleSpeed: document.getElementById("settingBattleSpeed").value
             };
             storageManager.saveSettings(this.settings);
             this.applySettings();
             this.showToast("设置已保存");
           };
-          ["settingAnimation","settingShake","settingLog","settingDim","settingSound","settingSoundVolume"].forEach(id => document.getElementById(id).addEventListener("change", save));
+          ["settingAnimation","settingShake","settingLog","settingDim","settingSound","settingSoundVolume","settingBattleSpeed"].forEach(id => document.getElementById(id).addEventListener("change", save));
           document.getElementById("settingSoundVolume").addEventListener("input", event => { document.getElementById("settingSoundVolumeValue").textContent = `${event.target.value}%`; });
           document.getElementById("settingsSaveBtn").addEventListener("click", () => { save(); this.closeModal(); });
           document.getElementById("settingsDefaultBtn").addEventListener("click", () => {
@@ -7426,6 +7450,7 @@
         const s = this.settings || DEFAULT_GAME_SETTINGS;
         document.body.dataset.anim = s.animation;
         document.body.dataset.dim = s.dim;
+        document.body.dataset.speed = s.battleSpeed || "normal";
         document.body.classList.toggle("no-shake", !s.shake);
         const log = document.querySelector(".log-panel");
         if (log) {
@@ -8722,12 +8747,14 @@
         "破甲": { label:"减益", desc: p => `受到伤害提高 ${Math.round((p||0.2)*100)}%` },
         "减伤": { label:"增益", desc: p => `下一次受到攻击时减少 ${formatNumber(p||0)} 点伤害` },
         "闪避": { label:"增益", desc: p => `下一次受到攻击时减少 ${formatNumber(p||0)} 点伤害` },
+        "灵巧防御": { label:"增益", desc: p => `下一次受到攻击时减少 ${formatNumber(p||0)} 点伤害（灵巧防御，非完全闪避）` },
         "连锁": { label:"增益", desc: p => `下一次攻击额外造成 ${formatNumber(p||0)} 点伤害` },
         "复生": { label:"增益", desc: p => `下一次受到致命伤害时恢复 ${formatNumber(p||0)} 生命` },
         "蓄力": { label:"增益", desc: p => `下一次攻击/燃烧/穿透/斩杀伤害提高 ${Math.round((p||0.25)*100)}%` },
         "禁锢": { label:"控制", desc: () => "本回合无法行动，不能出牌" },
         "冻结": { label:"控制", desc: () => "本回合能量恢复降低" },
         "真实伤害": { label:"增益", desc: () => "造成伤害时无视护盾，直接扣除生命" },
+        "真实": { label:"增益", desc: () => "持续期间造成伤害无视护盾，直接扣除生命" },
         "抽牌压制": { label:"减益", desc: p => `回合开始补牌时少抽 ${formatNumber(p||1)} 张` },
         "燃烧": { label:"持续伤害", desc: p => `每回合开始受到 ${formatNumber(p||0)} 点火属性持续伤害` },
         "诅咒": { label:"持续伤害", desc: p => `每回合开始受到 ${formatNumber(p||0)} 点暗属性持续伤害` },
@@ -9896,12 +9923,14 @@
     effectsRenderer._playLock = 0;
     effectsRenderer.play = function(card, result) {
       const now = Date.now();
-      if (now - this._playLock < 3000) return;
+      const factor = typeof getBattleSpeedFactor === "function" ? getBattleSpeedFactor() : 1;
+      if (now - this._playLock < Math.round(3000 * factor)) return;
       this._playLock = now;
       setCombatInputLocked(true);
       const banner = document.getElementById("skillBanner");
       if (banner) {
-        banner.style.animationDuration = card.skillTier === "special" ? "2.5s" : card.skillTier === "advanced" ? "1.75s" : "1.1s";
+        const baseDur = card.skillTier === "special" ? 2.5 : card.skillTier === "advanced" ? 1.75 : 1.1;
+        banner.style.animationDuration = (baseDur * factor) + "s";
       }
       battlePerfMonitor.markFirstCard(card);
       preloadCardVisualAssets(card, "played-card-stage");
@@ -9910,7 +9939,7 @@
       const timing = dramaTimingForCard(card);
       const battleState = gameEngine.state;
       const battleSessionId = gameEngine.sessionId;
-      setTimeout(() => { if (!gameEngine.isActiveBattle(battleState, battleSessionId)) return; this._playLock = 0; setCombatInputLocked(false); uiRenderer.render(); }, timing.totalMin + 200);
+      setTimeout(() => { if (!gameEngine.isActiveBattle(battleState, battleSessionId)) return; this._playLock = 0; setCombatInputLocked(false); uiRenderer.render(); }, Math.round((timing.totalMin + 200) * factor));
     };
 
 
@@ -10249,17 +10278,19 @@
         </div>`;
     };
 
-    renderCardPreview = function(card) {
+    renderCardPreview = function(card, opts = {}) {
       if (!card) return `<div class="preview-empty">悬停手牌查看完整说明</div>`;
+      // 减费（星耀等）后预览需显示实际费用：图标精灵与文字都使用 effectiveCost
+      const shownCost = (opts && Number.isFinite(opts.effectiveCost)) ? opts.effectiveCost : card.cost;
       const typeName = card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能";
       const rankText = card.skillRank || (card.rankMode === "fixed" ? "固定规格" : card.rankMode === "ultimate" ? "终极" : "");
       const target = getCardActionIntent(card).startsWith("friendly") ? "自身" : "敌方单体";
       const artStyle = cardArtBackgroundStyle(card);
-      const costSprite = card.cost >= 1 && card.cost <= 10 ? `cost${card.cost}` : "";
+      const costSprite = shownCost >= 1 && shownCost <= 10 ? `cost${shownCost}` : "";
       const advantageLine = currentAdvantageText(card, gameEngine.state?.enemy);
       const visualTier = inferVisualTier(card);
       return `
-        <div class="preview-card-title" data-visual-tier="${visualTier}"><span>${escapeHtml(formatCardTitle(card))}</span><span>${costSprite ? `<span class="atlas-status-icon" style="--cost-sprite:url('assets/ui/sprites/${costSprite}.png')"></span>` : ""}${escapeHtml(card.cost)} 能量</span></div>
+        <div class="preview-card-title" data-visual-tier="${visualTier}"><span>${escapeHtml(formatCardTitle(card))}</span><span>${costSprite ? `<span class="atlas-status-icon" style="--cost-sprite:url('assets/ui/sprites/${costSprite}.png')"></span>` : ""}${escapeHtml(shownCost)} 能量</span></div>
         <div class="preview-card-meta">
           <span class="pill">${escapeHtml(card.element)}</span>
           <span class="pill">${typeName}${rankText ? ` · ${rankText}` : ""}</span>
@@ -10272,7 +10303,7 @@
         </div>
         <div class="preview-card-keywords">${(card.keywords || card.mechanics || []).slice(0, 7).map(k => `<span class="pill">${escapeHtml(k)}</span>`).join("")}</div>
         <div class="preview-card-power">${escapeHtml(getCardPowerLabel(card))}</div>
-        <div class="preview-detail-grid"><span class="pill">类型 ${escapeHtml(EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType)}</span><span class="pill">目标 ${target}</span><span class="pill">消耗 ${escapeHtml(card.cost)}</span></div>
+        <div class="preview-detail-grid"><span class="pill">类型 ${escapeHtml(EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType)}</span><span class="pill">目标 ${target}</span><span class="pill">消耗 ${escapeHtml(shownCost)}</span></div>
       `;
     };
 
@@ -14380,6 +14411,18 @@
   body.home-mode .home-title-screen.image-load-failed {
     background: linear-gradient(135deg, #1a1108, #0d0804);
   }
+  </style>
+
+  <style id="battleSpeedOverride">
+    /* 战斗速度档位：缩放主要战斗动画时长（逻辑锁已在 effectsRenderer.play 中同步缩放） */
+    body[data-speed="fast"] .played-card-stage.show { animation-duration: .62s; }
+    body[data-speed="fast"] body.battle-mode .played-card-stage.show { animation-duration: .62s; }
+    body[data-speed="fast"] .card.playing { animation-duration: .2s; }
+    body[data-speed="fast"] .screen-flash.on { animation-duration: .28s; }
+    body[data-speed="ultra"] .played-card-stage.show { animation-duration: .36s; }
+    body[data-speed="ultra"] body.battle-mode .played-card-stage.show { animation-duration: .36s; }
+    body[data-speed="ultra"] .card.playing { animation-duration: .12s; }
+    body[data-speed="ultra"] .screen-flash.on { animation-duration: .16s; }
   </style>
 
 </body>
