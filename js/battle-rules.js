@@ -2,7 +2,7 @@
   "use strict";
 
   const HAND_LIMIT = 8;
-  const MAX_CARD_COST = 7;
+  const MAX_CARD_COST = 10;
   const ELEMENTS = ["火", "冰", "风", "土", "雷", "光", "暗"];
 
   function roundEnergy(round, maxEnergy, penalty = 0) {

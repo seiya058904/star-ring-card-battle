@@ -1,0 +1,7992 @@
+{
+  "generatedAt": "2026-07-12T04:43:53.842Z",
+  "skillNameUniverse": {
+    "advanced": [
+      "火焰领主Ⅲ",
+      "炎天噬地Ⅲ",
+      "炎龙凤燃",
+      "真火吞Ⅲ",
+      "烈焰护体",
+      "元素庇护",
+      "绝对冰冻Ⅲ",
+      "冰王斩Ⅲ",
+      "终·冰元素",
+      "超大冰暴Ⅲ",
+      "真王冰甲Ⅲ",
+      "绝对重力Ⅲ",
+      "沙王领主Ⅲ",
+      "超大土暴Ⅲ",
+      "天崩地裂",
+      "磐石装甲",
+      "终·元素贯穿",
+      "真王穿刺Ⅲ",
+      "混沌铠甲",
+      "雷光真闪Ⅲ",
+      "雷龙缠绕Ⅲ",
+      "雷光铠甲Ⅲ",
+      "超位雷斩",
+      "雷神剑",
+      "最终一击·雷霆",
+      "飓风笼罩Ⅲ",
+      "次元斩Ⅲ",
+      "次元隧道",
+      "次元屏障Ⅲ",
+      "超超级海啸",
+      "圣光庇护Ⅲ",
+      "圣光之音Ⅲ",
+      "祝福之光Ⅲ",
+      "光明圣剑Ⅲ",
+      "光明之主Ⅲ",
+      "雷霆审判",
+      "终·六翼大天使",
+      "神圣庇护Ⅲ",
+      "黑暗吞噬Ⅲ",
+      "耶梦加得凝视",
+      "噩梦Ⅲ",
+      "暗黑魔甲Ⅲ",
+      "至暗洗礼Ⅲ",
+      "暗光箭矢",
+      "幽暗庇护Ⅲ",
+      "暗黑领主Ⅲ",
+      "暗之闪Ⅲ",
+      "龙神意志",
+      "至尊炎火Ⅲ",
+      "灭世之威",
+      "雷霆王座Ⅲ",
+      "圣裁天幕Ⅲ",
+      "霜星坠落Ⅲ",
+      "风王猎场Ⅲ",
+      "灰烬魔域Ⅲ",
+      "日蚀之刃Ⅲ",
+      "终·万雷归一Ⅲ",
+      "天穹之门",
+      "极寒神殿Ⅲ",
+      "终·烈日焚天Ⅲ",
+      "虚空风暴Ⅲ",
+      "大地君王Ⅲ"
+    ],
+    "special": [
+      "死亡支配者Ⅲ",
+      "元素圣体Ⅲ",
+      "太阳神的祝福",
+      "灵魂吞噬Ⅲ",
+      "死亡注视Ⅲ",
+      "超级虚弱Ⅲ",
+      "死亡审判Ⅲ",
+      "统治Ⅲ",
+      "绝对死亡Ⅲ",
+      "时间禁锢",
+      "时间回溯",
+      "恶魔契约",
+      "天使羽",
+      "陨星灭地",
+      "九重神斩",
+      "斩魔剑",
+      "锁龙Ⅲ",
+      "冰火重天Ⅲ",
+      "风雷天暴Ⅲ",
+      "递种",
+      "五元素诛神斩",
+      "起死回生",
+      "灵魂烙印Ⅲ",
+      "不灭魔躯",
+      "星界放逐Ⅲ",
+      "神威降临Ⅲ",
+      "魔法极致化",
+      "防御极致化",
+      "伤害真实化"
+    ],
+    "normal": [
+      "高级治愈Ⅵ",
+      "高级治愈Ⅶ",
+      "高级治愈Ⅷ",
+      "黑暗吞噬Ⅵ",
+      "黑暗吞噬Ⅶ",
+      "雷电缠绕Ⅵ",
+      "雷电缠绕Ⅶ",
+      "熔岩剑Ⅴ",
+      "死之审判Ⅴ",
+      "冰刺Ⅷ",
+      "暗黑精灵Ⅷ",
+      "冰锋箭雨Ⅴ",
+      "光剑护体Ⅴ",
+      "黑暗视野Ⅳ",
+      "光明治愈Ⅴ",
+      "黑暗笼罩Ⅵ",
+      "风暴冲击Ⅵ",
+      "风暴冲击Ⅶ",
+      "光剑雨Ⅴ",
+      "暗之手Ⅴ",
+      "光宇Ⅴ",
+      "大火球Ⅵ",
+      "大火球Ⅶ",
+      "纵火Ⅵ",
+      "纵火Ⅶ",
+      "战术打击",
+      "能量涌动",
+      "守护之盾",
+      "精准射击",
+      "疾速位移",
+      "集气",
+      "战意激发",
+      "反击架势",
+      "生命汲取",
+      "凝神",
+      "烈焰斩Ⅴ",
+      "炎爆术Ⅴ",
+      "焚天击Ⅵ",
+      "火羽箭Ⅴ",
+      "寒冰刺Ⅵ",
+      "霜冻波Ⅴ",
+      "冰棱击Ⅵ",
+      "极寒斩Ⅴ",
+      "疾风刃Ⅵ",
+      "旋风斩Ⅴ",
+      "狂风斩Ⅵ",
+      "风刃连击Ⅴ",
+      "岩石锤Ⅵ",
+      "沙暴击Ⅴ",
+      "地裂斩Ⅵ",
+      "磐石击Ⅵ",
+      "落雷斩Ⅵ",
+      "雷光刺Ⅴ",
+      "惊雷斩Ⅵ",
+      "雷网缚Ⅴ",
+      "圣光刃Ⅵ",
+      "曦光箭Ⅴ",
+      "辉耀击Ⅵ",
+      "晨辉斩Ⅴ",
+      "幽影击Ⅵ",
+      "蚀魂刺Ⅴ",
+      "夜幕斩Ⅵ",
+      "冥噬击Ⅴ"
+    ],
+    "total": 154
+  },
+  "baseCardCount": 100,
+  "characters": [
+    {
+      "id": "human-lisaya",
+      "name": "丽莎娅",
+      "elements": [
+        "光",
+        "暗"
+      ],
+      "level": 67,
+      "skills": [
+        "高级治愈Ⅵ",
+        "黑暗吞噬Ⅵ"
+      ],
+      "tierPlan": {
+        "normal": 16,
+        "advanced": 0,
+        "special": 0
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "黑暗吞噬Ⅵ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "黑暗吞噬Ⅶ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "死之审判Ⅴ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "暗黑精灵Ⅷ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "光剑护体Ⅴ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "黑暗视野Ⅳ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "光明治愈Ⅴ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "黑暗笼罩Ⅵ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "光剑雨Ⅴ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "暗之手Ⅴ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "光宇Ⅴ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 29,
+          "name": "战术打击",
+          "tier": "normal",
+          "element": "光",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 30,
+          "name": "能量涌动",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 5,
+          "afterPlay": "discard"
+        }
+      ]
+    },
+    {
+      "id": "human-luolinfo",
+      "name": "罗林福",
+      "elements": [
+        "雷"
+      ],
+      "level": 61,
+      "skills": [
+        "雷电缠绕Ⅵ"
+      ],
+      "tierPlan": {
+        "normal": 16,
+        "advanced": 0,
+        "special": 0
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "雷电缠绕Ⅵ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "雷电缠绕Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "战术打击",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "能量涌动",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "守护之盾",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "精准射击",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "疾速位移",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "集气",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "战意激发",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "反击架势",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "生命汲取",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 29,
+          "name": "凝神",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 30,
+          "name": "落雷斩Ⅵ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 5,
+          "afterPlay": "discard"
+        }
+      ]
+    },
+    {
+      "id": "human-adrian",
+      "name": "阿德里安·维斯",
+      "elements": [
+        "光",
+        "雷"
+      ],
+      "level": 74,
+      "skills": [
+        "雷霆王座Ⅰ",
+        "圣裁天幕Ⅰ"
+      ],
+      "tierPlan": {
+        "normal": 12,
+        "advanced": 3,
+        "special": 1
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "雷电缠绕Ⅵ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "雷电缠绕Ⅶ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "光剑护体Ⅴ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "光明治愈Ⅴ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "光剑雨Ⅴ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "光宇Ⅴ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "战术打击",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "能量涌动",
+          "tier": "normal",
+          "element": "光",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "守护之盾",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "雷霆王座Ⅲ",
+          "tier": "advanced",
+          "element": "光",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "圣裁天幕Ⅲ",
+          "tier": "advanced",
+          "element": "雷",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 29,
+          "name": "炎龙凤燃",
+          "tier": "advanced",
+          "element": "光",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 30,
+          "name": "死亡支配者Ⅲ",
+          "tier": "special",
+          "element": "雷",
+          "cost": 8,
+          "afterPlay": "exhaust"
+        }
+      ]
+    },
+    {
+      "id": "human-green",
+      "name": "格林·奥瑞弗",
+      "elements": [
+        "火"
+      ],
+      "level": 59,
+      "skills": [
+        "熔岩剑Ⅴ"
+      ],
+      "tierPlan": {
+        "normal": 16,
+        "advanced": 0,
+        "special": 0
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "熔岩剑Ⅴ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "大火球Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "大火球Ⅶ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "纵火Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "纵火Ⅶ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "战术打击",
+          "tier": "normal",
+          "element": "火",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "能量涌动",
+          "tier": "normal",
+          "element": "火",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "守护之盾",
+          "tier": "normal",
+          "element": "火",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "精准射击",
+          "tier": "normal",
+          "element": "火",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "疾速位移",
+          "tier": "normal",
+          "element": "火",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "集气",
+          "tier": "normal",
+          "element": "火",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 29,
+          "name": "战意激发",
+          "tier": "normal",
+          "element": "火",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 30,
+          "name": "反击架势",
+          "tier": "normal",
+          "element": "火",
+          "cost": 5,
+          "afterPlay": "discard"
+        }
+      ]
+    },
+    {
+      "id": "human-quick",
+      "name": "奎克",
+      "elements": [
+        "暗",
+        "土"
+      ],
+      "level": 53,
+      "skills": [
+        "死之审判Ⅴ"
+      ],
+      "tierPlan": {
+        "normal": 16,
+        "advanced": 0,
+        "special": 0
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "死之审判Ⅴ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "土",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "土",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "黑暗吞噬Ⅵ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "黑暗吞噬Ⅶ",
+          "tier": "normal",
+          "element": "土",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "暗黑精灵Ⅷ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "黑暗视野Ⅳ",
+          "tier": "normal",
+          "element": "土",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "黑暗笼罩Ⅵ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "暗之手Ⅴ",
+          "tier": "normal",
+          "element": "土",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "战术打击",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "能量涌动",
+          "tier": "normal",
+          "element": "土",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "守护之盾",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "精准射击",
+          "tier": "normal",
+          "element": "土",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 29,
+          "name": "疾速位移",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 30,
+          "name": "集气",
+          "tier": "normal",
+          "element": "土",
+          "cost": 5,
+          "afterPlay": "discard"
+        }
+      ]
+    },
+    {
+      "id": "godkin-star",
+      "name": "闪耀星光",
+      "elements": [
+        "冰",
+        "火",
+        "土"
+      ],
+      "level": 84,
+      "skills": [
+        "冰王斩Ⅱ",
+        "超大冰暴Ⅱ",
+        "沙王领主Ⅱ",
+        "冰刺Ⅷ"
+      ],
+      "tierPlan": {
+        "normal": 9,
+        "advanced": 5,
+        "special": 2
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "冰刺Ⅷ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "土",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "熔岩剑Ⅴ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "冰锋箭雨Ⅴ",
+          "tier": "normal",
+          "element": "土",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "大火球Ⅵ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "大火球Ⅶ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "纵火Ⅵ",
+          "tier": "normal",
+          "element": "土",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "冰王斩Ⅲ",
+          "tier": "advanced",
+          "element": "冰",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "超大冰暴Ⅲ",
+          "tier": "advanced",
+          "element": "火",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "沙王领主Ⅲ",
+          "tier": "advanced",
+          "element": "土",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "火焰领主Ⅲ",
+          "tier": "advanced",
+          "element": "冰",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "炎天噬地Ⅲ",
+          "tier": "advanced",
+          "element": "火",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 29,
+          "name": "死亡支配者Ⅲ",
+          "tier": "special",
+          "element": "土",
+          "cost": 9,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 30,
+          "name": "元素圣体Ⅲ",
+          "tier": "special",
+          "element": "冰",
+          "cost": 9,
+          "afterPlay": "exhaust"
+        }
+      ]
+    },
+    {
+      "id": "godkin-su",
+      "name": "苏",
+      "elements": [
+        "暗",
+        "光",
+        "雷"
+      ],
+      "level": 93,
+      "skills": [
+        "雷光真闪Ⅲ",
+        "圣光庇护Ⅲ",
+        "光明之主Ⅲ",
+        "暗之闪Ⅲ",
+        "暗黑精灵Ⅷ",
+        "高级治愈Ⅷ"
+      ],
+      "tierPlan": {
+        "normal": 7,
+        "advanced": 6,
+        "special": 3
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "暗黑精灵Ⅷ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "黑暗吞噬Ⅵ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "黑暗吞噬Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "雷电缠绕Ⅵ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "雷光真闪Ⅲ",
+          "tier": "advanced",
+          "element": "光",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "圣光庇护Ⅲ",
+          "tier": "advanced",
+          "element": "雷",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "光明之主Ⅲ",
+          "tier": "advanced",
+          "element": "暗",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "暗之闪Ⅲ",
+          "tier": "advanced",
+          "element": "光",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "炎龙凤燃",
+          "tier": "advanced",
+          "element": "雷",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "元素庇护",
+          "tier": "advanced",
+          "element": "暗",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "死亡支配者Ⅲ",
+          "tier": "special",
+          "element": "光",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 29,
+          "name": "元素圣体Ⅲ",
+          "tier": "special",
+          "element": "雷",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 30,
+          "name": "太阳神的祝福",
+          "tier": "special",
+          "element": "暗",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        }
+      ]
+    },
+    {
+      "id": "elf-queen",
+      "name": "百丽耶塔·卡佩恩",
+      "elements": [
+        "冰",
+        "风",
+        "雷"
+      ],
+      "level": 59,
+      "skills": [
+        "冰锋箭雨Ⅴ"
+      ],
+      "tierPlan": {
+        "normal": 16,
+        "advanced": 0,
+        "special": 0
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "冰锋箭雨Ⅴ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "雷电缠绕Ⅵ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "雷电缠绕Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "冰刺Ⅷ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "风暴冲击Ⅵ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "风暴冲击Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "战术打击",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "能量涌动",
+          "tier": "normal",
+          "element": "风",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "守护之盾",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "精准射击",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "疾速位移",
+          "tier": "normal",
+          "element": "风",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 29,
+          "name": "集气",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 30,
+          "name": "战意激发",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 5,
+          "afterPlay": "discard"
+        }
+      ]
+    },
+    {
+      "id": "elf-bushi",
+      "name": "布施·勋尔瓦",
+      "elements": [
+        "光",
+        "火",
+        "雷"
+      ],
+      "level": 52,
+      "skills": [
+        "光剑护体Ⅴ"
+      ],
+      "tierPlan": {
+        "normal": 16,
+        "advanced": 0,
+        "special": 0
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "光剑护体Ⅴ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "雷电缠绕Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "雷电缠绕Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "熔岩剑Ⅴ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "光明治愈Ⅴ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "光剑雨Ⅴ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "光宇Ⅴ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "大火球Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "大火球Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "纵火Ⅵ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "纵火Ⅶ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 29,
+          "name": "战术打击",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 30,
+          "name": "能量涌动",
+          "tier": "normal",
+          "element": "光",
+          "cost": 5,
+          "afterPlay": "discard"
+        }
+      ]
+    },
+    {
+      "id": "elf-enbolu",
+      "name": "恩伯鲁·卡佩恩",
+      "elements": [
+        "暗",
+        "风",
+        "火"
+      ],
+      "level": 49,
+      "skills": [
+        "黑暗视野Ⅳ"
+      ],
+      "tierPlan": {
+        "normal": 16,
+        "advanced": 0,
+        "special": 0
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "黑暗视野Ⅳ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "黑暗吞噬Ⅵ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "黑暗吞噬Ⅶ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "熔岩剑Ⅴ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "死之审判Ⅴ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "暗黑精灵Ⅷ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "黑暗笼罩Ⅵ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "风暴冲击Ⅵ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "风暴冲击Ⅶ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "暗之手Ⅴ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "大火球Ⅵ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 29,
+          "name": "大火球Ⅶ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 30,
+          "name": "纵火Ⅵ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 5,
+          "afterPlay": "discard"
+        }
+      ]
+    },
+    {
+      "id": "elf-saint",
+      "name": "圣伯特·神圣",
+      "elements": [
+        "光"
+      ],
+      "level": 54,
+      "skills": [
+        "光明治愈Ⅴ"
+      ],
+      "tierPlan": {
+        "normal": 16,
+        "advanced": 0,
+        "special": 0
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "光明治愈Ⅴ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "光剑护体Ⅴ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "光剑雨Ⅴ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "光宇Ⅴ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "战术打击",
+          "tier": "normal",
+          "element": "光",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "能量涌动",
+          "tier": "normal",
+          "element": "光",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "守护之盾",
+          "tier": "normal",
+          "element": "光",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "精准射击",
+          "tier": "normal",
+          "element": "光",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "疾速位移",
+          "tier": "normal",
+          "element": "光",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "集气",
+          "tier": "normal",
+          "element": "光",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "战意激发",
+          "tier": "normal",
+          "element": "光",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 29,
+          "name": "反击架势",
+          "tier": "normal",
+          "element": "光",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 30,
+          "name": "生命汲取",
+          "tier": "normal",
+          "element": "光",
+          "cost": 5,
+          "afterPlay": "discard"
+        }
+      ]
+    },
+    {
+      "id": "darkelf-sterling",
+      "name": "斯特林·哥加咖",
+      "elements": [
+        "暗"
+      ],
+      "level": 63,
+      "skills": [
+        "黑暗笼罩Ⅵ"
+      ],
+      "tierPlan": {
+        "normal": 16,
+        "advanced": 0,
+        "special": 0
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "黑暗笼罩Ⅵ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "黑暗吞噬Ⅵ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "黑暗吞噬Ⅶ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "死之审判Ⅴ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "暗黑精灵Ⅷ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "黑暗视野Ⅳ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "暗之手Ⅴ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "战术打击",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "能量涌动",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "守护之盾",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "精准射击",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 29,
+          "name": "疾速位移",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 30,
+          "name": "集气",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 5,
+          "afterPlay": "discard"
+        }
+      ]
+    },
+    {
+      "id": "elf-eluxia",
+      "name": "艾露希娅·卡佩恩",
+      "elements": [
+        "冰",
+        "风",
+        "土"
+      ],
+      "level": 86,
+      "skills": [
+        "霜星坠落Ⅱ",
+        "风王猎场Ⅱ",
+        "大地君王Ⅱ",
+        "灵魂烙印Ⅱ"
+      ],
+      "tierPlan": {
+        "normal": 9,
+        "advanced": 5,
+        "special": 2
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "土",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "冰刺Ⅷ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "冰锋箭雨Ⅴ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "风暴冲击Ⅵ",
+          "tier": "normal",
+          "element": "土",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "风暴冲击Ⅶ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "战术打击",
+          "tier": "normal",
+          "element": "风",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "能量涌动",
+          "tier": "normal",
+          "element": "土",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "霜星坠落Ⅲ",
+          "tier": "advanced",
+          "element": "冰",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "风王猎场Ⅲ",
+          "tier": "advanced",
+          "element": "风",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "大地君王Ⅲ",
+          "tier": "advanced",
+          "element": "土",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "炎龙凤燃",
+          "tier": "advanced",
+          "element": "冰",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "元素庇护",
+          "tier": "advanced",
+          "element": "风",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 29,
+          "name": "灵魂烙印Ⅲ",
+          "tier": "special",
+          "element": "土",
+          "cost": 9,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 30,
+          "name": "死亡支配者Ⅲ",
+          "tier": "special",
+          "element": "冰",
+          "cost": 9,
+          "afterPlay": "exhaust"
+        }
+      ]
+    },
+    {
+      "id": "orc-moluo",
+      "name": "摩罗哥·恩典",
+      "elements": [
+        "风"
+      ],
+      "level": 62,
+      "skills": [
+        "风暴冲击Ⅵ"
+      ],
+      "tierPlan": {
+        "normal": 16,
+        "advanced": 0,
+        "special": 0
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "风暴冲击Ⅵ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "风暴冲击Ⅶ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "战术打击",
+          "tier": "normal",
+          "element": "风",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "能量涌动",
+          "tier": "normal",
+          "element": "风",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "守护之盾",
+          "tier": "normal",
+          "element": "风",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "精准射击",
+          "tier": "normal",
+          "element": "风",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "疾速位移",
+          "tier": "normal",
+          "element": "风",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "集气",
+          "tier": "normal",
+          "element": "风",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "战意激发",
+          "tier": "normal",
+          "element": "风",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "反击架势",
+          "tier": "normal",
+          "element": "风",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "生命汲取",
+          "tier": "normal",
+          "element": "风",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 29,
+          "name": "凝神",
+          "tier": "normal",
+          "element": "风",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 30,
+          "name": "疾风刃Ⅵ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 5,
+          "afterPlay": "discard"
+        }
+      ]
+    },
+    {
+      "id": "orc-xindi",
+      "name": "辛迪亚兹·祝福",
+      "elements": [
+        "光"
+      ],
+      "level": 55,
+      "skills": [
+        "光剑雨Ⅴ"
+      ],
+      "tierPlan": {
+        "normal": 16,
+        "advanced": 0,
+        "special": 0
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "光剑雨Ⅴ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "光剑护体Ⅴ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "光明治愈Ⅴ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "光宇Ⅴ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "战术打击",
+          "tier": "normal",
+          "element": "光",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "能量涌动",
+          "tier": "normal",
+          "element": "光",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "守护之盾",
+          "tier": "normal",
+          "element": "光",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "精准射击",
+          "tier": "normal",
+          "element": "光",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "疾速位移",
+          "tier": "normal",
+          "element": "光",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "集气",
+          "tier": "normal",
+          "element": "光",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "战意激发",
+          "tier": "normal",
+          "element": "光",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 29,
+          "name": "反击架势",
+          "tier": "normal",
+          "element": "光",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 30,
+          "name": "生命汲取",
+          "tier": "normal",
+          "element": "光",
+          "cost": 5,
+          "afterPlay": "discard"
+        }
+      ]
+    },
+    {
+      "id": "orc-flemo",
+      "name": "弗雷莫·残酷",
+      "elements": [
+        "暗"
+      ],
+      "level": 58,
+      "skills": [
+        "暗之手Ⅴ"
+      ],
+      "tierPlan": {
+        "normal": 16,
+        "advanced": 0,
+        "special": 0
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "暗之手Ⅴ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "黑暗吞噬Ⅵ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "黑暗吞噬Ⅶ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "死之审判Ⅴ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "暗黑精灵Ⅷ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "黑暗视野Ⅳ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "黑暗笼罩Ⅵ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "战术打击",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "能量涌动",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "守护之盾",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "精准射击",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 29,
+          "name": "疾速位移",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 30,
+          "name": "集气",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 5,
+          "afterPlay": "discard"
+        }
+      ]
+    },
+    {
+      "id": "orc-saibo",
+      "name": "赛博洛娜·希望",
+      "elements": [
+        "光"
+      ],
+      "level": 56,
+      "skills": [
+        "光宇Ⅴ"
+      ],
+      "tierPlan": {
+        "normal": 16,
+        "advanced": 0,
+        "special": 0
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "光宇Ⅴ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "光剑护体Ⅴ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "光明治愈Ⅴ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "光剑雨Ⅴ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "战术打击",
+          "tier": "normal",
+          "element": "光",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "能量涌动",
+          "tier": "normal",
+          "element": "光",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "守护之盾",
+          "tier": "normal",
+          "element": "光",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "精准射击",
+          "tier": "normal",
+          "element": "光",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "疾速位移",
+          "tier": "normal",
+          "element": "光",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "集气",
+          "tier": "normal",
+          "element": "光",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "战意激发",
+          "tier": "normal",
+          "element": "光",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 29,
+          "name": "反击架势",
+          "tier": "normal",
+          "element": "光",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 30,
+          "name": "生命汲取",
+          "tier": "normal",
+          "element": "光",
+          "cost": 5,
+          "afterPlay": "discard"
+        }
+      ]
+    },
+    {
+      "id": "orc-sennuo",
+      "name": "森诺迩·正义",
+      "elements": [
+        "火"
+      ],
+      "level": 69,
+      "skills": [
+        "炎天噬地Ⅰ",
+        "大火球Ⅵ",
+        "纵火Ⅵ"
+      ],
+      "tierPlan": {
+        "normal": 16,
+        "advanced": 0,
+        "special": 0
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "大火球Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "纵火Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "熔岩剑Ⅴ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "大火球Ⅶ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "纵火Ⅶ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "战术打击",
+          "tier": "normal",
+          "element": "火",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "能量涌动",
+          "tier": "normal",
+          "element": "火",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "守护之盾",
+          "tier": "normal",
+          "element": "火",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "精准射击",
+          "tier": "normal",
+          "element": "火",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "疾速位移",
+          "tier": "normal",
+          "element": "火",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "集气",
+          "tier": "normal",
+          "element": "火",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 29,
+          "name": "战意激发",
+          "tier": "normal",
+          "element": "火",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 30,
+          "name": "反击架势",
+          "tier": "normal",
+          "element": "火",
+          "cost": 5,
+          "afterPlay": "discard"
+        }
+      ]
+    },
+    {
+      "id": "demon-heka",
+      "name": "赫卡莫斯·烬",
+      "elements": [
+        "火",
+        "暗"
+      ],
+      "level": 93,
+      "skills": [
+        "灰烬魔域Ⅲ",
+        "日蚀之刃Ⅲ",
+        "终·烈日焚天Ⅲ",
+        "灵魂烙印Ⅲ",
+        "不灭魔躯"
+      ],
+      "tierPlan": {
+        "normal": 7,
+        "advanced": 6,
+        "special": 3
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "黑暗吞噬Ⅵ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "黑暗吞噬Ⅶ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "熔岩剑Ⅴ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "死之审判Ⅴ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "灰烬魔域Ⅲ",
+          "tier": "advanced",
+          "element": "暗",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "日蚀之刃Ⅲ",
+          "tier": "advanced",
+          "element": "火",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "终·烈日焚天Ⅲ",
+          "tier": "advanced",
+          "element": "暗",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "火焰领主Ⅲ",
+          "tier": "advanced",
+          "element": "火",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "炎天噬地Ⅲ",
+          "tier": "advanced",
+          "element": "暗",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "炎龙凤燃",
+          "tier": "advanced",
+          "element": "火",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "灵魂烙印Ⅲ",
+          "tier": "special",
+          "element": "暗",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 29,
+          "name": "不灭魔躯",
+          "tier": "special",
+          "element": "火",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 30,
+          "name": "死亡支配者Ⅲ",
+          "tier": "special",
+          "element": "暗",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        }
+      ]
+    },
+    {
+      "id": "dragon-shijiage",
+      "name": "释迦格",
+      "elements": [
+        "全系"
+      ],
+      "level": 94,
+      "skills": [
+        "龙神意志",
+        "真火吞Ⅲ",
+        "最终一击·雷霆",
+        "死亡注视Ⅲ"
+      ],
+      "tierPlan": {
+        "normal": 7,
+        "advanced": 6,
+        "special": 3
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "黑暗吞噬Ⅵ",
+          "tier": "normal",
+          "element": "土",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "黑暗吞噬Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "雷电缠绕Ⅵ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "雷电缠绕Ⅶ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "龙神意志",
+          "tier": "advanced",
+          "element": "火",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "真火吞Ⅲ",
+          "tier": "advanced",
+          "element": "冰",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "最终一击·雷霆",
+          "tier": "advanced",
+          "element": "风",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "火焰领主Ⅲ",
+          "tier": "advanced",
+          "element": "土",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "炎天噬地Ⅲ",
+          "tier": "advanced",
+          "element": "雷",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "炎龙凤燃",
+          "tier": "advanced",
+          "element": "光",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "死亡注视Ⅲ",
+          "tier": "special",
+          "element": "暗",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 29,
+          "name": "死亡支配者Ⅲ",
+          "tier": "special",
+          "element": "火",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 30,
+          "name": "元素圣体Ⅲ",
+          "tier": "special",
+          "element": "冰",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        }
+      ]
+    },
+    {
+      "id": "dragon-moye",
+      "name": "摩耶巳格",
+      "elements": [
+        "全系"
+      ],
+      "level": 95,
+      "skills": [
+        "龙神意志",
+        "耶梦加得凝视",
+        "死亡支配者Ⅲ"
+      ],
+      "tierPlan": {
+        "normal": 7,
+        "advanced": 6,
+        "special": 3
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "黑暗吞噬Ⅵ",
+          "tier": "normal",
+          "element": "土",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "黑暗吞噬Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "雷电缠绕Ⅵ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "雷电缠绕Ⅶ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "龙神意志",
+          "tier": "advanced",
+          "element": "火",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "耶梦加得凝视",
+          "tier": "advanced",
+          "element": "冰",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "火焰领主Ⅲ",
+          "tier": "advanced",
+          "element": "风",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "炎天噬地Ⅲ",
+          "tier": "advanced",
+          "element": "土",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "炎龙凤燃",
+          "tier": "advanced",
+          "element": "雷",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "真火吞Ⅲ",
+          "tier": "advanced",
+          "element": "光",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "死亡支配者Ⅲ",
+          "tier": "special",
+          "element": "暗",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 29,
+          "name": "元素圣体Ⅲ",
+          "tier": "special",
+          "element": "火",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 30,
+          "name": "太阳神的祝福",
+          "tier": "special",
+          "element": "冰",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        }
+      ]
+    },
+    {
+      "id": "dragon-jieao",
+      "name": "桀骜稣",
+      "elements": [
+        "全系"
+      ],
+      "level": 91,
+      "skills": [
+        "龙神意志",
+        "幽暗庇护Ⅲ",
+        "至暗洗礼Ⅲ"
+      ],
+      "tierPlan": {
+        "normal": 7,
+        "advanced": 6,
+        "special": 3
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "黑暗吞噬Ⅵ",
+          "tier": "normal",
+          "element": "土",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "黑暗吞噬Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "雷电缠绕Ⅵ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "雷电缠绕Ⅶ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "龙神意志",
+          "tier": "advanced",
+          "element": "火",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "幽暗庇护Ⅲ",
+          "tier": "advanced",
+          "element": "冰",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "至暗洗礼Ⅲ",
+          "tier": "advanced",
+          "element": "风",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "火焰领主Ⅲ",
+          "tier": "advanced",
+          "element": "土",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "炎天噬地Ⅲ",
+          "tier": "advanced",
+          "element": "雷",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "炎龙凤燃",
+          "tier": "advanced",
+          "element": "光",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "死亡支配者Ⅲ",
+          "tier": "special",
+          "element": "暗",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 29,
+          "name": "元素圣体Ⅲ",
+          "tier": "special",
+          "element": "火",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 30,
+          "name": "太阳神的祝福",
+          "tier": "special",
+          "element": "冰",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        }
+      ]
+    },
+    {
+      "id": "dragon-weike",
+      "name": "维克基",
+      "elements": [
+        "全系"
+      ],
+      "level": 92,
+      "skills": [
+        "龙神意志",
+        "天使羽"
+      ],
+      "tierPlan": {
+        "normal": 7,
+        "advanced": 6,
+        "special": 3
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "黑暗吞噬Ⅵ",
+          "tier": "normal",
+          "element": "土",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "黑暗吞噬Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "雷电缠绕Ⅵ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "雷电缠绕Ⅶ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "龙神意志",
+          "tier": "advanced",
+          "element": "火",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "火焰领主Ⅲ",
+          "tier": "advanced",
+          "element": "冰",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "炎天噬地Ⅲ",
+          "tier": "advanced",
+          "element": "风",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "炎龙凤燃",
+          "tier": "advanced",
+          "element": "土",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "真火吞Ⅲ",
+          "tier": "advanced",
+          "element": "雷",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "烈焰护体",
+          "tier": "advanced",
+          "element": "光",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "天使羽",
+          "tier": "special",
+          "element": "暗",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 29,
+          "name": "死亡支配者Ⅲ",
+          "tier": "special",
+          "element": "火",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 30,
+          "name": "元素圣体Ⅲ",
+          "tier": "special",
+          "element": "冰",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        }
+      ]
+    },
+    {
+      "id": "dragon-baosi",
+      "name": "堡思维亚",
+      "elements": [
+        "全系"
+      ],
+      "level": 94,
+      "skills": [
+        "龙神意志",
+        "噩梦Ⅲ",
+        "斩魔剑"
+      ],
+      "tierPlan": {
+        "normal": 7,
+        "advanced": 6,
+        "special": 3
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "黑暗吞噬Ⅵ",
+          "tier": "normal",
+          "element": "土",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "黑暗吞噬Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "雷电缠绕Ⅵ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "雷电缠绕Ⅶ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "龙神意志",
+          "tier": "advanced",
+          "element": "火",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "噩梦Ⅲ",
+          "tier": "advanced",
+          "element": "冰",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "火焰领主Ⅲ",
+          "tier": "advanced",
+          "element": "风",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "炎天噬地Ⅲ",
+          "tier": "advanced",
+          "element": "土",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "炎龙凤燃",
+          "tier": "advanced",
+          "element": "雷",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "真火吞Ⅲ",
+          "tier": "advanced",
+          "element": "光",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "斩魔剑",
+          "tier": "special",
+          "element": "暗",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 29,
+          "name": "死亡支配者Ⅲ",
+          "tier": "special",
+          "element": "火",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 30,
+          "name": "元素圣体Ⅲ",
+          "tier": "special",
+          "element": "冰",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        }
+      ]
+    },
+    {
+      "id": "dragon-feiyu",
+      "name": "菲羽克",
+      "elements": [
+        "全系"
+      ],
+      "level": 96,
+      "skills": [
+        "龙神意志",
+        "超位雷斩",
+        "暗之闪Ⅲ",
+        "陨星灭地"
+      ],
+      "tierPlan": {
+        "normal": 7,
+        "advanced": 6,
+        "special": 3
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "黑暗吞噬Ⅵ",
+          "tier": "normal",
+          "element": "土",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "黑暗吞噬Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "雷电缠绕Ⅵ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "雷电缠绕Ⅶ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "龙神意志",
+          "tier": "advanced",
+          "element": "火",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "超位雷斩",
+          "tier": "advanced",
+          "element": "冰",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "暗之闪Ⅲ",
+          "tier": "advanced",
+          "element": "风",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "火焰领主Ⅲ",
+          "tier": "advanced",
+          "element": "土",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "炎天噬地Ⅲ",
+          "tier": "advanced",
+          "element": "雷",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "炎龙凤燃",
+          "tier": "advanced",
+          "element": "光",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "陨星灭地",
+          "tier": "special",
+          "element": "暗",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 29,
+          "name": "死亡支配者Ⅲ",
+          "tier": "special",
+          "element": "火",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 30,
+          "name": "元素圣体Ⅲ",
+          "tier": "special",
+          "element": "冰",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        }
+      ]
+    },
+    {
+      "id": "dragon-yemosu",
+      "name": "耶莫稣",
+      "elements": [
+        "全系"
+      ],
+      "level": 100,
+      "skills": [
+        "龙神意志",
+        "起死回生",
+        "统治Ⅲ",
+        "雷光铠甲Ⅲ",
+        "元素圣体Ⅲ",
+        "时间禁锢"
+      ],
+      "tierPlan": {
+        "normal": 7,
+        "advanced": 6,
+        "special": 3
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "黑暗吞噬Ⅵ",
+          "tier": "normal",
+          "element": "土",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "黑暗吞噬Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "雷电缠绕Ⅵ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "雷电缠绕Ⅶ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "龙神意志",
+          "tier": "advanced",
+          "element": "火",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "雷光铠甲Ⅲ",
+          "tier": "advanced",
+          "element": "冰",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "火焰领主Ⅲ",
+          "tier": "advanced",
+          "element": "风",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "炎天噬地Ⅲ",
+          "tier": "advanced",
+          "element": "土",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "炎龙凤燃",
+          "tier": "advanced",
+          "element": "雷",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "真火吞Ⅲ",
+          "tier": "advanced",
+          "element": "光",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "起死回生",
+          "tier": "special",
+          "element": "暗",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 29,
+          "name": "统治Ⅲ",
+          "tier": "special",
+          "element": "火",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 30,
+          "name": "元素圣体Ⅲ",
+          "tier": "special",
+          "element": "冰",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        }
+      ]
+    },
+    {
+      "id": "arcane-time-exile",
+      "name": "阿斯特拉·流亡",
+      "elements": [
+        "风",
+        "雷",
+        "暗"
+      ],
+      "level": 95,
+      "skills": [
+        "时间回溯",
+        "星界放逐Ⅲ",
+        "天穹之门",
+        "次元隧道",
+        "次元斩Ⅲ",
+        "次元屏障Ⅲ"
+      ],
+      "tierPlan": {
+        "normal": 7,
+        "advanced": 6,
+        "special": 3
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "黑暗吞噬Ⅵ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "黑暗吞噬Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "雷电缠绕Ⅵ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "雷电缠绕Ⅶ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "天穹之门",
+          "tier": "advanced",
+          "element": "雷",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "次元隧道",
+          "tier": "advanced",
+          "element": "暗",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "次元斩Ⅲ",
+          "tier": "advanced",
+          "element": "风",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "次元屏障Ⅲ",
+          "tier": "advanced",
+          "element": "雷",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "炎龙凤燃",
+          "tier": "advanced",
+          "element": "暗",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "元素庇护",
+          "tier": "advanced",
+          "element": "风",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "时间回溯",
+          "tier": "special",
+          "element": "雷",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 29,
+          "name": "星界放逐Ⅲ",
+          "tier": "special",
+          "element": "暗",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 30,
+          "name": "死亡支配者Ⅲ",
+          "tier": "special",
+          "element": "风",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        }
+      ]
+    },
+    {
+      "id": "demon-abyss-executor",
+      "name": "涅萨洛斯·断罪",
+      "elements": [
+        "暗"
+      ],
+      "level": 95,
+      "skills": [
+        "绝对死亡Ⅲ",
+        "死亡审判Ⅲ",
+        "灵魂吞噬Ⅲ",
+        "超级虚弱Ⅲ",
+        "恶魔契约"
+      ],
+      "tierPlan": {
+        "normal": 7,
+        "advanced": 6,
+        "special": 3
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "黑暗吞噬Ⅵ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "黑暗吞噬Ⅶ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "死之审判Ⅴ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "暗黑精灵Ⅷ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "炎龙凤燃",
+          "tier": "advanced",
+          "element": "暗",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "元素庇护",
+          "tier": "advanced",
+          "element": "暗",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "绝对重力Ⅲ",
+          "tier": "advanced",
+          "element": "暗",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "终·元素贯穿",
+          "tier": "advanced",
+          "element": "暗",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "真王穿刺Ⅲ",
+          "tier": "advanced",
+          "element": "暗",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "混沌铠甲",
+          "tier": "advanced",
+          "element": "暗",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "绝对死亡Ⅲ",
+          "tier": "special",
+          "element": "暗",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 29,
+          "name": "死亡审判Ⅲ",
+          "tier": "special",
+          "element": "暗",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 30,
+          "name": "灵魂吞噬Ⅲ",
+          "tier": "special",
+          "element": "暗",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        }
+      ]
+    },
+    {
+      "id": "godkin-element-endbringer",
+      "name": "赛勒菲恩·终焉",
+      "elements": [
+        "全系"
+      ],
+      "level": 100,
+      "skills": [
+        "五元素诛神斩",
+        "冰火重天Ⅲ",
+        "风雷天暴Ⅲ",
+        "终·万雷归一Ⅲ",
+        "灭世之威",
+        "神威降临Ⅲ"
+      ],
+      "tierPlan": {
+        "normal": 7,
+        "advanced": 6,
+        "special": 3
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "火",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "黑暗吞噬Ⅵ",
+          "tier": "normal",
+          "element": "土",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "黑暗吞噬Ⅶ",
+          "tier": "normal",
+          "element": "雷",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "雷电缠绕Ⅵ",
+          "tier": "normal",
+          "element": "光",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "雷电缠绕Ⅶ",
+          "tier": "normal",
+          "element": "暗",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "终·万雷归一Ⅲ",
+          "tier": "advanced",
+          "element": "火",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "灭世之威",
+          "tier": "advanced",
+          "element": "冰",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "火焰领主Ⅲ",
+          "tier": "advanced",
+          "element": "风",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "炎天噬地Ⅲ",
+          "tier": "advanced",
+          "element": "土",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "炎龙凤燃",
+          "tier": "advanced",
+          "element": "雷",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "真火吞Ⅲ",
+          "tier": "advanced",
+          "element": "光",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "五元素诛神斩",
+          "tier": "special",
+          "element": "暗",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 29,
+          "name": "冰火重天Ⅲ",
+          "tier": "special",
+          "element": "火",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 30,
+          "name": "风雷天暴Ⅲ",
+          "tier": "special",
+          "element": "冰",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        }
+      ]
+    },
+    {
+      "id": "ice-archon",
+      "name": "艾瑟琳·霜冕",
+      "elements": [
+        "冰",
+        "风"
+      ],
+      "level": 95,
+      "skills": [
+        "超大冰暴Ⅲ",
+        "绝对冰冻Ⅲ",
+        "极寒神殿Ⅲ",
+        "霜星坠落Ⅲ",
+        "真王冰甲Ⅲ",
+        "终·冰元素"
+      ],
+      "tierPlan": {
+        "normal": 7,
+        "advanced": 6,
+        "special": 3
+      },
+      "cards": [
+        {
+          "idx": 1,
+          "name": "普通攻击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 2,
+          "name": "格挡",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 3,
+          "name": "集中",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 4,
+          "name": "急救",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 5,
+          "name": "战术调整",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 6,
+          "name": "裁决突刺",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 7,
+          "name": "反击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 8,
+          "name": "重击",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 9,
+          "name": "护盾",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 10,
+          "name": "压制",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 11,
+          "name": "蓄势",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 12,
+          "name": "闪避",
+          "tier": "basic",
+          "element": "无",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 13,
+          "name": "魔力恢复",
+          "tier": "basic",
+          "element": "无",
+          "cost": 1,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 14,
+          "name": "破甲斩",
+          "tier": "basic",
+          "element": "无",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 15,
+          "name": "高级治愈Ⅵ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 16,
+          "name": "高级治愈Ⅶ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 3,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 17,
+          "name": "高级治愈Ⅷ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 4,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 18,
+          "name": "冰刺Ⅷ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 5,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 19,
+          "name": "冰锋箭雨Ⅴ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 6,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 20,
+          "name": "风暴冲击Ⅵ",
+          "tier": "normal",
+          "element": "风",
+          "cost": 7,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 21,
+          "name": "风暴冲击Ⅶ",
+          "tier": "normal",
+          "element": "冰",
+          "cost": 2,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 22,
+          "name": "超大冰暴Ⅲ",
+          "tier": "advanced",
+          "element": "风",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 23,
+          "name": "绝对冰冻Ⅲ",
+          "tier": "advanced",
+          "element": "冰",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 24,
+          "name": "极寒神殿Ⅲ",
+          "tier": "advanced",
+          "element": "风",
+          "cost": 8,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 25,
+          "name": "霜星坠落Ⅲ",
+          "tier": "advanced",
+          "element": "冰",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 26,
+          "name": "真王冰甲Ⅲ",
+          "tier": "advanced",
+          "element": "风",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 27,
+          "name": "终·冰元素",
+          "tier": "advanced",
+          "element": "冰",
+          "cost": 9,
+          "afterPlay": "discard"
+        },
+        {
+          "idx": 28,
+          "name": "死亡支配者Ⅲ",
+          "tier": "special",
+          "element": "风",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 29,
+          "name": "元素圣体Ⅲ",
+          "tier": "special",
+          "element": "冰",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        },
+        {
+          "idx": 30,
+          "name": "太阳神的祝福",
+          "tier": "special",
+          "element": "风",
+          "cost": 10,
+          "afterPlay": "exhaust"
+        }
+      ]
+    }
+  ],
+  "issues": [
+    "名字元素不符：艾露希娅·卡佩恩(冰/风/土) 的「灵魂烙印Ⅲ」推断为[暗]",
+    "签名技未落位：森诺迩·正义 的「炎天噬地Ⅰ」(advanced) — 等级<70 不可持高级卡",
+    "签名技未落位：耶莫稣 的「时间禁锢」(special) — 高阶槽位不足（签名技多于该档位槽数）",
+    "签名技未落位：涅萨洛斯·断罪 的「超级虚弱Ⅲ」(special) — 高阶槽位不足（签名技多于该档位槽数）",
+    "签名技未落位：涅萨洛斯·断罪 的「恶魔契约」(special) — 高阶槽位不足（签名技多于该档位槽数）",
+    "签名技未落位：赛勒菲恩·终焉 的「神威降临Ⅲ」(special) — 高阶槽位不足（签名技多于该档位槽数）"
+  ]
+}

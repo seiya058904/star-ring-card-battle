@@ -6,16 +6,42 @@
 
   const STATUS_LABELS = { "燃烧":"每回合开始造成持续伤害（最多3层）", "诅咒":"每回合开始造成持续伤害（取最高值）", "冻结":"下回合能量 -1", "禁锢":"本回合不能行动，结束后获得控制抗性", "增幅":"伤害提高", "虚弱":"受到伤害提高", "减伤":"受到伤害降低", "闪避":"有概率闪避攻击", "连锁":"下一次伤害提高" };
   const rounded = value => Math.max(0, Math.round(Number(value) || 0));
-  const effectAmount = (fighter, effect) => rounded(effect.amount ?? fighter.maxHp * Number(effect.ratio || 0));
+  // 战斗时按等级 × ratio × 职业档案算出实际数值
+  const effectAmount = (fighter, effect) => {
+    const fn = typeof globalThis.resolveEffectAmount === "function" ? globalThis.resolveEffectAmount : (e, a, c) => Math.max(0, Math.round(Number(e?.amount || 0)));
+    return fn(effect, fighter, null);
+  };
 
-  global.fixedCardDescription = function fixedCardDescription(card) {
+  global.fixedCardDescription = function fixedCardDescription(card, ctx) {
+    const descValue = effect => {
+      if (!ctx || !ctx.level) return "?";
+      const normRace = typeof normalizeRace === "function" ? normalizeRace(ctx.race || "人族") : "人族";
+      const normProf = typeof normalizeProfession === "function" ? normalizeProfession(ctx.profession || "战士") : "战士";
+      const prof = typeof combinedProfile === "function" ? combinedProfile(normRace, normProf) : { damage: 1, heal: 1, defense: 1 };
+      return effectAmount({ level: ctx.level, profile: prof }, effect);
+    };
     const parts = card.effects.map(effect => {
-      if (effect.type === "damage") return `造成 ${Math.round((effect.ratio || 0) * 100)}% 最大生命值伤害${effect.pierce ? `（穿透 ${Math.round(effect.pierce * 100)}% 护盾）` : ""}`;
-      if (effect.type === "heal") return `恢复 ${Math.round((effect.ratio || 0) * 100)}% 最大生命值`;
-      if (effect.type === "shield") return `获得 ${Math.round((effect.ratio || 0) * 100)}% 最大生命值护盾（不自动衰减）`;
+      if (effect.type === "damage") {
+        const v = descValue(effect);
+        return `造成 ${typeof v === "number" ? formatNumber(v) : v} 伤害${effect.pierce ? `（穿透 ${Math.round(effect.pierce * 100)}% 护盾）` : ""}`;
+      }
+      if (effect.type === "heal") {
+        const v = descValue(effect);
+        return `恢复 ${typeof v === "number" ? formatNumber(v) : v} 生命`;
+      }
+      if (effect.type === "shield") {
+        const v = descValue(effect);
+        return `获得 ${typeof v === "number" ? formatNumber(v) : v} 护盾（不自动衰减）`;
+      }
       if (effect.type === "draw") return `抽 ${effect.amount} 张牌`;
       if (effect.type === "energy") return `获得 ${effect.amount} 点能量`;
-      if (effect.type === "status") return `施加${effect.status}${effect.turns ? `${effect.turns}回合` : ""}${STATUS_LABELS[effect.status] ? `：${STATUS_LABELS[effect.status]}` : ""}`;
+      if (effect.type === "status") {
+        if (["燃烧", "诅咒"].includes(effect.status)) {
+          const v = effect.burnRatio !== undefined ? descValue(effect) : effect.amount;
+          return `施加${effect.status}${effect.turns}回合：每回合 ${typeof v === "number" ? formatNumber(v) : 0} 伤害`;
+        }
+        return `施加${effect.status}${effect.turns ? `${effect.turns}回合` : ""}${STATUS_LABELS[effect.status] ? `：${STATUS_LABELS[effect.status]}` : ""}`;
+      }
       if (effect.type === "summon") return "召唤协击单位";
       return effect.type;
     });
@@ -63,14 +89,14 @@
       return null;
     }
     const existing = target.statuses.filter(status => status.type === type);
-    const next = { type, turns: Math.max(1, Number(incoming.turns) || 1), power: Number(incoming.power || 0), sourceOwnerId: incoming.sourceOwnerId, source: incoming.source || "固定卡牌" };
+    const next = { type, turns: Math.max(1, Number(incoming.turns) || 1), power: Number(incoming.power || 0), charges: incoming.charges, sourceOwnerId: incoming.sourceOwnerId, source: incoming.source || "固定卡牌" };
     if (type === "燃烧") {
       if (existing.length >= 3) { existing.sort((a, b) => a.power - b.power)[0].power = Math.max(existing[0].power, next.power); existing.forEach(status => status.turns = Math.max(status.turns, next.turns)); return existing[0]; }
       target.statuses.push(next); return next;
     }
     if (["诅咒", "冻结", "禁锢", "增幅", "虚弱", "减伤", "闪避", "连锁"].includes(type)) {
       const current = existing[0];
-      if (current) { current.power = Math.max(current.power || 0, next.power || 0); current.turns = Math.max(current.turns || 0, next.turns); current.sourceOwnerId = next.sourceOwnerId || current.sourceOwnerId; return current; }
+      if (current) { current.power = Math.max(current.power || 0, next.power || 0); current.turns = Math.max(current.turns || 0, next.turns); current.charges = Math.max(current.charges || 1, next.charges || 1); current.sourceOwnerId = next.sourceOwnerId || current.sourceOwnerId; return current; }
     }
     target.statuses.push(next);
     return next;
@@ -80,10 +106,11 @@
     const state = this.state;
     if (!state || !target || target.hp <= 0) return { total: 0, ownerDamage: 0, summonDamage: 0, blocked: 0, dodged: false };
     let damage = rounded(amount);
-    const evade = target.statuses.find(status => status.type === "闪避");
-    if (evade && sourceKind !== "dot" && Math.random() < Math.min(.85, evade.power || .3)) return { total: 0, ownerDamage: 0, summonDamage: 0, blocked: 0, dodged: true };
-    const reduction = target.statuses.filter(status => status.type === "减伤").reduce((max, status) => Math.max(max, status.power || 0), 0);
-    damage = rounded(damage * (1 - reduction));
+    // 实数值减伤（等级缩放后的绝对值），来自 减伤/闪避 状态
+    const flatReduction = target.statuses.filter(s => s.type === "减伤" || s.type === "闪避").reduce((sum, s) => sum + (s.power || 0), 0);
+    damage = Math.max(0, damage - flatReduction);
+    // 消耗减伤/闪避的层数（仅非 DOT 伤害）
+    if (sourceKind !== "dot") target.statuses.forEach(s => { if (s.type === "减伤" || s.type === "闪避") s.charges = (s.charges || 1) - 1; });
     if (element !== "无" && typeof elementMultiplier === "function") damage = rounded(damage * (elementMultiplier(element, target).multiplier || 1));
     const shieldBefore = target.shield;
     const pierceBlocked = rounded(Math.min(target.shield, damage) * Math.max(0, Math.min(1, pierce)));
@@ -109,21 +136,36 @@
   };
 
   gameEngine.applyCard = function(actor, target, card) {
-    const result = { text: `${actor.name}使用「${card.name}」。`, amount: 0, kind: card.effectType, element: card.element, tier: card.skillTier, actorId: actor.id, targetId: target.id, popups: [] };
+    const effectType = card.effectType || "";
+    const defaultIntent = typeof getCardActionIntent === "function" ? getCardActionIntent(card) : "hostile-damage";
+    const result = { text: `${actor.name}使用「${card.name}」。`, amount: 0, kind: card.effectType, element: card.element, tier: card.skillTier, intent: defaultIntent, actorId: actor.id, targetId: actor.id, popups: [] };
     for (const effect of card.effects || []) {
       if (effect.type === "damage") {
+        result.targetId = target.id; // 伤害动画打向敌方
+        const baseAmount = effectAmount(actor, effect);
+        // 等级缩放实数值增幅：来自 actor 的 增幅/连锁，target 的 虚弱
+        const boostFromActor = actor.statuses.filter(s => s.type === "增幅" || s.type === "连锁").reduce((sum, s) => sum + (s.power || 0), 0);
+        const boostFromWeaken = target.statuses.filter(s => s.type === "虚弱").reduce((sum, s) => sum + (s.power || 0), 0);
         const multiplier = this.statusMultiplier(actor, target, card);
-        const settlement = this.resolveDamage({ source: actor, target, amount: effectAmount(actor, effect) * multiplier, element: card.element, pierce: effect.pierce || 0 });
+        const totalAmount = Math.max(0, (baseAmount + boostFromActor + boostFromWeaken) * multiplier);
+        const settlement = this.resolveDamage({ source: actor, target, amount: totalAmount, element: card.element, pierce: effect.pierce || 0 });
         result.amount += settlement.total;
         result.text += settlement.dodged ? ` ${target.name}闪避了攻击。` : ` 造成${formatNumber(settlement.total)}伤害。`;
+        // 消耗层数：增幅/连锁（攻击方），虚弱（受击方）
+        actor.statuses.forEach(s => { if (s.type === "增幅" || s.type === "连锁") s.charges = (s.charges || 1) - 1; });
+        target.statuses.forEach(s => { if (s.type === "虚弱") s.charges = (s.charges || 1) - 1; });
+        actor.statuses = actor.statuses.filter(s => (s.charges === undefined || s.charges > 0) && s.turns > 0);
+        target.statuses = target.statuses.filter(s => (s.charges === undefined || s.charges > 0) && s.turns > 0);
       } else if (effect.type === "heal") {
         const requested = effectAmount(actor, effect); const before = actor.hp;
         actor.hp = Math.min(actor.maxHp, actor.hp + requested);
         const actual = actor.hp - before;
+        result.amount += actual;
         if (actor.id === "player" && this.state.combatStats) { this.state.combatStats.healing += actual; this.state.combatStats.overheal = (this.state.combatStats.overheal || 0) + requested - actual; }
         result.text += ` 恢复${formatNumber(actual)}生命。`;
       } else if (effect.type === "shield") {
         const amount = effectAmount(actor, effect); actor.shield += amount;
+        result.amount += amount;
         if (actor.id === "player" && this.state.combatStats) this.state.combatStats.shield += amount;
         result.text += ` 获得${formatNumber(amount)}护盾。`;
       } else if (effect.type === "draw") {
@@ -132,9 +174,14 @@
         const gained = Math.min(actor.maxEnergy - actor.energy, effect.amount || 0); actor.energy += gained; result.text += ` 获得${gained}点能量。`;
       } else if (effect.type === "status") {
         const recipient = ["增幅", "减伤", "闪避", "连锁"].includes(effect.status) ? actor : target;
-        const statusPower = ["燃烧", "诅咒"].includes(effect.status) ? effectAmount(actor, effect) : (effect.ratio ?? effect.power ?? 0);
+        result.targetId = recipient.id; // 状态动画作用于实际接收方
+        const statusPower = effect.burnRatio !== undefined ? effectAmount(actor, effect) : (effect.ratio ?? effect.amount ?? effect.power ?? 0);
         const status = this.applyStatus(recipient, { ...effect, power: statusPower, sourceOwnerId: actor.id, source: card.name });
-        if (status) result.text += ` ${recipient.name}获得${status.type}${status.turns}回合。`;
+        if (status) {
+          result.text += ` ${recipient.name}获得${status.type}${status.turns}回合。`;
+          if (["燃烧", "诅咒"].includes(status.type) && statusPower > 0) result.popups.push({ type: "status dot", text: `${status.type} ${formatNumber(statusPower)}/回合`, side: recipient.id });
+          if (effect.ratio && statusPower > 0) result.popups.push({ type: "status flat", text: `+${formatNumber(statusPower)} ${status.type}`, side: recipient.id });
+        }
       } else if (effect.type === "summon") {
         const power = effectAmount(actor, effect);
         const summon = { id: deterministicId("summon"), name: `${card.name}召唤物`, ownerId: actor.id, power: Math.max(1, rounded(power * .3)), maxHp: rounded(actor.maxHp * .35), hp: rounded(actor.maxHp * .35) };
@@ -148,8 +195,7 @@
 
   gameEngine.statusMultiplier = function(actor, target) {
     let multiplier = 1;
-    multiplier += actor.statuses.filter(status => status.type === "增幅" || status.type === "连锁").reduce((sum, status) => sum + (status.power || 0), 0);
-    multiplier += target.statuses.filter(status => status.type === "虚弱").reduce((sum, status) => sum + (status.power || 0), 0);
+    // 增幅/连锁/虚弱 已改为等级缩放实数值，在 applyCard 中直接加减，不再乘算此处
     return Math.max(.25, Math.min(2.6, multiplier));
   };
 
@@ -166,7 +212,7 @@
       if (status.type === "禁锢") fighter.skipAction = true;
     }
     const hadBind = fighter.statuses.some(status => status.type === "禁锢");
-    fighter.statuses = fighter.statuses.map(status => ({ ...status, turns: status.turns - 1 })).filter(status => status.turns > 0);
+    fighter.statuses = fighter.statuses.map(status => ({ ...status, turns: status.turns - 1 })).filter(status => status.turns > 0 && (status.charges === undefined || status.charges > 0));
     if (hadBind && !fighter.statuses.some(status => status.type === "禁锢")) fighter.controlImmuneTurns = 1;
     if (fighter.controlImmuneTurns > 0 && !hadBind) fighter.controlImmuneTurns -= 1;
     return { totalDamage: events.reduce((sum, event) => sum + event.actualDamage, 0), playerDotDamage: events.filter(event => event.sourceOwnerId === "player").reduce((sum, event) => sum + event.actualDamage, 0), dotEvents: events };
@@ -193,6 +239,7 @@
     actor.energy -= cost; actor.hand.splice(index, 1);
     (card.afterPlay === "exhaust" ? actor.exhaustPile : actor.discardPile).push(card);
     this.applyCard(actor, target, card);
+    if (actor.id === "player") audioManager?.playCard(card);
     if (actor.id === "player" && state.combatStats) { state.combatStats.cards += 1; if (card.tier === "advanced") state.combatStats.advanced += 1; if (card.tier === "special") state.combatStats.special += 1; }
     this.checkGameOver(); uiRenderer.render(); return true;
   };
@@ -207,6 +254,7 @@
   }
   gameEngine.endTurn = function(side) {
     const state = this.state; if (!state || state.gameOver || state.turn !== side) return false;
+    if (state.turn === side) audioManager?.play(side === "player" ? "turn-end" : "turn-start");
     resolveSummonAssist(state[side]); this.checkGameOver(); if (state.gameOver) return false;
     const next = side === "player" ? "enemy" : "player"; if (side === "enemy") state.round += 1; state.turn = next;
     this.beginTurn(next); uiRenderer.render();
@@ -240,7 +288,16 @@
   if (global.deckBuilder) {
     global.deckBuilder.createDeck = () => library.createRuntimeDeck(library.characterDefinitions[0].id);
     global.deckBuilder.createCharacterDeck = character => library.createRuntimeDeck(character?.id || library.characterDefinitions[0].id);
-    global.deckBuilder.pickEnemyFor = playerDeck => library.createRuntimeDeck(library.characterDefinitions.find(character => character.id !== playerDeck.characterId)?.id || library.characterDefinitions[1].id);
+    global.deckBuilder.pickEnemyFor = playerDeck => {
+      const playerLevel = playerDeck.level || 50;
+      const candidates = library.characterDefinitions.filter(c => c.id !== playerDeck.characterId);
+      candidates.sort((a, b) => Math.abs(a.level - playerLevel) - Math.abs(b.level - playerLevel));
+      const chosen = candidates[0];
+      const deck = library.createRuntimeDeck(chosen.id);
+      // 如果敌方等级与玩家差距 >10 级，提升到玩家等级附近
+      if (Math.abs(chosen.level - playerLevel) > 10) deck.level = Math.min(playerLevel, 100);
+      return deck;
+    };
   }
   uiRenderer.openBattlePrep = function() {
     const options = library.characterDefinitions.map(character => `<button class="campaign-card" type="button" data-fixed-character="${character.id}"><h3>${escapeHtml(character.name)}</h3><small>${escapeHtml(character.race)} · ${escapeHtml(character.profession)} · ${character.deck.length} 张固定卡</small></button>`).join("");
@@ -248,8 +305,7 @@
   };
   uiRenderer.startBattle = async function() {
     const playerDeck = library.createRuntimeDeck(this.selectedDeck?.characterId || library.characterDefinitions[0].id);
-    const enemy = library.characterDefinitions.find(character => character.id !== playerDeck.characterId) || library.characterDefinitions[1];
-    const enemyDeck = library.createRuntimeDeck(enemy.id);
+    const enemyDeck = global.deckBuilder.pickEnemyFor(playerDeck);
     gameEngine.start(playerDeck, enemyDeck);
     document.getElementById("battlefield").style.setProperty("--battle-bg", `url("${battleBackgroundFor(playerDeck, enemyDeck)}")`);
     this.nav("battle"); effectsRenderer.resize(); this.render();
