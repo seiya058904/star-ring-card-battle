@@ -128,6 +128,8 @@
       const rule = SPECIAL_CARD_RULES[base];
       if (rule) return rule();
     }
+    // 召唤判定：尾缀 领主/之主/君王 → 召唤单位（沿用旧生成器规则；引擎 summon 分支见 fixed-game-rules.js:243）
+    if (/领主|之主|君王/.test(name)) return [effect("summon", { ratio: r(.8) })];
     if (semantic === "heal") return [healE(tierName === "normal" ? .9 : 1.05)];
     if (semantic === "shield") return [shieldE(tierName === "normal" ? .9 : 1.05)];
     if (semantic === "damage") return [dmg(tierName === "normal" ? 1.0 : 1.1)];
