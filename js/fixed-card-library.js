@@ -54,7 +54,7 @@
   const tierPlan = level => {
     if (level < 70) return { normal: 16, advanced: 0, special: 0 };
     const highTotal = level >= 90 ? 9 : level >= 80 ? 7 : 4;
-    const special = level >= 90 ? 3 : level >= 80 ? 2 : 1;
+    const special = level >= 100 ? 4 : level >= 90 ? 3 : level >= 80 ? 2 : 1;
     const advanced = highTotal - special;
     return { normal: 16 - highTotal, advanced, special };
   };
