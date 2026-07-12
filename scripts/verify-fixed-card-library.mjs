@@ -80,15 +80,21 @@ assert.match(resolverSource, /等级 \$\{character\.level\}/);
 assert.match(resolverSource, /character\.elements\.join\("、"\)/);
 assert.match(librarySource, /semanticEffectType/);
 assert.match(librarySource, /const semanticElement = inferElement\(name\)/);
-assert.match(librarySource, /name\.startsWith\("时间回溯"\)/);
-assert.match(librarySource, /name\.startsWith\("时间禁锢"\)/);
-assert.match(librarySource, /name\.startsWith\("起死回生"\)/);
-assert.match(librarySource, /name\.startsWith\("恶魔契约"\)/);
-assert.match(librarySource, /name\.startsWith\("不灭魔躯"\)/);
-assert.match(librarySource, /name\.startsWith\("绝对死亡"\)/);
-assert.match(librarySource, /name\.startsWith\("伤害真实化"\)/);
-assert.match(librarySource, /name\.startsWith\("魔法极致化"\)/);
-assert.match(librarySource, /name\.startsWith\("元素圣体"\)/);
+// 唯一特殊卡规则表：结构存在性 + 恢复的关键条目（时间/契约/统治/防御极致化/锁龙/斩魔剑/递种/伤害真实化）
+assert.match(librarySource, /const SPECIAL_CARD_RULES = \{/);
+for (const key of ["时间回溯", "时间禁锢", "起死回生", "恶魔契约", "不灭魔躯", "绝对死亡", "伤害真实化", "魔法极致化", "元素圣体", "统治", "防御极致化", "锁龙", "斩魔剑", "递种"]) {
+  assert.ok(new RegExp(`"${key}":`).test(librarySource), `SPECIAL_CARD_RULES 缺少条目：${key}`);
+}
+// 伤害真实化必须是持续 2 回合的真实状态，而非一次性穿透
+assert.match(librarySource, /"伤害真实化":\s*\(\)\s*=>\s*\[effect\("status",\s*\{\s*status:\s*"真实"/);
+// 锁龙/斩魔剑必须带种族特攻（经 slayer 工厂注入 slayRace/slayMultiplier）
+assert.match(librarySource, /slayRace: race, slayMultiplier: 2/);
+assert.match(librarySource, /"锁龙":\s*\(\)\s*=>\s*\[slayer\(1\.15,\s*"龙族"\)\]/);
+assert.match(librarySource, /"斩魔剑":\s*\(\)\s*=>\s*\[slayer\(1\.15,\s*"恶魔"\)\]/);
+// 递种必须施加抽牌压制
+assert.match(librarySource, /"递种":\s*\(\)\s*=>\s*\[effect\("status",\s*\{\s*status:\s*"抽牌压制"/);
+// 防御极致化必须是最大生命百分比护盾
+assert.match(librarySource, /"防御极致化":[\s\S]*?percentageOfMax: true/);
 assert.match(resolverSource, /const statusPower = effectAmount\(actor, effect, card\)/);
 assert.match(resolverSource, /sourceKind === "dot" \? 0/);
 assert.match(resolverSource, /s\.charges === undefined \|\| s\.charges > 0/);
@@ -96,7 +102,7 @@ assert.match(librarySource, /percentageOfMax: true/);
 assert.match(librarySource, /execute: true/);
 assert.match(resolverSource, /effect\.type === "revive"/);
 assert.match(source, /effect\.status === "复生"/);
-assert.match(source, /\["减伤", "闪避"\]\.includes\(effect\.status\)/);
+assert.match(source, /\["减伤", "闪避", "灵巧防御"\]\.includes\(effect\.status\)/);
 assert.match(librarySource, /起死回生.*effect\("heal"/);
 assert.match(librarySource, /pierceAmountRatio/);
 assert.doesNotMatch(librarySource, /pierce: \.35|pierce: \.6/);

@@ -35,7 +35,7 @@ node scripts/sync-android-web-assets.mjs
 
 The first command serves `http://127.0.0.1:8000/`. Verification is read-only. Sync rewrites the Android copy; use it only for Android parity, then verify. Gradle creates the ignored `android/app/build/outputs/apk/debug/app-debug.apk` and may download tools.
 
-No package manifest, automated test runner, lint, formatter, type-checker, CI workflow, database, or migration system is configured. Do not invent commands for them. Commit, push, tag, release, deploy, publish, and database writes require explicit user authorization.
+No package manifest, full test runner, lint, formatter, type-checker, CI workflow, database, or migration system is configured — do not invent commands for them. Read-only Node verification scripts do exist under `scripts/` (`verify-fixed-card-library.mjs`, `verify-campaign.mjs`, `verify-special-card-behavior.mjs`, `verify-android-web-assets.mjs`) and should be run before delivery. Commit, push, tag, release, deploy, publish, and database writes require explicit user authorization.
 
 ## Coding Style & Naming Conventions
 
@@ -43,7 +43,13 @@ Follow adjacent code. JavaScript uses `const`, camelCase, and two-space indentat
 
 ## Testing & Verification
 
-There is no automated suite. Manually check affected flows, console errors, assets, desktop, and a narrow mobile viewport. Gameplay checks cover battle start, card play, turn end, win/loss, and relevant persistence. Android work requires sync verification and, when practical, an APK/WebView smoke test. Report failures; never alter unrelated behavior to force a pass.
+No full automated test *runner* exists, but `scripts/verify-*.mjs` provide read-only behavior and structure checks and must pass before delivery:
+- `verify-fixed-card-library.mjs` — 固定角色、卡牌与通用规则（含 SPECIAL_CARD_RULES 结构）。
+- `verify-campaign.mjs` — 战役规则、固定卡组接入与通用能量。
+- `verify-special-card-behavior.mjs` — 14 张特殊卡经真实 `gameEngine.applyCard` 执行验证（种族特攻倍率、真实无视护盾、百分比护盾/治疗、抽牌压制等）。
+- `verify-android-web-assets.mjs` — Android 同步副本的资产/引用/哈希一致性。
+
+These scripts load the real modules in a `vm` sandbox (数值解析函数从 `index.html` 原样抽取以保证可信)；切勿用脆弱的源码正则替代真实行为测试。 Manual checks still apply for affected flows, console errors, assets, desktop, and a narrow mobile viewport. Gameplay checks cover battle start, card play, turn end, win/loss, and relevant persistence. Android work requires sync verification and, when practical, an APK/WebView smoke test. Report failures; never alter unrelated behavior to force a pass.
 
 ## Commit & Pull Request Guidelines
 

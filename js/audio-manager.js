@@ -20,7 +20,7 @@
     if (statuses.has("诅咒")) return "curse";
     if (statuses.has("冻结") || statuses.has("禁锢")) return "freeze";
     if (statuses.has("虚弱")) return "debuff";
-    if (statuses.has("增幅") || statuses.has("减伤") || statuses.has("闪避") || statuses.has("连锁")) return "buff";
+    if (statuses.has("增幅") || statuses.has("减伤") || statuses.has("灵巧防御") || statuses.has("闪避") || statuses.has("连锁")) return "buff";
     return card?.skillTier === "special" ? "ultimate-impact" : card?.skillTier === "advanced" ? "advanced-skill" : "card-play";
   }
   function cardCastSoundEvent(card) {
