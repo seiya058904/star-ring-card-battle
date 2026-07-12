@@ -4,8 +4,10 @@ import vm from "node:vm";
 
 const html = await readFile("index.html", "utf8");
 const source = html.match(/start\(playerDeck, enemyDeck\) \{[\s\S]*?\n      \},\n      beginTurn/)[0].replace(/\n      \},\n      beginTurn$/, "\n}");
-const context = { DEFAULT_ENEMY_NAME_POOL: { 人族: ["测试敌人"] }, pick: values => values[0] };
+const costSource = html.match(/function effectiveCardCost\(state, side, card\) \{[\s\S]*?\n    \}/)[0];
+const context = { DEFAULT_ENEMY_NAME_POOL: { 人族: ["测试敌人"] }, pick: values => values[0], campaignMode: { effectiveCardCost: (state, side, card) => Math.max(0, card.cost - (side === "player" ? state.campaign?.costReduction || 0 : 0)) } };
 vm.createContext(context);
+vm.runInContext(costSource, context);
 const start = vm.runInContext(`({${source}}).start`, context);
 const calls = { beginTurn: 0, draws: 0, logs: [] };
 const engine = {
@@ -19,6 +21,8 @@ const engine = {
 
 const playerDeck = { race: "人族", cards: [{ name: "玩家卡" }] };
 const enemyDeck = { race: "人族", cards: [{ name: "敌人卡" }] };
+assert.equal(context.effectiveCardCost({ campaign: { costReduction: 2 } }, "player", { cost: 5 }), 3);
+assert.equal(context.effectiveCardCost({}, "player", { cost: 5 }), 5);
 const state = engine.start(playerDeck, enemyDeck);
 
 assert.equal(state.turn, "player");
