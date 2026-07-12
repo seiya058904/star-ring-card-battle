@@ -51,9 +51,9 @@ Current focus:
 
 ### v1.1.0 campaign prototype / v1.1.0 战役原型
 
-The existing **开始战斗** remains the free sandbox for generated, custom, imported, and random-deck testing. **战役模式** adds six fixed characters, five first-chapter stages, three difficulties, one-time opening mulligan, six-slot Star Ring resonance, enemy intent, local per-character progression, campaign scoring, and offline CC0 sound effects. It remains a continuously developed playable prototype rather than a finished release.
+The existing **开始战斗** remains the free sandbox for generated, custom, and random-deck testing. **战役模式** adds six fixed characters, five first-chapter stages, three difficulties, one-time opening mulligan, six-slot Star Ring resonance, enemy intent, local per-character progression, campaign scoring, and offline CC0 sound effects. It remains a continuously developed playable prototype rather than a finished release.
 
-现有“开始战斗”仍是自由沙盒，可继续使用生成卡组、自定义卡牌/卡组、导入导出和随机敌人。新增“战役模式”包含六名首发角色、五个首章关卡、三种难度、开局换牌、六格星环共鸣、敌方意图、按角色保存的本地进度、战斗评分和离线 CC0 音效。项目仍是持续开发中的可玩原型。
+现有“开始战斗”仍是自由沙盒，可继续使用生成卡组、自定义卡牌/卡组和随机敌人。新增“战役模式”包含六名首发角色、五个首章关卡、三种难度、开局换牌、六格星环共鸣、敌方意图、按角色保存的本地进度、战斗评分和离线 CC0 音效。项目仍是持续开发中的可玩原型。
 
 Audio sources are recorded in `assets/audio/AUDIO_SOURCES.md`. Web and Android parity checks:
 

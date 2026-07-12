@@ -6499,12 +6499,16 @@
       saveCurrentDeck(deck) {
         localStorage.setItem(this.deckKey, JSON.stringify(deck));
       },
-      getCurrentDeck() {
-        try { return JSON.parse(localStorage.getItem(this.deckKey) || "null"); }
-        catch { return null; }
+      isValidStoredDeck(deck) {
+        return Boolean(deck && typeof deck === "object" && !Array.isArray(deck) && typeof deck.name === "string" && deck.name.trim().length > 0 && deck.name.length <= 80 && Array.isArray(deck.cards) && deck.cards.length > 0 && deck.cards.length <= 60 && deck.cards.every(card => card && typeof card === "object" && typeof card.name === "string" && card.name.trim().length > 0 && card.name.length <= 80 && Number.isFinite(Number(card.cost)) && Number(card.cost) >= 0 && Number(card.cost) <= 10 && EFFECT_TYPES.includes(card.effectType)));
       },
-      exportDeck(deck) {
-        return JSON.stringify(deck, null, 2);
+      getCurrentDeck() {
+        try {
+          const deck = JSON.parse(localStorage.getItem(this.deckKey) || "null");
+          if (deck === null || this.isValidStoredDeck(deck)) return deck;
+        } catch {}
+        localStorage.removeItem(this.deckKey);
+        return null;
       },
       getSettings() {
         try { return { ...DEFAULT_GAME_SETTINGS, ...(JSON.parse(localStorage.getItem(this.settingsKey) || "{}")) }; }
@@ -6517,6 +6521,15 @@
 
     const gameEngine = {
       state: null,
+      sessionId: 0,
+      isActiveBattle(state, sessionId) {
+        return this.state === state && this.sessionId === sessionId;
+      },
+      invalidateBattle() {
+        this.sessionId += 1;
+        this.state = null;
+        effectsRenderer._playLock = 0;
+      },
       makeFighter(name, deck, isPlayer) {
         const profile = combinedProfile(deck.race, deck.profession);
         const maxHp = Math.round(levelHp(deck.level) * (RACE_PROFILES[deck.race]?.hp || 1));
@@ -6614,8 +6627,9 @@
         audioManager?.playCard(card);
         uiRenderer.render();
         const battleState = this.state;
+        const battleSessionId = this.sessionId;
         setTimeout(() => {
-          if (this.state === battleState) {
+          if (this.isActiveBattle(battleState, battleSessionId)) {
             clearHpDisplayOverrides();
             if (pendingGameOverCheck.flag) {
               pendingGameOverCheck.flag = false;
@@ -6705,7 +6719,8 @@
         setHandHoverSuppressed(true, 400);
         uiRenderer.render();
         const battleState = this.state;
-        if (next === "enemy") setTimeout(() => { if (this.state === battleState) aiController.takeTurn(); }, 520);
+        const battleSessionId = this.sessionId;
+        if (next === "enemy") setTimeout(() => { if (this.isActiveBattle(battleState, battleSessionId)) aiController.takeTurn(); }, 520);
       },
       log(text) {
         this.state.log.unshift({ round: this.state.round, text, time: new Date().toLocaleTimeString() });
@@ -6723,10 +6738,11 @@
           this.state.actionLocked = true;
           this.state.winner = this.state.player.hp > 0 ? "player" : "enemy";
           const battleState = this.state;
+          const battleSessionId = this.sessionId;
           const dialogue = battleState.winner === "player" ? "lose" : "win";
           this.log(battleState.winner === "player" ? "玩家获胜！" : "电脑获胜。");
-          setTimeout(() => { if (this.state === battleState) uiRenderer.showAiDialogue(dialogue); }, Math.max(0, VICTORY_TIMING.victoryDelay - VICTORY_TIMING.enemyDefeatLine));
-          setTimeout(() => { if (this.state === battleState) uiRenderer.showResult(); }, VICTORY_TIMING.victoryDelay);
+          setTimeout(() => { if (this.isActiveBattle(battleState, battleSessionId)) uiRenderer.showAiDialogue(dialogue); }, Math.max(0, VICTORY_TIMING.victoryDelay - VICTORY_TIMING.enemyDefeatLine));
+          setTimeout(() => { if (this.isActiveBattle(battleState, battleSessionId)) uiRenderer.showResult(); }, VICTORY_TIMING.victoryDelay);
         }
       }
     };
@@ -7179,6 +7195,7 @@
             onConfirm: () => {
               setCombatInputLocked(false);
               clearHpDisplayOverrides();
+              gameEngine.invalidateBattle();
               this.nav("home");
               this.showToast("已返回主菜单");
             }
@@ -7198,11 +7215,6 @@
         });
         document.getElementById("previewCustomBtn")?.addEventListener("click", () => this.previewCustom());
         document.getElementById("saveCustomBtn")?.addEventListener("click", () => this.saveCustom());
-        document.getElementById("exportDeckBtn")?.addEventListener("click", () => {
-          const deck = this.selectedDeck || storageManager.getCurrentDeck() || this.generatedDeck;
-          document.getElementById("deckJsonText").value = storageManager.exportDeck(deck);
-          this.showToast("当前卡组 JSON 已导出到文本框");
-        });
         document.querySelector("[data-modal-close]")?.addEventListener("click", () => this.closeModal());
         document.querySelectorAll("[data-modal-close]").forEach(el => el.addEventListener("click", () => this.closeModal()));
       },
@@ -7398,7 +7410,7 @@
           const customCount = storageManager.getCustomCards().length;
           content = `
             <div class="modal-choice-grid">
-              ${saved ? `<div class="modal-choice ${selected?.id === saved.id ? "selected" : ""}" data-use-saved-deck="true"><h3>使用当前保存卡组</h3><p class="small-note">${saved.name} · ${saved.cards.length} 张卡</p></div>` : `<div class="modal-choice"><h3>没有保存卡组</h3><p class="small-note">可先到卡组工坊导入或创建</p></div>`}
+              ${saved ? `<div class="modal-choice ${selected?.id === saved.id ? "selected" : ""}" data-use-saved-deck="true"><h3>使用当前保存卡组</h3><p class="small-note">${saved.name} · ${saved.cards.length} 张卡</p></div>` : `<div class="modal-choice"><h3>没有保存卡组</h3><p class="small-note">可先生成或创建卡组</p></div>`}
               <div class="modal-choice" data-build-custom-deck="true"><h3>使用自定义卡牌构筑</h3><p class="small-note">已保存自定义卡牌${customCount} 张。系统会补足基础卡形成可战斗卡组</p></div>
             </div>
           `;
@@ -7458,7 +7470,7 @@
         this.openModal("卡组工坊", `
           <div class="modal-choice-grid">
             <button class="modal-choice" data-workshop-target="custom"><h3>自定义卡牌</h3><p class="small-note">创建专属技能与基础卡牌</p></button>
-            <button class="modal-choice" data-workshop-target="deck"><h3>卡组管理</h3><p class="small-note">查看当前卡组，导出 JSON</p></button>
+            <button class="modal-choice" data-workshop-target="deck"><h3>卡组管理</h3><p class="small-note">查看当前卡组</p></button>
             <button class="modal-choice" data-workshop-target="assets"><h3>素材预览</h3><p class="small-note">检查图标、角色、背景素材</p></button>
           </div>
         `, { afterRender: () => {
@@ -8722,8 +8734,9 @@
     };
 
     gameEngine.start = function(playerDeck, enemyDeck) {
+      const sessionId = ++this.sessionId;
       this.state = {
-        turn: "player", round: 1, gameOver: false, winner: null, log: [], actions: [],
+        sessionId, turn: "player", round: 1, gameOver: false, winner: null, log: [], actions: [],
         player: this.makeFighter(playerDeck.characterName || "玩家", playerDeck, true),
         enemy: this.makeFighter(enemyDeck.characterName || "电脑", enemyDeck, false),
         combatStats: globalThis.campaignMode?.createCombatStats() || { damage: 0, highestDamage: 0, healing: 0, shield: 0, shieldAbsorbed: 0, elementalAdvantage: 0, summonDamage: 0, cards: 0, advanced: 0, special: 0, rounds: 0 }
@@ -8734,7 +8747,8 @@
       this.log(`战斗开始：「${this.state.player.name}」对阵「${this.state.enemy.name}${this.state.enemy.title || this.state.enemy.deckName || ""}」。`);
       audioManager?.preload();
       audioManager?.play("battle-start");
-      setTimeout(() => uiRenderer.showAiDialogue("battleStart"), 350);
+      const battleState = this.state;
+      setTimeout(() => { if (this.state === battleState && this.sessionId === sessionId) uiRenderer.showAiDialogue("battleStart"); }, 350);
       return this.state;
     };
 
@@ -8786,7 +8800,8 @@
       }
       this.log(`${fighter.name}进入第 ${this.state.round} 回合，能量恢复到 ${fighter.energy}。`);
       const battleState = this.state;
-      if (side === "enemy") setTimeout(() => { if (gameEngine.state === battleState) uiRenderer.showAiDialogue("turnStart"); }, 180);
+      const battleSessionId = gameEngine.sessionId;
+      if (side === "enemy") setTimeout(() => { if (gameEngine.isActiveBattle(battleState, battleSessionId)) uiRenderer.showAiDialogue("turnStart"); }, 180);
     };
 
     /* HP display override: keeps old HP visible on screen until damage numbers appear */
@@ -9067,8 +9082,10 @@
           : `${actor.name}使用「${card.name}」。\n[召唤] ${summon.name}加入战场，生命值 ${formatNumber(summon.maxHp)}。召唤物会在${actor.name}回合结束时协助攻击，并替拥有者分摊部分伤害。`;
       }
 
-      if (actor.id === "enemy" && ["advanced","special"].includes(card.skillTier)) setTimeout(() => uiRenderer.showAiDialogue(card.skillTier === "special" ? "playSpecial" : "playAdvanced"), 120);
-      if (target.id === "enemy" && result.amount > 0) setTimeout(() => uiRenderer.showAiDialogue(target.hp / target.maxHp < .3 ? "lowHp" : "takeDamage"), 420);
+      const battleState = this.state;
+      const battleSessionId = this.sessionId;
+      if (actor.id === "enemy" && ["advanced","special"].includes(card.skillTier)) setTimeout(() => { if (this.isActiveBattle(battleState, battleSessionId)) uiRenderer.showAiDialogue(card.skillTier === "special" ? "playSpecial" : "playAdvanced"); }, 120);
+      if (target.id === "enemy" && result.amount > 0) setTimeout(() => { if (this.isActiveBattle(battleState, battleSessionId)) uiRenderer.showAiDialogue(target.hp / target.maxHp < .3 ? "lowHp" : "takeDamage"); }, 420);
       this.log(result.text);
       if (target.hp / target.maxHp < .35 && !target.talentUsed && ["人族","神人"].includes(target.race) && !(this.state?.campaign?.characterId === "lisaya" && target.id === "player")) {
         const gain = Math.round(target.maxHp * .08);
@@ -9184,44 +9201,46 @@
         }
       }
       const battleState = this.state;
-      if (this.state?.turn === "enemy") setTimeout(() => { if (gameEngine.state === battleState) uiRenderer.showAiDialogue("turnEnd"); }, 80);
+      const battleSessionId = gameEngine.sessionId;
+      if (this.state?.turn === "enemy") setTimeout(() => { if (gameEngine.isActiveBattle(battleState, battleSessionId)) uiRenderer.showAiDialogue("turnEnd"); }, 80);
       if (this.state?.turn === side) audioManager?.play(side === "player" ? "turn-end" : "turn-start");
       return originalEndTurnStandard(side);
     };
 
     aiController.takeTurn = function() {
       const state = gameEngine.state;
+      const sessionId = gameEngine.sessionId;
       if (!state || state.gameOver || state.turn !== "enemy") return;
       const enemy = state.enemy;
       if (enemy.skipAction) {
         const controlStatus = enemy.statuses.find(s => s.type === "禁锢");
         gameEngine.log(`[控制] ${enemy.name} 被${controlStatus?.type || "控制"}束缚，无法行动。`);
-        setTimeout(() => { if (gameEngine.state === state) gameEngine.resolveAction({ type:"endTurn", side:"enemy" }); }, 650);
+        setTimeout(() => { if (gameEngine.isActiveBattle(state, sessionId)) gameEngine.resolveAction({ type:"endTurn", side:"enemy" }); }, 650);
         return;
       }
       let steps = 0;
       const loop = () => {
-        if (gameEngine.state !== state || state.gameOver || state.turn !== "enemy") return;
+        if (!gameEngine.isActiveBattle(state, sessionId) || state.gameOver || state.turn !== "enemy") return;
         steps += 1;
         const card = this.chooseCard(enemy, state.player);
         if (!card || steps > 8) {
           if (!card && !state.gameOver) {
             gameEngine.log(`${enemy.name}没有可打牌，跳过回合（能量 ${enemy.energy}，手牌 ${enemy.hand.length} 张）。`);
           }
-          setTimeout(() => { if (gameEngine.state === state) gameEngine.resolveAction({ type:"endTurn", side:"enemy" }); }, 650);
+          setTimeout(() => { if (gameEngine.isActiveBattle(state, sessionId)) gameEngine.resolveAction({ type:"endTurn", side:"enemy" }); }, 650);
           return;
         }
         preloadCardVisualAssets(card, "ai-before-card");
         uiRenderer.showAiDialogue(card.skillTier === "special" ? "beforeSpecial" : card.skillTier === "advanced" ? "beforeAdvanced" : "beforeCard");
         setHandHoverSuppressed(true, 700);
         setTimeout(() => {
-          if (gameEngine.state !== state) return;
+          if (!gameEngine.isActiveBattle(state, sessionId)) return;
           gameEngine.resolveAction({ type:"playCard", side:"enemy", cardInstanceId: card.instanceId });
           const pause = dramaTimingForCard(card).totalMin + 280;
-          setTimeout(() => { if (gameEngine.state === state) loop(); }, pause);
+          setTimeout(() => { if (gameEngine.isActiveBattle(state, sessionId)) loop(); }, pause);
         }, 650 + Math.floor(rng() * 450));
       };
-      setTimeout(() => { if (gameEngine.state === state) loop(); }, 850);
+      setTimeout(() => { if (gameEngine.isActiveBattle(state, sessionId)) loop(); }, 850);
     };
 
     const AI_DIALOGUE_BANK = {
@@ -9827,7 +9846,8 @@
       originalEffectsPlayStandard(card, result);
       const timing = dramaTimingForCard(card);
       const battleState = gameEngine.state;
-      setTimeout(() => { if (gameEngine.state !== battleState) return; this._playLock = 0; setCombatInputLocked(false); uiRenderer.render(); }, timing.totalMin + 200);
+      const battleSessionId = gameEngine.sessionId;
+      setTimeout(() => { if (!gameEngine.isActiveBattle(battleState, battleSessionId)) return; this._playLock = 0; setCombatInputLocked(false); uiRenderer.render(); }, timing.totalMin + 200);
     };
 
 
