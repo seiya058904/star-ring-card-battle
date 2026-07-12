@@ -28,6 +28,7 @@ Core objects in `index.html` include `ASSETS`, `cardGenerator`, `deckBuilder`, `
 
 ```powershell
 python -m http.server 8000
+node scripts/verify-audio-library.mjs
 node scripts/verify-android-web-assets.mjs
 node scripts/sync-android-web-assets.mjs
 .\android\gradlew.bat -p android assembleDebug
@@ -35,7 +36,7 @@ node scripts/sync-android-web-assets.mjs
 
 The first command serves `http://127.0.0.1:8000/`. Verification is read-only. Sync rewrites the Android copy; use it only for Android parity, then verify. Gradle creates the ignored `android/app/build/outputs/apk/debug/app-debug.apk` and may download tools.
 
-No package manifest, full test runner, lint, formatter, type-checker, CI workflow, database, or migration system is configured — do not invent commands for them. Read-only Node verification scripts do exist under `scripts/` (`verify-fixed-card-library.mjs`, `verify-campaign.mjs`, `verify-special-card-behavior.mjs`, `verify-android-web-assets.mjs`) and should be run before delivery. Commit, push, tag, release, deploy, publish, and database writes require explicit user authorization.
+No package manifest, full test runner, lint, formatter, type-checker, CI workflow, database, or migration system is configured — do not invent commands for them. Read-only Node verification scripts do exist under `scripts/` (`verify-fixed-card-library.mjs`, `verify-campaign.mjs`, `verify-special-card-behavior.mjs`, `verify-audio-library.mjs`, `verify-android-web-assets.mjs`) and should be run before delivery. Commit, push, tag, release, deploy, publish, and database writes require explicit user authorization.
 
 ## Coding Style & Naming Conventions
 
@@ -47,6 +48,7 @@ No full automated test *runner* exists, but `scripts/verify-*.mjs` provide read-
 - `verify-fixed-card-library.mjs` — 固定角色、卡牌与通用规则（含 SPECIAL_CARD_RULES 结构）。
 - `verify-campaign.mjs` — 战役规则、固定卡组接入与通用能量。
 - `verify-special-card-behavior.mjs` — 14 张特殊卡经真实 `gameEngine.applyCard` 执行验证（种族特攻倍率、真实无视护盾、百分比护盾/治疗、抽牌压制等）。
+- `verify-audio-library.mjs` — Web Audio 事件配置、特殊状态优先级、技能分层与 OGG 兼容回退。
 - `verify-android-web-assets.mjs` — Android 同步副本的资产/引用/哈希一致性。
 
 These scripts load the real modules in a `vm` sandbox (数值解析函数从 `index.html` 原样抽取以保证可信)；切勿用脆弱的源码正则替代真实行为测试。 Manual checks still apply for affected flows, console errors, assets, desktop, and a narrow mobile viewport. Gameplay checks cover battle start, card play, turn end, win/loss, and relevant persistence. Android work requires sync verification and, when practical, an APK/WebView smoke test. Report failures; never alter unrelated behavior to force a pass.
