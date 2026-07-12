@@ -10,6 +10,7 @@ for (const file of ["js/battle-rules.js", "js/campaign-data.js", "js/campaign-mo
 
 const { campaignData, campaignMode, battleRules } = context;
 const campaignUiSource = await readFile("js/campaign-ui.js", "utf8");
+const campaignModeSource = await readFile("js/campaign-mode.js", "utf8");
 const coreSource = await readFile("js/fixed-game-rules.js", "utf8");
 
 assert.equal(campaignData.characters.length, 6);
@@ -18,6 +19,15 @@ assert.equal(campaignData.stages.length, 5);
 assert.deepEqual(Array.from([1, 2, 3, 4], round => battleRules.roundEnergy(round, 10)), [3, 5, 7, 9]);
 assert.match(campaignUiSource, /fixedCardLibrary\.createRuntimeDeck/);
 assert.doesNotMatch(campaignUiSource, /cardGenerator\.cardFromName/);
+assert.match(campaignUiSource, /CAMPAIGN_CHARACTER_MAP/);
+assert.match(campaignUiSource, /const sessionId = gameEngine\.sessionId/);
+assert.doesNotMatch(campaignUiSource, /gameEngine\.isActiveBattle\(state, state\.sessionId\)/);
+assert.match(campaignUiSource, /card\.effects\?\.some\(effect => effect\.type === "damage"\)/);
+assert.doesNotMatch(campaignUiSource, /damageTakenRatio/);
+assert.doesNotMatch(campaignUiSource, /baseCampaignResult|originalCampaignResult|originalShowResult/);
+assert.doesNotMatch(campaignUiSource, /uiRenderer\.showResult\s*=\s*function/);
+assert.match(campaignModeSource, /card\.effects/);
+assert.doesNotMatch(campaignModeSource, /Number\(card\.power \|\| 0\) \/ Math\.max/);
 assert.match(coreSource, /rules\.roundEnergy/);
 assert.match(coreSource, /HAND_LIMIT/);
 assert.match(coreSource, /afterPlay === "exhaust"/);

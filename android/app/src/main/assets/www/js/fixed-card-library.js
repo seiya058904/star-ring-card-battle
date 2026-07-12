@@ -64,10 +64,10 @@
     [1, [effect("damage", { ratio: BASE_RATIO(.38) })]], [1, [effect("shield", { ratio: BASE_RATIO(.32) })]],
     [1, [effect("energy", { amount: 1 })]], [2, [effect("heal", { ratio: BASE_RATIO(.30) })]],
     [2, [effect("draw", { amount: 2 })]], [2, [effect("damage", { ratio: BASE_RATIO(.52), pierce: .35 })]],
-    [2, [effect("damage", { ratio: BASE_RATIO(.52) }), effect("status", { status: "增幅", amount: .12, turns: 1 })]],
+    [2, [effect("damage", { ratio: BASE_RATIO(.52) }), effect("status", { status: "增幅", ratio: BASE_SCALE * .50 * .12, turns: 1 })]],
     [3, [effect("damage", { ratio: BASE_RATIO(.72) })]], [3, [effect("shield", { ratio: BASE_RATIO(.62) })]],
-    [2, [effect("damage", { ratio: BASE_RATIO(.24) }), effect("status", { status: "虚弱", amount: .14, turns: 2 })]],
-    [2, [effect("energy", { amount: 2 })]], [2, [effect("status", { status: "闪避", amount: .35, turns: 1 })]],
+    [2, [effect("damage", { ratio: BASE_RATIO(.24) }), effect("status", { status: "虚弱", ratio: BASE_SCALE * .50 * .14, turns: 2 })]],
+    [2, [effect("energy", { amount: 2 })]], [2, [effect("status", { status: "闪避", ratio: BASE_SCALE * .50 * .35, turns: 1, charges: 1 })]],
     [1, [effect("draw", { amount: 1 }), effect("energy", { amount: 1 })]], [3, [effect("damage", { ratio: BASE_RATIO(.58), pierce: .6 })]]
   ];
 
@@ -96,6 +96,17 @@
     const statusDot = (st, amt, turns) => effect("status", { status: st, burnRatio: amt, turns });
     const statusFlat = (st, amt, turns, charges) => effect("status", { status: st, ratio: BASE_SCALE * COST_MULTIPLIER[cost] * amt, turns, charges });
     const semantic = semanticEffectType(name);
+    if (tierName === "special") {
+      if (name.startsWith("时间回溯")) return [healE(.85), effect("cleanse")];
+      if (name.startsWith("时间禁锢")) return [dmg(1.05), effect("status", { status: "禁锢", turns: 1 })];
+      if (name.startsWith("起死回生")) return [effect("revive", { ratio: r(.78) })];
+      if (name.startsWith("恶魔契约")) return [dmg(1.25), effect("status", { status: "增幅", ratio: r(.22), turns: 2, charges: 2 })];
+      if (name.startsWith("不灭魔躯")) return [shieldE(1.2), effect("status", { status: "减伤", ratio: r(.2), turns: 2, charges: 1 })];
+      if (name.startsWith("绝对死亡")) return [effect("damage", { ratio: r(1.3), execute: true, element })];
+      if (name.startsWith("伤害真实化")) return [effect("damage", { ratio: r(1.25), pierce: 1, element })];
+      if (name.startsWith("魔法极致化")) return [dmg(1.2), effect("status", { status: "增幅", ratio: r(.2), turns: 2, charges: 2 })];
+      if (name.startsWith("元素圣体")) return [shieldE(1.05), effect("status", { status: "增幅", ratio: r(.18), turns: 2, charges: 2 })];
+    }
     if (semantic === "heal") return [healE(tierName === "normal" ? .9 : 1.05)];
     if (semantic === "shield") return [shieldE(tierName === "normal" ? .9 : 1.05)];
     if (semantic === "damage") return [dmg(tierName === "normal" ? 1.0 : 1.1)];
