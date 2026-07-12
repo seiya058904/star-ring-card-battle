@@ -5889,7 +5889,7 @@
         debuff: "assets/skills/skill_black_mist.png"
       }
     };
-
+    globalThis.ASSETS = ASSETS;
 
     const PERF_LOG_PREFIX = "[perf]";
     const preloadImagePromiseMap = new Map();
@@ -10331,7 +10331,7 @@
       });
     };
 
-    Object.assign(globalThis, { gameEngine, uiRenderer, aiController, storageManager, deckBuilder, effectsRenderer });
+    Object.assign(globalThis, { gameEngine, uiRenderer, aiController, storageManager, deckBuilder, effectsRenderer, shareOwnerDamageWithSummon, upsertSummonEntity });
     effectsRenderer.init();
     uiRenderer.init();
 
