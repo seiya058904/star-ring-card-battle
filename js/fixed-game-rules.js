@@ -8,8 +8,8 @@
   const rounded = value => Math.max(0, Math.round(Number(value) || 0));
   // 战斗时按等级 × ratio × 职业档案算出实际数值
   const effectAmount = (fighter, effect, card = null) => {
-    const fn = typeof globalThis.resolveEffectAmount === "function" ? globalThis.resolveEffectAmount : (e, a, c) => Math.max(0, Math.round(Number(e?.amount || 0)));
-    return fn(effect, fighter, card) * (Number(card?.effectMultiplier) || 1);
+    const fn = typeof globalThis.resolveCardEffectAmount === "function" ? globalThis.resolveCardEffectAmount : typeof globalThis.resolveEffectAmount === "function" ? (e, a, c) => globalThis.resolveEffectAmount(e, a, c) * (Number(c?.effectMultiplier) || 1) : (e, a, c) => Math.max(0, Math.round(Number(e?.amount || 0))) * (Number(c?.effectMultiplier) || 1);
+    return fn(effect, fighter, card);
   };
 
   global.fixedCardDescription = function fixedCardDescription(card, ctx) {
@@ -23,7 +23,8 @@
     const parts = card.effects.map(effect => {
       if (effect.type === "damage") {
         const v = descValue(effect);
-        return `造成 ${typeof v === "number" ? formatNumber(v) : v} 伤害${effect.pierce ? "（穿透护盾）" : ""}`;
+        const pierce = effect.pierceAmountRatio ? descValue({ type: "damage", ratio: effect.pierceAmountRatio }) : 0;
+        return `造成 ${typeof v === "number" ? formatNumber(v) : v} 伤害${effect.pierce ? "（穿透护盾）" : pierce ? `（其中 ${formatNumber(pierce)} 无视护盾）` : ""}`;
       }
       if (effect.type === "heal") {
         const v = descValue(effect);
@@ -43,7 +44,7 @@
         const pointStatus = ["增幅", "虚弱", "减伤", "闪避", "连锁", "复生"].includes(effect.status);
         const value = pointStatus ? descValue(effect) : 0;
         const detail = pointStatus ? effect.status === "复生" ? `${STATUS_LABELS[effect.status]}，恢复${formatNumber(value)}生命` : `${STATUS_LABELS[effect.status]} ${formatNumber(value)}点` : STATUS_LABELS[effect.status];
-        return `施加${effect.status}${effect.turns ? `${effect.turns}回合` : ""}${detail ? `：${detail}` : ""}`;
+        return effect.persistent ? `本场下一次受到致命伤害时，恢复${formatNumber(value)}生命` : `施加${effect.status}${effect.turns ? `${effect.turns}回合` : ""}${detail ? `：${detail}` : ""}`;
       }
       if (effect.type === "revive") return `起死回生：恢复 ${formatNumber(descValue(effect))} 生命`;
       if (effect.type === "cleanse") return "清除负面状态";
@@ -98,20 +99,20 @@
       return null;
     }
     const existing = target.statuses.filter(status => status.type === type);
-    const next = { type, turns: Math.max(1, Number(incoming.turns) || 1), power: Number(incoming.power || 0), charges: incoming.charges, sourceOwnerId: incoming.sourceOwnerId, source: incoming.source || "固定卡牌" };
+    const next = { type, turns: incoming.persistent ? null : Math.max(1, Number(incoming.turns) || 1), persistent: Boolean(incoming.persistent), power: Number(incoming.power || 0), charges: incoming.charges, sourceOwnerId: incoming.sourceOwnerId, source: incoming.source || "固定卡牌" };
     if (type === "燃烧") {
       if (existing.length >= 3) { existing.sort((a, b) => a.power - b.power)[0].power = Math.max(existing[0].power, next.power); existing.forEach(status => status.turns = Math.max(status.turns, next.turns)); return existing[0]; }
       target.statuses.push(next); return next;
     }
     if (["诅咒", "冻结", "禁锢", "增幅", "虚弱", "减伤", "闪避", "连锁", "复生"].includes(type)) {
       const current = existing[0];
-      if (current) { current.power = Math.max(current.power || 0, next.power || 0); current.turns = Math.max(current.turns || 0, next.turns); current.charges = Math.max(current.charges || 1, next.charges || 1); current.sourceOwnerId = next.sourceOwnerId || current.sourceOwnerId; return current; }
+      if (current) { current.power = Math.max(current.power || 0, next.power || 0); current.persistent ||= next.persistent; current.turns = current.persistent ? null : Math.max(current.turns || 0, next.turns); current.charges = Math.max(current.charges || 1, next.charges || 1); current.sourceOwnerId = next.sourceOwnerId || current.sourceOwnerId; return current; }
     }
     target.statuses.push(next);
     return next;
   };
 
-  gameEngine.resolveDamage = function({ source, target, amount, element = "无", pierce = 0, execute = false, sourceKind = "card" }) {
+  gameEngine.resolveDamage = function({ source, target, amount, element = "无", pierce = 0, pierceAmount = 0, execute = false, sourceKind = "card" }) {
     const state = this.state;
     if (!state || !target || target.hp <= 0) return { total: 0, ownerDamage: 0, summonDamage: 0, blocked: 0, dodged: false };
     let damage = rounded(amount);
@@ -126,7 +127,7 @@
     const instantKill = execute && target.hp / target.maxHp < .3;
     const pierceRatio = instantKill ? 1 : Math.max(0, Math.min(1, pierce));
     if (instantKill) damage = target.hp;
-    const bypassDamage = rounded(damage * pierceRatio);
+    const bypassDamage = Math.min(damage, rounded(damage * pierceRatio) + rounded(pierceAmount));
     const blockableDamage = Math.max(0, damage - bypassDamage);
     const blocked = Math.min(target.shield, blockableDamage);
     target.shield = Math.max(0, target.shield - blocked);
@@ -134,7 +135,7 @@
     const ownerBefore = target.hp;
     const guard = target.summons?.find(summon => summon.hp > 0);
     const guardBefore = guard?.hp || 0;
-    const shared = typeof shareOwnerDamageWithSummon === "function" ? shareOwnerDamageWithSummon(target, afterShield) : { ownerDamage: afterShield, summonDamage: 0, guard: null };
+    const shared = instantKill ? { ownerDamage: afterShield, summonDamage: 0, guard: null } : typeof shareOwnerDamageWithSummon === "function" ? shareOwnerDamageWithSummon(target, afterShield) : { ownerDamage: afterShield, summonDamage: 0, guard: null };
     target.hp = Math.max(0, target.hp - shared.ownerDamage);
     const ownerDamage = ownerBefore - target.hp;
     const revival = target.hp <= 0 ? target.statuses.find(status => status.type === "复生" && (status.charges === undefined || status.charges > 0)) : null;
@@ -171,7 +172,8 @@
         const multiplier = this.statusMultiplier(actor, target, card);
         const executeBonus = effect.execute && target.hp / target.maxHp < .3 ? 1.55 : 1;
         const totalAmount = Math.max(0, (baseAmount + boostFromActor + boostFromWeaken) * multiplier * executeBonus);
-        const settlement = this.resolveDamage({ source: actor, target, amount: totalAmount, element: card.element, pierce: effect.pierce || 0, execute: Boolean(effect.execute) });
+        const pierceAmount = effect.pierceAmountRatio ? effectAmount(actor, { type: "damage", ratio: effect.pierceAmountRatio }, card) : 0;
+        const settlement = this.resolveDamage({ source: actor, target, amount: totalAmount, element: card.element, pierce: effect.pierce || 0, pierceAmount, execute: Boolean(effect.execute) });
         result.amount += settlement.total;
         result.visualAmounts.push({ amount: settlement.total, side: target.id, type: "damage" });
         result.visualTargets = { number: target.id, impact: target.id, shake: settlement.total > 0 };
@@ -179,8 +181,8 @@
         // 消耗层数：增幅/连锁（攻击方），虚弱（受击方）
         actor.statuses.forEach(s => { if (s.type === "增幅" || s.type === "连锁") s.charges = (s.charges || 1) - 1; });
         target.statuses.forEach(s => { if (s.type === "虚弱") s.charges = (s.charges || 1) - 1; });
-        actor.statuses = actor.statuses.filter(s => (s.charges === undefined || s.charges > 0) && s.turns > 0);
-        target.statuses = target.statuses.filter(s => (s.charges === undefined || s.charges > 0) && s.turns > 0);
+        actor.statuses = actor.statuses.filter(s => (s.charges === undefined || s.charges > 0) && (s.persistent || s.turns > 0));
+        target.statuses = target.statuses.filter(s => (s.charges === undefined || s.charges > 0) && (s.persistent || s.turns > 0));
       } else if (effect.type === "heal") {
         const requested = effectAmount(actor, effect, card); const before = actor.hp;
         actor.hp = Math.min(actor.maxHp, actor.hp + requested);
@@ -211,7 +213,7 @@
         const statusPower = effectAmount(actor, effect, card);
         const status = this.applyStatus(recipient, { ...effect, power: statusPower, sourceOwnerId: actor.id, source: card.name });
         if (status) {
-          result.text += ` ${recipient.name}获得${status.type}${status.turns}回合。`;
+          result.text += status.persistent ? ` ${recipient.name}获得复生。` : ` ${recipient.name}获得${status.type}${status.turns}回合。`;
           if (["燃烧", "诅咒"].includes(status.type) && statusPower > 0) result.popups.push({ type: "status dot", text: `${status.type} ${formatNumber(statusPower)}/回合`, side: recipient.id });
           if (effect.ratio && statusPower > 0) result.popups.push({ type: "status flat", text: `+${formatNumber(statusPower)} ${status.type}`, side: recipient.id });
         }
@@ -257,7 +259,7 @@
       if (status.type === "禁锢") fighter.skipAction = true;
     }
     const hadBind = fighter.statuses.some(status => status.type === "禁锢");
-    fighter.statuses = fighter.statuses.map(status => ({ ...status, turns: status.turns - 1 })).filter(status => status.turns > 0 && (status.charges === undefined || status.charges > 0));
+    fighter.statuses = fighter.statuses.map(status => status.persistent ? status : { ...status, turns: status.turns - 1 }).filter(status => (status.persistent || status.turns > 0) && (status.charges === undefined || status.charges > 0));
     if (hadBind && !fighter.statuses.some(status => status.type === "禁锢")) fighter.controlImmuneTurns = 1;
     if (fighter.controlImmuneTurns > 0 && !hadBind) fighter.controlImmuneTurns -= 1;
     return { totalDamage: events.reduce((sum, event) => sum + event.actualDamage, 0), playerDotDamage: events.filter(event => event.sourceOwnerId === "player").reduce((sum, event) => sum + event.actualDamage, 0), dotEvents: events };

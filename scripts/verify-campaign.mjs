@@ -33,6 +33,7 @@ assert.match(campaignUiSource, /maxHpMultiplier/);
 assert.match(campaignUiSource, /effectMultiplier: tuning\.power/);
 assert.match(campaignUiSource, /actor: state\.enemy, target: state\.player/);
 assert.match(campaignModeSource, /\["诅咒", "燃烧"\]/);
+assert.match(campaignModeSource, /resolveCardEffectAmount/);
 assert.match(campaignModeSource, /card\.effects/);
 assert.doesNotMatch(campaignModeSource, /Number\(card\.power \|\| 0\) \/ Math\.max/);
 assert.match(coreSource, /rules\.roundEnergy/);

@@ -6233,6 +6233,10 @@
       if (Number.isFinite(card?.power) && card.power !== 0) return Math.max(0, Math.round(Number(card.power) || 0));
       return 0;
     }
+    function resolveCardEffectAmount(effect, actor, card) {
+      return resolveEffectAmount(effect, actor, card) * (Number(card?.effectMultiplier) || 1);
+    }
+    globalThis.resolveCardEffectAmount = resolveCardEffectAmount;
     // 获取一张卡牌的主数值（兼容新旧系统）
     function getCardPrimaryPower(card, actor) {
       if (card?.effects?.length) {
@@ -6499,6 +6503,8 @@
 
     function getCardActionIntent(card) {
       const type = String(card?.effectType || card?.type || "").toLowerCase();
+      const hasHostileEffect = card?.effects?.some(effect => effect.type === "damage" || ["燃烧", "诅咒", "冻结", "禁锢", "虚弱"].includes(effect.status));
+      if (!hasHostileEffect && card?.effects?.some(effect => effect.type === "status" && ["复生", "增幅", "减伤", "闪避", "连锁"].includes(effect.status))) return "friendly-buff";
       if (["attack", "damage", "strike", "burn", "freeze", "curse", "execute", "lifesteal", "pierce"].includes(type)) return "hostile-damage";
       if (["heal", "recover", "revive"].includes(type)) return "friendly-heal";
       if (["defense", "shield", "guard", "block", "armor"].includes(type)) return "friendly-shield";
@@ -7667,7 +7673,7 @@
             <div class="energy-row">${Array.from({ length: fighter.maxEnergy }, (_, i) => `<span class="energy-dot ${i < fighter.energy ? "full" : ""}"></span>`).join("")}</div>
             <div class="status-line">
               <span class="status">${iconImg(ASSETS.status["护盾"])}护盾 ${formatNumber(fighter.shield)}</span>
-              ${visibleStatuses.map(s => `<span class="status">${iconImg(ASSETS.status[s.type])}${s.type} ${s.turns}</span>`).join("")}
+              ${visibleStatuses.map(s => `<span class="status">${iconImg(ASSETS.status[s.type])}${s.type} ${s.persistent ? "本场" : s.turns}</span>`).join("")}
             </div>
           </div>
         `;
@@ -9849,7 +9855,7 @@
           <div class="energy-row">${Array.from({ length: fighter.maxEnergy }, (_, i) => `<span class="energy-dot ${i < fighter.energy ? "full" : ""}"></span>`).join("")}</div>
           <div class="status-line">
             <span class="status">${iconImg(ASSETS.status["护盾"])}护盾 ${formatNumber(fighter.shield)}</span>
-            ${visibleStatuses.map(s => `<span class="status">${iconImg(ASSETS.status[s.type])}${s.type} ${s.turns}</span>`).join("")}
+            ${visibleStatuses.map(s => `<span class="status">${iconImg(ASSETS.status[s.type])}${s.type} ${s.persistent ? "本场" : s.turns}</span>`).join("")}
           </div>
         </div>`;
     };
@@ -10062,7 +10068,7 @@
           <div class="energy-row">${Array.from({ length: fighter.maxEnergy }, (_, i) => `<span class="energy-dot ${i < fighter.energy ? "full" : ""}"></span>`).join("")}<span class="status">${fighter.energy}/${fighter.maxEnergy}</span></div>
           <div class="status-line">
             <span class="status">${iconImg(ASSETS.status["护盾"])}护盾 ${formatNumber(fighter.shield)}</span>
-            ${visibleStatuses.map(s => `<span class="status">${iconImg(ASSETS.status[s.type])}${s.type} ${s.turns}</span>`).join("")}
+            ${visibleStatuses.map(s => `<span class="status">${iconImg(ASSETS.status[s.type])}${s.type} ${s.persistent ? "本场" : s.turns}</span>`).join("")}
           </div>
           ${enemyHandHtml}
         </div>`;
@@ -10182,7 +10188,7 @@
           <div class="energy-row">${Array.from({ length: fighter.maxEnergy }, (_, i) => `<span class="energy-dot ${i < fighter.energy ? "full" : ""}"></span>`).join("")}<span class="status">${fighter.energy}/${fighter.maxEnergy}</span></div>
           <div class="status-line">
             <span class="status" title="优先抵扣受到的伤害">${atlasStatusIcon("shield")}护盾 ${formatNumber(displayShield(fighter))}</span>
-            ${visibleStatuses.map(s => `<span class="status" title="${describeStatus(s.type, s.turns, s.power, s.source, s.maxHp)}">${atlasStatusIcon(s.type)}${s.type} ${s.turns}</span>`).join("")}
+            ${visibleStatuses.map(s => `<span class="status" title="${describeStatus(s.type, s.turns, s.power, s.source, s.maxHp)}">${atlasStatusIcon(s.type)}${s.type} ${s.persistent ? "本场" : s.turns}</span>`).join("")}
           </div>
           ${enemyHandHtml}
         </div>`;

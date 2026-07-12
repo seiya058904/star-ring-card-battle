@@ -21,6 +21,10 @@ assert.match(fixedRules, /const hasDamage = result\.visualAmounts\.some/);
 assert.match(fixedRules, /setHpDisplayOverride\(actor\);\s*setHpDisplayOverride\(target\);/);
 assert.match(html, /effect\?\.type === "status" && Number\.isFinite\(effect\?\.burnRatio\)/);
 assert.match(fixedRules, /const recipient = \["增幅", "减伤", "闪避", "连锁", "复生"\]\.includes\(effect\.status\) \? actor : target/);
+assert.match(fixedRules, /const shared = instantKill/);
+assert.match(html, /resolveCardEffectAmount/);
+assert.match(html, /\["复生", "增幅", "减伤", "闪避", "连锁"\]/);
+assert.match(html, /s\.persistent \? "本场" : s\.turns/);
 
 assert.match(audioManager, /function cardSoundEvent\(card\)/);
 assert.match(audioManager, /card\.effects/);
