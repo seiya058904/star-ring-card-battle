@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
-const html = await readFile("index.html", "utf8");
+const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
+const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
+inlineScripts.forEach((match, index) => new vm.Script(match[1], { filename: `index-inline-${index + 1}.js` }));
 const source = html.match(/start\(playerDeck, enemyDeck\) \{[\s\S]*?\n      \},\n      beginTurn/)[0].replace(/\n      \},\n      beginTurn$/, "\n}");
 const costSource = html.match(/function effectiveCardCost\(state, side, card\) \{[\s\S]*?\n    \}/)[0];
 const context = { DEFAULT_ENEMY_NAME_POOL: { 人族: ["测试敌人"] }, pick: values => values[0], campaignMode: { effectiveCardCost: (state, side, card) => Math.max(0, card.cost - (side === "player" ? state.campaign?.costReduction || 0 : 0)) } };

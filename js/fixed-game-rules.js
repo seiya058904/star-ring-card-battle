@@ -27,6 +27,10 @@
         return `造成 ${typeof v === "number" ? formatNumber(v) : v} 伤害${effect.pierce ? "（穿透护盾）" : pierce ? `（其中 ${formatNumber(pierce)} 无视护盾）` : ""}`;
       }
       if (effect.type === "heal") {
+        if (effect.percentageOfMax) {
+          const pct = Math.round((effect.ratio || 0) * 100);
+          return `恢复最大生命值的 ${pct}%`;
+        }
         const v = descValue(effect);
         return `恢复 ${typeof v === "number" ? formatNumber(v) : v} 生命`;
       }
@@ -38,7 +42,7 @@
       if (effect.type === "energy") return `获得 ${effect.amount} 点能量`;
       if (effect.type === "status") {
         if (["燃烧", "诅咒"].includes(effect.status)) {
-          const v = effect.burnRatio !== undefined ? descValue(effect) : effect.amount;
+          const v = descValue(effect);
           return `施加${effect.status}${effect.turns}回合：每回合 ${typeof v === "number" ? formatNumber(v) : 0} 伤害`;
         }
         const pointStatus = ["增幅", "虚弱", "减伤", "闪避", "连锁", "复生"].includes(effect.status);
@@ -56,11 +60,9 @@
 
   const originalMakeFighter = gameEngine.makeFighter.bind(gameEngine);
   gameEngine.makeFighter = function(name, deck, isPlayer) {
-    const normalizedDeck = { ...deck, race: normalizeRace(deck.race), profession: normalizeProfession(deck.profession) };
+    const normalizedDeck = { ...deck, originalRace: deck.originalRace || deck.race, originalProfession: deck.originalProfession || deck.profession, race: normalizeRace(deck.race), profession: normalizeProfession(deck.profession) };
     const fighter = originalMakeFighter(name, normalizedDeck, isPlayer);
-    fighter.race = normalizedDeck.race;
-    fighter.profession = normalizedDeck.profession;
-    fighter.profile = combinedProfile(fighter.race, fighter.profession);
+    fighter.profile = combinedProfile(normalizedDeck.race, normalizedDeck.profession);
     if (Number.isFinite(normalizedDeck.maxHpMultiplier)) {
       fighter.maxHp = Math.max(1, Math.round(fighter.maxHp * normalizedDeck.maxHpMultiplier));
       fighter.hp = fighter.maxHp;
@@ -184,7 +186,7 @@
         actor.statuses = actor.statuses.filter(s => (s.charges === undefined || s.charges > 0) && (s.persistent || s.turns > 0));
         target.statuses = target.statuses.filter(s => (s.charges === undefined || s.charges > 0) && (s.persistent || s.turns > 0));
       } else if (effect.type === "heal") {
-        const requested = effectAmount(actor, effect, card); const before = actor.hp;
+        const requested = effect.percentageOfMax ? Math.round(actor.maxHp * effect.ratio) : effectAmount(actor, effect, card); const before = actor.hp;
         actor.hp = Math.min(actor.maxHp, actor.hp + requested);
         const actual = actor.hp - before;
         result.amount += actual;

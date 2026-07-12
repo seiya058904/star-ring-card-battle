@@ -6579,6 +6579,7 @@
         this.sessionId += 1;
         this.state = null;
         effectsRenderer._playLock = 0;
+        pendingGameOverCheck.flag = false;
       },
       makeFighter(name, deck, isPlayer) {
         const profile = combinedProfile(deck.race, deck.profession);
@@ -6776,7 +6777,7 @@
         this.state.log.unshift({ round: this.state.round, text, time: new Date().toLocaleTimeString() });
       },
       checkGameOver() {
-        if (this.state.resultPending || this.state.gameOver) return;
+        if (!this.state || this.state.resultPending || this.state.gameOver) return;
         if (this.state.player.hp <= 0 || this.state.enemy.hp <= 0) {
           /* If stat changes are still visually hidden, defer the result screen */
           if (hasPendingOverrides()) {
@@ -6904,6 +6905,8 @@
       play(card, result) {
         resetBattleViewTransform();
         if (!this.isBattleActive()) return;
+        const battleState = gameEngine.state;
+        const battleSessionId = gameEngine.sessionId;
         this.start();
         const drama = dramaTimingForCard(card);
         const field = document.getElementById("battlefield");
@@ -6944,6 +6947,7 @@
         stage.className = `played-card-stage show ${drama.tier}`;
         document.body.classList.add(`${drama.tier}-drama`);
         setTimeout(() => {
+          if (!gameEngine.isActiveBattle(battleState, battleSessionId)) return;
           banner.classList.remove("show", "special");
           stage.className = "played-card-stage";
           stage.innerHTML = "";
@@ -6961,6 +6965,7 @@
         }
         const impactDelay = drama.enter + drama.focus + drama.charge + drama.cast;
         setTimeout(() => {
+          if (!gameEngine.isActiveBattle(battleState, battleSessionId)) return;
           clearHpDisplayOverrides();
           uiRenderer.render();
           const numberSide = result.visualTargets?.number || result.targetId;
@@ -8315,8 +8320,8 @@
         fullDescription: `恢复 ${formatNumber(card.power)} 点生命并净化 1 个负面状态；随后获得增幅 3 回合，造成的伤害提高 25%。`
       };
       if (/起死回生/.test(name)) return {
-        description: "直接恢复到最大生命值，并净化 1 个负面状态。",
-        fullDescription: "直接将生命恢复到最大生命值，并净化自身 1 个负面状态。"
+        description: "直接回复最大生命值的 50%，并净化 1 个负面状态。",
+        fullDescription: "直接回复最大生命值的 50%，并净化自身 1 个负面状态。"
       };
       if (/递种/.test(name)) return {
         description: "压制目标 3 回合：目标每次回合开始时少抽 1 张牌。",
@@ -9061,7 +9066,7 @@
           : `${actor.name}使用「${card.name}」，获得 ${formatNumber(shield)} 护盾。`;
       } else if (["heal","revive"].includes(card.effectType)) {
         let heal = Math.round(power * actor.profile.heal * (card.effectType === "revive" && actor.hp / actor.maxHp < .25 ? 1.45 : 1));
-        if (/起死回生/.test(rawCardName)) heal = Math.max(0, actor.maxHp - actor.hp);
+        if (/起死回生/.test(rawCardName)) heal = Math.round(actor.maxHp * 0.5);
         const hpBefore = actor.hp;
         setHpDisplayOverride(actor);
         actor.hp = Math.min(actor.maxHp, actor.hp + heal);
@@ -9774,7 +9779,7 @@
               <li><strong>防御极致化</strong>：获得最大生命值 50% 的护盾，并获得 10% 减伤，持续 3 回合。</li>
               <li><strong>伤害真实化</strong>：接下来 2 回合，自己造成的伤害无视护盾。</li>
               <li><strong>锁龙Ⅲ / 斩魔剑</strong>：分别对龙族 / 恶魔造成 2 倍伤害。</li>
-              <li><strong>起死回生</strong>：直接恢复到最大生命值。</li>
+              <li><strong>起死回生</strong>：直接回复最大生命值的 50%。</li>
               <li><strong>递种</strong>：目标接下来 3 回合每回合少抽 1 张牌。</li>
             </ul>
           </div>
@@ -10130,8 +10135,6 @@
       if (el) el.innerHTML = "";
     };
 
-
-    document.addEventListener("click", (event) => {
     /* Battle v6 behavior fixes: battle codex is an overlay, not navigation away from the fight. */
     uiRenderer.openBattleCodexOverlay = function() {
       const state = gameEngine.state;

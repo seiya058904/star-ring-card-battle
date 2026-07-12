@@ -18,6 +18,17 @@ for (const file of ["js/battle-rules.js", "js/fixed-card-library.js"]) vm.runInC
 const { fixedCardLibrary, battleRules } = context;
 const resolverSource = await readRepoFile("js/fixed-game-rules.js");
 const librarySource = await readRepoFile("js/fixed-card-library.js");
+const makeFighterSource = resolverSource.match(/const originalMakeFighter = gameEngine\.makeFighter\.bind\(gameEngine\);[\s\S]*?\n  \};\n\n  gameEngine\.draw/)[0].replace(/\n\n  gameEngine\.draw$/, "");
+const fighterContext = {
+  normalizeRace: race => race === "神人" ? "人族" : race === "黑暗精灵" ? "精灵族" : race,
+  normalizeProfession: profession => /法|魔/.test(profession) ? "魔法师" : "战士",
+  combinedProfile: (race, profession) => ({ race, profession }),
+  gameEngine: { makeFighter(name, deck) { return { name, race: deck.originalRace || deck.race, profession: deck.originalProfession || deck.profession, maxHp: 100, hp: 100 }; } }
+};
+vm.createContext(fighterContext);
+vm.runInContext(makeFighterSource, fighterContext);
+assert.equal(fighterContext.gameEngine.makeFighter("苏", { race: "神人", profession: "战士" }).race, "神人");
+assert.equal(fighterContext.gameEngine.makeFighter("斯特林", { race: "黑暗精灵", profession: "法神" }).race, "黑暗精灵");
 assert.equal(fixedCardLibrary.characterDefinitions.length, 30);
 assert.equal(new Set(Object.keys(fixedCardLibrary.cards)).size, Object.keys(fixedCardLibrary.cards).length);
 for (const character of fixedCardLibrary.characterDefinitions) {
@@ -81,12 +92,12 @@ assert.match(librarySource, /name\.startsWith\("元素圣体"\)/);
 assert.match(resolverSource, /const statusPower = effectAmount\(actor, effect, card\)/);
 assert.match(resolverSource, /sourceKind === "dot" \? 0/);
 assert.match(resolverSource, /s\.charges === undefined \|\| s\.charges > 0/);
-assert.match(librarySource, /status: "复生"/);
+assert.match(librarySource, /percentageOfMax: true/);
 assert.match(librarySource, /execute: true/);
 assert.match(resolverSource, /effect\.type === "revive"/);
 assert.match(source, /effect\.status === "复生"/);
 assert.match(source, /\["减伤", "闪避"\]\.includes\(effect\.status\)/);
-assert.match(librarySource, /persistent: true/);
+assert.match(librarySource, /起死回生.*effect\("heal"/);
 assert.match(librarySource, /pierceAmountRatio/);
 assert.doesNotMatch(librarySource, /pierce: \.35|pierce: \.6/);
 assert.match(resolverSource, /persistent \? null/);

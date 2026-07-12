@@ -15,6 +15,7 @@ const [html, fixedRules, campaignUi, audioManager] = await Promise.all([
 
 const fixedScript = html.indexOf('src="js/fixed-game-rules.js"');
 const campaignScript = html.indexOf('src="js/campaign-ui.js"');
+const effectsPlay = html.match(/      play\(card, result\) \{[\s\S]*?\n      \},\n      textColor/)[0];
 assert.ok(fixedScript >= 0 && campaignScript >= 0 && fixedScript < campaignScript, "固定规则必须先加载，战役层才能包装最终实现");
 
 assert.match(fixedRules, /result\.popups\.push\(\{ type: "status heal"/);
@@ -33,6 +34,10 @@ assert.match(html, /getCardActionIntent\(card\)\.startsWith\("friendly"\) \? "�
 assert.match(html, /status: "状态"/);
 assert.match(html, /\["复生", "增幅", "减伤", "闪避", "连锁"\]/);
 assert.match(html, /s\.persistent \? "本场" : s\.turns/);
+assert.match(effectsPlay, /const battleState = gameEngine\.state;\s*const battleSessionId = gameEngine\.sessionId;/);
+assert.ok((effectsPlay.match(/if \(!gameEngine\.isActiveBattle\(battleState, battleSessionId\)\) return;/g) || []).length >= 2, "特效主回调必须忽略已失效战斗");
+assert.match(html, /invalidateBattle\(\) \{[\s\S]*?pendingGameOverCheck\.flag = false;/);
+assert.match(html, /checkGameOver\(\) \{\s*if \(!this\.state/);
 
 assert.match(audioManager, /function cardSoundEvent\(card\)/);
 assert.match(audioManager, /card\.effects/);
