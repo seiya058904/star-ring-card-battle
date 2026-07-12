@@ -5716,6 +5716,7 @@
         character.allowedElements = elements.length ? elements : [character.primaryElement];
       }
     });
+    globalThis.DEFAULT_CHARACTER_TEMPLATES = DEFAULT_CHARACTER_TEMPLATES;
 
     const DEFAULT_SKILL_NAMES = {
       advanced: "火焰领主Ⅲ、炎天噬地Ⅲ、炎龙凤燃、真火吞Ⅲ、烈焰护体、元素庇护、绝对冰冻Ⅲ、冰王斩Ⅲ、终·冰元素、超大冰暴Ⅲ、真王冰甲Ⅲ、绝对重力Ⅲ、沙王领主Ⅲ、超大土暴Ⅲ、天崩地裂、磐石装甲、终·元素贯穿、真王穿刺Ⅲ、混沌铠甲、雷光真闪Ⅲ、雷龙缠绕Ⅲ、雷光铠甲Ⅲ、超位雷斩、雷神剑、最终一击·雷霆、飓风笼罩Ⅲ、次元斩Ⅲ、次元隧道、次元屏障Ⅲ、超超级海啸、圣光庇护Ⅲ、圣光之音Ⅲ、祝福之光Ⅲ、光明圣剑Ⅲ、光明之主Ⅲ、雷霆审判、终·六翼大天使、神圣庇护Ⅲ、黑暗吞噬Ⅲ、耶梦加得凝视、噩梦Ⅲ、暗黑魔甲Ⅲ、至暗洗礼Ⅲ、暗光箭矢、幽暗庇护Ⅲ、暗黑领主Ⅲ、暗之闪Ⅲ、龙神意志、至尊炎火Ⅲ、灭世之威、雷霆王座Ⅲ、圣裁天幕Ⅲ、霜星坠落Ⅲ、风王猎场Ⅲ、灰烬魔域Ⅲ、日蚀之刃Ⅲ、终·万雷归一Ⅲ、天穹之门、极寒神殿Ⅲ、终·烈日焚天Ⅲ、虚空风暴Ⅲ、大地君王Ⅲ".split("、"),
@@ -8773,7 +8774,7 @@
       const fighter = this.state[side];
       fighter.turnFlags = { firstHit: true };
       const freezeStatus = fighter.statuses.find(s => s.type === "冻结");
-      fighter.energy = globalThis.campaignMode.roundEnergy(this.state.round, fighter.maxEnergy, freezeStatus ? 1 : 0);
+      fighter.energy = globalThis.battleRules.roundEnergy(this.state.round, fighter.maxEnergy, freezeStatus ? 1 : 0);
       fighter.shield = Math.max(0, Math.round(fighter.shield * .35));
       // 冻结：能量恢复后立即生效，再tick duration
       if (freezeStatus) {
@@ -10246,6 +10247,7 @@
       });
     };
 
+    Object.assign(globalThis, { gameEngine, uiRenderer, aiController, storageManager, deckBuilder, effectsRenderer });
     effectsRenderer.init();
     uiRenderer.init();
 
@@ -10256,10 +10258,13 @@
     });
   </script>
 
+  <script src="js/battle-rules.js"></script>
+  <script src="js/fixed-card-library.js"></script>
   <script src="js/campaign-data.js"></script>
   <script src="js/campaign-mode.js"></script>
   <script src="js/audio-manager.js"></script>
   <script src="js/campaign-ui.js"></script>
+  <script src="js/fixed-game-rules.js"></script>
 
 
   <style id="battle-visual-polish-final">
