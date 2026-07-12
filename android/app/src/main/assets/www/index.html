@@ -6818,7 +6818,8 @@
         setTimeout(loop, 420);
       },
       chooseCard(enemy, player) {
-        const playable = enemy.hand.filter(card => effectiveCardCost(this.state, "enemy", card) <= enemy.energy);
+        const state = gameEngine.state;
+        const playable = enemy.hand.filter(card => effectiveCardCost(state, "enemy", card) <= enemy.energy);
         if (!playable.length) {
           const costly = enemy.hand.slice(0, 3).map(c => `${c.name}(费${c.cost})`).join("、");
           console.debug(`[AI] 敌方跳过：能量 ${enemy.energy}/${enemy.maxEnergy}，手牌 ${enemy.hand.length} 张，可用 0 张。示例: ${costly}`);
@@ -6826,7 +6827,7 @@
         }
         const lowHp = enemy.hp / enemy.maxHp < .38;
         const scored = playable.map(card => {
-          let score = card.power / Math.max(1, effectiveCardCost(this.state, "enemy", card));
+          let score = card.power / Math.max(1, effectiveCardCost(state, "enemy", card));
           if (lowHp && ["heal", "shield", "defense", "revive"].includes(card.effectType)) score *= 2.3;
           if (player.hp / player.maxHp < .28 && ["attack", "execute", "pierce"].includes(card.effectType)) score *= 1.8;
           if (["draw", "charge"].includes(card.effectType) && enemy.energy < 5) score *= 1.25;

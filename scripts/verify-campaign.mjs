@@ -13,6 +13,7 @@ const campaignDataSource = await readFile("js/campaign-data.js", "utf8");
 const campaignUiSource = await readFile("js/campaign-ui.js", "utf8");
 const campaignModeSource = await readFile("js/campaign-mode.js", "utf8");
 const coreSource = await readFile("js/fixed-game-rules.js", "utf8");
+const htmlSource = await readFile("index.html", "utf8");
 
 assert.equal(campaignData.characters.length, 6);
 assert.equal(new Set(campaignData.characters.map(({ id }) => id)).size, 6);
@@ -36,6 +37,10 @@ assert.match(campaignModeSource, /\["诅咒", "燃烧"\]/);
 assert.match(campaignModeSource, /resolveCardEffectAmount/);
 assert.match(campaignModeSource, /card\.effects/);
 assert.doesNotMatch(campaignModeSource, /Number\(card\.power \|\| 0\) \/ Math\.max/);
+assert.doesNotMatch(campaignUiSource, /(?<![\w.])effectiveCardCost\(/);
+assert.match(campaignUiSource, /mode\.effectiveCardCost\(state, "enemy", card\)/);
+assert.match(campaignUiSource, /mode\.effectiveCardCost\(state, "player", card\)/);
+assert.match(htmlSource, /chooseCard\(enemy, player\)\s*\{\s*const state = gameEngine\.state/);
 assert.match(coreSource, /rules\.roundEnergy/);
 assert.match(coreSource, /HAND_LIMIT/);
 assert.match(coreSource, /afterPlay === "exhaust"/);
