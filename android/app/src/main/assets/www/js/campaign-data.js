@@ -18,7 +18,7 @@
     ["su", "苏", "神人", "神人", "战士", ["暗", "光", "雷"], "三相神血", "多元素伤害与负面免疫"]
   ].map(([id, name, title, race, profession, elements, passive, playStyle]) => ({
     id, name, title, loreLevel: ({ lisaya: 67, luolinfo: 61, eluxia: 86, moluo: 62, heka: 93, su: 93 })[id],
-    combatLevel: 60, race, profession, elements, difficulty: id === "su" || id === "heka" ? "高" : "中",
+    race, profession, elements, difficulty: id === "su" || id === "heka" ? "高" : "中",
     playStyle, passive, signatureCards: decks[id].normal.slice(0, 3), deck: decks[id]
   }));
 

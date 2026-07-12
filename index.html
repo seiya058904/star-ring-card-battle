@@ -6223,8 +6223,9 @@
           return Math.max(0, Math.round(base * effect.ratio * (prof.heal || 1)));
         if (effect.type === "shield")
           return Math.max(0, Math.round(base * effect.ratio * (prof.defense || 1)));
-        // 增幅/减伤/闪避/虚弱/连锁等状态：ratio 代表等级缩放后的绝对值
-        return Math.max(0, Math.round(base * effect.ratio * (prof.damage || 1)));
+        // 状态点数按实际职业分支缩放，避免防御/复生沿用伤害系数
+        const multiplier = ["减伤", "闪避"].includes(effect.status) ? prof.defense : effect.status === "复生" || effect.type === "revive" ? prof.heal : prof.damage;
+        return Math.max(0, Math.round(base * effect.ratio * (multiplier || 1)));
       }
       // 旧 system：effect.amount 为绝对数值
       if (Number.isFinite(effect?.amount)) return Math.max(0, Math.round(Number(effect.amount) || 0));

@@ -99,7 +99,7 @@
     if (tierName === "special") {
       if (name.startsWith("时间回溯")) return [healE(.85), effect("cleanse")];
       if (name.startsWith("时间禁锢")) return [dmg(1.05), effect("status", { status: "禁锢", turns: 1 })];
-      if (name.startsWith("起死回生")) return [effect("revive", { ratio: r(.78) })];
+      if (name.startsWith("起死回生")) return [effect("status", { status: "复生", ratio: r(.78), turns: 99, charges: 1 })];
       if (name.startsWith("恶魔契约")) return [dmg(1.25), effect("status", { status: "增幅", ratio: r(.22), turns: 2, charges: 2 })];
       if (name.startsWith("不灭魔躯")) return [shieldE(1.2), effect("status", { status: "减伤", ratio: r(.2), turns: 2, charges: 1 })];
       if (name.startsWith("绝对死亡")) return [effect("damage", { ratio: r(1.3), execute: true, element })];

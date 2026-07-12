@@ -20,7 +20,7 @@ assert.match(fixedRules, /const expectedTarget = this\.state\?\.\[actor\.id === 
 assert.match(fixedRules, /const hasDamage = result\.visualAmounts\.some/);
 assert.match(fixedRules, /setHpDisplayOverride\(actor\);\s*setHpDisplayOverride\(target\);/);
 assert.match(html, /effect\?\.type === "status" && Number\.isFinite\(effect\?\.burnRatio\)/);
-assert.match(fixedRules, /const recipient = \["增幅", "减伤", "闪避", "连锁"\]\.includes\(effect\.status\) \? actor : target/);
+assert.match(fixedRules, /const recipient = \["增幅", "减伤", "闪避", "连锁", "复生"\]\.includes\(effect\.status\) \? actor : target/);
 
 assert.match(audioManager, /function cardSoundEvent\(card\)/);
 assert.match(audioManager, /card\.effects/);

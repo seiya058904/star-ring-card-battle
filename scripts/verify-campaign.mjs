@@ -9,6 +9,7 @@ for (const file of ["js/battle-rules.js", "js/campaign-data.js", "js/campaign-mo
 }
 
 const { campaignData, campaignMode, battleRules } = context;
+const campaignDataSource = await readFile("js/campaign-data.js", "utf8");
 const campaignUiSource = await readFile("js/campaign-ui.js", "utf8");
 const campaignModeSource = await readFile("js/campaign-mode.js", "utf8");
 const coreSource = await readFile("js/fixed-game-rules.js", "utf8");
@@ -26,6 +27,12 @@ assert.match(campaignUiSource, /card\.effects\?\.some\(effect => effect\.type ==
 assert.doesNotMatch(campaignUiSource, /damageTakenRatio/);
 assert.doesNotMatch(campaignUiSource, /baseCampaignResult|originalCampaignResult|originalShowResult/);
 assert.doesNotMatch(campaignUiSource, /uiRenderer\.showResult\s*=\s*function/);
+assert.doesNotMatch(campaignDataSource, /combatLevel/);
+assert.doesNotMatch(campaignUiSource, /战役计算等级/);
+assert.match(campaignUiSource, /maxHpMultiplier/);
+assert.match(campaignUiSource, /effectMultiplier: tuning\.power/);
+assert.match(campaignUiSource, /actor: state\.enemy, target: state\.player/);
+assert.match(campaignModeSource, /\["诅咒", "燃烧"\]/);
 assert.match(campaignModeSource, /card\.effects/);
 assert.doesNotMatch(campaignModeSource, /Number\(card\.power \|\| 0\) \/ Math\.max/);
 assert.match(coreSource, /rules\.roundEnergy/);
@@ -35,6 +42,10 @@ assert.match(coreSource, /resolveDamage/);
 assert.match(coreSource, /damageTaken/);
 assert.match(coreSource, /overheal/);
 assert.match(coreSource, /controlImmuneTurns/);
+assert.match(coreSource, /bypassDamage/);
+assert.match(coreSource, /blockableDamage/);
+assert.match(coreSource, /status\.type === "复生"/);
+assert.match(coreSource, /execute/);
 
 const fresh = campaignMode.defaultProgress(campaignData.characters);
 assert.equal(fresh.characters.lisaya.unlockedStage, 1);
