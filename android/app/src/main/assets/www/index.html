@@ -6506,12 +6506,6 @@
       exportDeck(deck) {
         return JSON.stringify(deck, null, 2);
       },
-      importDeck(text) {
-        const deck = JSON.parse(text);
-        if (!deck || !Array.isArray(deck.cards)) throw new Error("JSON 里没有 cards 卡牌数组。");
-        storageManager.saveCurrentDeck(deck);
-        return deck;
-      },
       getSettings() {
         try { return { ...DEFAULT_GAME_SETTINGS, ...(JSON.parse(localStorage.getItem(this.settingsKey) || "{}")) }; }
         catch { return { ...DEFAULT_GAME_SETTINGS }; }
@@ -6619,8 +6613,9 @@
         this.applyCard(actor, target, card);
         audioManager?.playCard(card);
         uiRenderer.render();
+        const battleState = this.state;
         setTimeout(() => {
-          if (this.state) {
+          if (this.state === battleState) {
             clearHpDisplayOverrides();
             if (pendingGameOverCheck.flag) {
               pendingGameOverCheck.flag = false;
@@ -6709,7 +6704,8 @@
         this.beginTurn(next);
         setHandHoverSuppressed(true, 400);
         uiRenderer.render();
-        if (next === "enemy") setTimeout(() => aiController.takeTurn(), 520);
+        const battleState = this.state;
+        if (next === "enemy") setTimeout(() => { if (this.state === battleState) aiController.takeTurn(); }, 520);
       },
       log(text) {
         this.state.log.unshift({ round: this.state.round, text, time: new Date().toLocaleTimeString() });
@@ -6726,9 +6722,11 @@
           this.state.resultPending = true;
           this.state.actionLocked = true;
           this.state.winner = this.state.player.hp > 0 ? "player" : "enemy";
-          this.log(this.state.winner === "player" ? "玩家获胜！" : "电脑获胜。");
-          setTimeout(() => uiRenderer.showAiDialogue(this.state.winner === "player" ? "lose" : "win"), Math.max(0, VICTORY_TIMING.victoryDelay - VICTORY_TIMING.enemyDefeatLine));
-          setTimeout(() => uiRenderer.showResult(), VICTORY_TIMING.victoryDelay);
+          const battleState = this.state;
+          const dialogue = battleState.winner === "player" ? "lose" : "win";
+          this.log(battleState.winner === "player" ? "玩家获胜！" : "电脑获胜。");
+          setTimeout(() => { if (this.state === battleState) uiRenderer.showAiDialogue(dialogue); }, Math.max(0, VICTORY_TIMING.victoryDelay - VICTORY_TIMING.enemyDefeatLine));
+          setTimeout(() => { if (this.state === battleState) uiRenderer.showResult(); }, VICTORY_TIMING.victoryDelay);
         }
       }
     };
@@ -7205,17 +7203,6 @@
           document.getElementById("deckJsonText").value = storageManager.exportDeck(deck);
           this.showToast("当前卡组 JSON 已导出到文本框");
         });
-        document.getElementById("importDeckBtn")?.addEventListener("click", () => {
-          try {
-            this.selectedDeck = storageManager.importDeck(document.getElementById("deckJsonText").value);
-            this.prepSelectedDeck = this.selectedDeck;
-            this.renderDeckManager();
-            this.renderDefaultDecks();
-            this.showToast("JSON 导入成功");
-          } catch (error) {
-            this.showToast("JSON 格式错误：" + error.message, "error");
-          }
-        });
         document.querySelector("[data-modal-close]")?.addEventListener("click", () => this.closeModal());
         document.querySelectorAll("[data-modal-close]").forEach(el => el.addEventListener("click", () => this.closeModal()));
       },
@@ -7471,7 +7458,7 @@
         this.openModal("卡组工坊", `
           <div class="modal-choice-grid">
             <button class="modal-choice" data-workshop-target="custom"><h3>自定义卡牌</h3><p class="small-note">创建专属技能与基础卡牌</p></button>
-            <button class="modal-choice" data-workshop-target="deck"><h3>卡组管理</h3><p class="small-note">查看当前卡组，导入 / 导出 JSON</p></button>
+            <button class="modal-choice" data-workshop-target="deck"><h3>卡组管理</h3><p class="small-note">查看当前卡组，导出 JSON</p></button>
             <button class="modal-choice" data-workshop-target="assets"><h3>素材预览</h3><p class="small-note">检查图标、角色、背景素材</p></button>
           </div>
         `, { afterRender: () => {
@@ -7685,7 +7672,7 @@
       },
       renderLog() {
         const log = gameEngine.state.log.slice(0, 38);
-        document.getElementById("battleLog").innerHTML = log.map(item => `<div class="log-item">${item.round}回合 · ${item.text}</div>`).join("");
+        document.getElementById("battleLog").innerHTML = log.map(item => `<div class="log-item">${escapeHtml(item.round)}回合 · ${escapeHtml(item.text)}</div>`).join("");
       },
       renderAssetPreview() {
         const entries = [];
@@ -7722,20 +7709,20 @@
         const cards = storageManager.getCustomCards();
         document.getElementById("customCardList").innerHTML = cards.length ? cards.map(card => `
           <div class="deck-card">
-            <h3>${card.name}</h3>
-            <p class="small-note">${card.category === "base" ? "基础卡" : "技能卡"} · ${card.element} · ${DEFAULT_RARITIES[card.rarity] || card.rarity}</p>
-            <div class="pill-list"><span class="pill">${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</span><span class="pill">${getCardPowerLabel(card)}</span></div>
+            <h3>${escapeHtml(card.name)}</h3>
+            <p class="small-note">${card.category === "base" ? "基础卡" : "技能卡"} · ${escapeHtml(card.element)} · ${escapeHtml(DEFAULT_RARITIES[card.rarity] || card.rarity)}</p>
+            <div class="pill-list"><span class="pill">${escapeHtml(EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType)}</span><span class="pill">${escapeHtml(getCardPowerLabel(card))}</span></div>
           </div>
         `).join("") : `<p class="small-note">还没有保存自定义卡牌</p>`;
       },
       renderDeckManager() {
         const deck = this.selectedDeck || storageManager.getCurrentDeck() || this.generatedDeck;
-        document.getElementById("currentDeckMeta").innerHTML = [`${deck.name}`, `${deck.race}`, `${deck.profession}`, `${deck.level}级`, `${deck.cards.length}张`].map(x => `<span class="pill">${x}</span>`).join("");
+        document.getElementById("currentDeckMeta").innerHTML = [`${deck.name}`, `${deck.race}`, `${deck.profession}`, `${deck.level}级`, `${deck.cards.length}张`].map(x => `<span class="pill">${escapeHtml(x)}</span>`).join("");
         document.getElementById("currentDeckCards").innerHTML = deck.cards.map(card => `
           <div class="deck-card">
-            <h3>${card.name}</h3>
-            <p class="small-note">${card.element} · ${card.effectType} · 消耗${card.cost}</p>
-            <div class="pill-list"><span class="pill">${DEFAULT_RARITIES[card.rarity] || card.rarity}</span><span class="pill">${getCardPowerLabel(card)}</span></div>
+            <h3>${escapeHtml(card.name)}</h3>
+            <p class="small-note">${escapeHtml(card.element)} · ${escapeHtml(card.effectType)} · 消耗${escapeHtml(card.cost)}</p>
+            <div class="pill-list"><span class="pill">${escapeHtml(DEFAULT_RARITIES[card.rarity] || card.rarity)}</span><span class="pill">${escapeHtml(getCardPowerLabel(card))}</span></div>
           </div>
         `).join("");
       },
@@ -7870,6 +7857,11 @@
       return ASSETS.skills[card.effectType] || ASSETS.elements[card.element] || ASSETS.skills.attack;
     }
 
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+    }
+    globalThis.escapeHtml = escapeHtml;
 
     function renderCard(card, unplayable) {
       const [c1, c2] = cardColors(card);
@@ -8766,14 +8758,12 @@
     gameEngine.beginTurn = function(side) {
       const fighter = this.state[side];
       fighter.turnFlags = { firstHit: true };
-      fighter.energy = clamp(3 + (this.state.round - 1) * 2, 0, fighter.maxEnergy);
+      const freezeStatus = fighter.statuses.find(s => s.type === "冻结");
+      fighter.energy = globalThis.campaignMode.roundEnergy(this.state.round, fighter.maxEnergy, freezeStatus ? 1 : 0);
       fighter.shield = Math.max(0, Math.round(fighter.shield * .35));
       // 冻结：能量恢复后立即生效，再tick duration
-      const freezeStatus = fighter.statuses.find(s => s.type === "冻结");
       if (freezeStatus) {
-        const reduction = 1;
-        fighter.energy = Math.max(1, fighter.energy - reduction);
-        this.log(`${fighter.name}受到冻结影响，能量恢复减少 ${reduction}。`);
+        this.log(`${fighter.name}受到冻结影响，能量恢复减少 1。`);
       }
       // 先检查控制再tick——避免禁锢的duration被减少后无法检测
       const controlStatus = fighter.statuses.find(s => s.type === "禁锢");
@@ -8787,6 +8777,7 @@
         this.log(`${fighter.name}的冻结已消退。`);
       }
       this.checkGameOver();
+      if (this.state.gameOver) return false;
       if (!fighter.skipAction) {
         const drawPenalty = drawSuppressStatus ? Math.max(1, Math.round(drawSuppressStatus.power || 1)) : 0;
         const drawAmount = Math.max(0, 5 - fighter.hand.length - drawPenalty);
@@ -8794,7 +8785,8 @@
         this.draw(fighter, drawAmount);
       }
       this.log(`${fighter.name}进入第 ${this.state.round} 回合，能量恢复到 ${fighter.energy}。`);
-      if (side === "enemy") setTimeout(() => uiRenderer.showAiDialogue("turnStart"), 180);
+      const battleState = this.state;
+      if (side === "enemy") setTimeout(() => { if (gameEngine.state === battleState) uiRenderer.showAiDialogue("turnStart"); }, 180);
     };
 
     /* HP display override: keeps old HP visible on screen until damage numbers appear */
@@ -8932,26 +8924,31 @@
           target.shield = Math.max(0, target.shield - blocked);
           damage = Math.max(0, damage - blocked);
         }
-        /* Capture summon guard HP before damage */
+        /* Capture health before damage so lifesteal cannot exceed real losses. */
+        const ownerHpBefore = target.hp;
         const guardBefore = target.summons?.find(s => s.hp > 0);
+        const guardHpBefore = guardBefore?.hp || 0;
         if (guardBefore) setHpDisplayOverride(guardBefore);
         const shared = shareOwnerDamageWithSummon(target, damage);
         target.hp = Math.max(0, target.hp - shared.ownerDamage);
+        const actualDamage = ownerHpBefore - target.hp + guardHpBefore - (shared.guard?.hp || 0);
         result.amount = shared.ownerDamage;
         result.totalDamage = damage;
         result.summonGuard = shared.guard ? { id: shared.guard.id, name: shared.guard.name, amount: shared.summonDamage, ownerId: target.id } : null;
         result.text = `${actor.name}使用「${card.name}」。\n[伤害] 造成 ${formatNumber(damage)} 点${card.element}属性伤害。${trueDamageActive ? "\n[真实伤害] 本次伤害无视护盾，直接作用于生命。" : ""}${elem.text ? "\n" + elem.text : ""}${modifierNote ? "\n" + modifierNote : ""}`;
         if (textNotes.length) result.text += "\n" + textNotes.join("\n");
-        if (card.mechanics?.includes("lifesteal")) {
-          const heal = Math.round(Math.max(1, damage) * .28);
+        if (card.mechanics?.includes("lifesteal") && actualDamage > 0) {
+          const heal = Math.round(actualDamage * .28);
           const hpBefore = actor.hp;
-          setHpDisplayOverride(actor);
-          actor.hp = Math.min(actor.maxHp, actor.hp + heal);
-          if (actor.id === "player") globalThis.campaignMode?.recordCombatEvent?.(this.state.combatStats, { type: "heal", amount: actor.hp - hpBefore });
-          result.popups.push({ type:"status heal", text:`吸血 +${formatNumber(heal)}`, side: actor.id });
-          result.text += lifestealFromTalent
-            ? `\n[吸血｜天赋] 【血契】根据实际伤害回复 ${formatNumber(heal)} 生命。`
-            : `\n[吸血｜技能] 「${card.name}」根据实际伤害回复 ${formatNumber(heal)} 生命。`;
+          if (heal > 0) {
+            setHpDisplayOverride(actor);
+            actor.hp = Math.min(actor.maxHp, actor.hp + heal);
+            if (actor.id === "player") globalThis.campaignMode?.recordCombatEvent?.(this.state.combatStats, { type: "heal", amount: actor.hp - hpBefore });
+            result.popups.push({ type:"status heal", text:`吸血 +${formatNumber(heal)}`, side: actor.id });
+            result.text += lifestealFromTalent
+              ? `\n[吸血｜天赋] 【血契】根据实际伤害回复 ${formatNumber(heal)} 生命。`
+              : `\n[吸血｜技能] 「${card.name}」根据实际伤害回复 ${formatNumber(heal)} 生命。`;
+          }
         }
         if (card.mechanics?.includes("burn")) { const st = createStatusFromMechanic("burn", card, power, actor.id); if (st) { target.statuses.push(st); result.popups.push({ type:"status debuff", text:"燃烧 2 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「燃烧」2回合：每回合开始受到火属性持续伤害。"; } }
         if (card.mechanics?.includes("freeze")) { target.statuses.push({ type:"冻结", turns:1, power:0 }); result.popups.push({ type:"status control", text:"冻结 1 回合", side: target.id }); result.text += "\n[状态施加] 目标获得「冻结」1回合：本回合能量恢复降低。"; }
@@ -9186,7 +9183,8 @@
           return true;
         }
       }
-      if (this.state?.turn === "enemy") setTimeout(() => uiRenderer.showAiDialogue("turnEnd"), 80);
+      const battleState = this.state;
+      if (this.state?.turn === "enemy") setTimeout(() => { if (gameEngine.state === battleState) uiRenderer.showAiDialogue("turnEnd"); }, 80);
       if (this.state?.turn === side) audioManager?.play(side === "player" ? "turn-end" : "turn-start");
       return originalEndTurnStandard(side);
     };
@@ -9198,31 +9196,32 @@
       if (enemy.skipAction) {
         const controlStatus = enemy.statuses.find(s => s.type === "禁锢");
         gameEngine.log(`[控制] ${enemy.name} 被${controlStatus?.type || "控制"}束缚，无法行动。`);
-        setTimeout(() => gameEngine.resolveAction({ type:"endTurn", side:"enemy" }), 650);
+        setTimeout(() => { if (gameEngine.state === state) gameEngine.resolveAction({ type:"endTurn", side:"enemy" }); }, 650);
         return;
       }
       let steps = 0;
       const loop = () => {
-        if (state.gameOver || state.turn !== "enemy") return;
+        if (gameEngine.state !== state || state.gameOver || state.turn !== "enemy") return;
         steps += 1;
         const card = this.chooseCard(enemy, state.player);
         if (!card || steps > 8) {
           if (!card && !state.gameOver) {
             gameEngine.log(`${enemy.name}没有可打牌，跳过回合（能量 ${enemy.energy}，手牌 ${enemy.hand.length} 张）。`);
           }
-          setTimeout(() => gameEngine.resolveAction({ type:"endTurn", side:"enemy" }), 650);
+          setTimeout(() => { if (gameEngine.state === state) gameEngine.resolveAction({ type:"endTurn", side:"enemy" }); }, 650);
           return;
         }
         preloadCardVisualAssets(card, "ai-before-card");
         uiRenderer.showAiDialogue(card.skillTier === "special" ? "beforeSpecial" : card.skillTier === "advanced" ? "beforeAdvanced" : "beforeCard");
         setHandHoverSuppressed(true, 700);
         setTimeout(() => {
+          if (gameEngine.state !== state) return;
           gameEngine.resolveAction({ type:"playCard", side:"enemy", cardInstanceId: card.instanceId });
           const pause = dramaTimingForCard(card).totalMin + 280;
-          setTimeout(loop, pause);
+          setTimeout(() => { if (gameEngine.state === state) loop(); }, pause);
         }, 650 + Math.floor(rng() * 450));
       };
-      setTimeout(loop, 850);
+      setTimeout(() => { if (gameEngine.state === state) loop(); }, 850);
     };
 
     const AI_DIALOGUE_BANK = {
@@ -9827,7 +9826,8 @@
       preloadCardVisualAssetsReady(card, 200).then(() => {});
       originalEffectsPlayStandard(card, result);
       const timing = dramaTimingForCard(card);
-      setTimeout(() => { this._playLock = 0; setCombatInputLocked(false); uiRenderer.render(); }, timing.totalMin + 200);
+      const battleState = gameEngine.state;
+      setTimeout(() => { if (gameEngine.state !== battleState) return; this._playLock = 0; setCombatInputLocked(false); uiRenderer.render(); }, timing.totalMin + 200);
     };
 
 
@@ -10158,19 +10158,19 @@
           <span class="orbit orbit-1"></span>${effectiveCost >= 9 ? '<span class="orbit orbit-2"></span>' : ''}${effectiveCost >= 10 ? '<span class="orbit orbit-3"></span>' : ''}
         </div>` : '';
       return `
-        <div class="card ${unplayable ? "unplayable" : ""} card-tier-${visualTier}" data-visual-tier="${visualTier}" data-instance-id="${card.instanceId || ""}" data-tier="${tier}" data-drama-tier="${dramaTierNameFor(card)}" data-cost="${effectiveCost}" data-element="${card.element}" data-effect="${card.effectType}" data-symbol="${card.mark || "✦"}" style="--c1:${c1};--c2:${c2};${frameStyle}">
+        <div class="card ${unplayable ? "unplayable" : ""} card-tier-${visualTier}" data-visual-tier="${visualTier}" data-instance-id="${escapeHtml(card.instanceId)}" data-tier="${tier}" data-drama-tier="${dramaTierNameFor(card)}" data-cost="${effectiveCost}" data-element="${escapeHtml(card.element)}" data-effect="${escapeHtml(card.effectType)}" data-symbol="${escapeHtml(card.mark || "✦")}" style="--c1:${c1};--c2:${c2};${frameStyle}">
           ${orbitHtml}
           <div class="card-top">
-            <div class="card-name">${formatCardTitle(card)}</div>
+            <div class="card-name">${escapeHtml(formatCardTitle(card))}</div>
             ${costSprite ? `<div class="card-cost" style="${costStyle}" aria-label="${effectiveCost} 能量"></div>` : `<div class="card-cost">${effectiveCost}</div>`}
           </div>
           <div class="card-meta">
-            <span class="pill">${card.element}</span>
+            <span class="pill">${escapeHtml(card.element)}</span>
             <span class="pill">${typeName}${rankText ? ` · ${rankText}` : ""}</span>
           </div>
           ${advantageHint}
           <div class="card-art card-art-v2" style="${artStyle}"></div>
-          <div class="card-desc">${card.description}</div>
+          <div class="card-desc">${escapeHtml(card.description)}</div>
         </div>`;
     };
 
@@ -10184,20 +10184,20 @@
       const advantageLine = currentAdvantageText(card, gameEngine.state?.enemy);
       const visualTier = inferVisualTier(card);
       return `
-        <div class="preview-card-title" data-visual-tier="${visualTier}"><span>${formatCardTitle(card)}</span><span>${costSprite ? `<span class="atlas-status-icon" style="--cost-sprite:url('assets/ui/sprites/${costSprite}.png')"></span>` : ""}${card.cost} 能量</span></div>
+        <div class="preview-card-title" data-visual-tier="${visualTier}"><span>${escapeHtml(formatCardTitle(card))}</span><span>${costSprite ? `<span class="atlas-status-icon" style="--cost-sprite:url('assets/ui/sprites/${costSprite}.png')"></span>` : ""}${escapeHtml(card.cost)} 能量</span></div>
         <div class="preview-card-meta">
-          <span class="pill">${card.element}</span>
+          <span class="pill">${escapeHtml(card.element)}</span>
           <span class="pill">${typeName}${rankText ? ` · ${rankText}` : ""}</span>
-          <span class="pill">${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</span>
+          <span class="pill">${escapeHtml(EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType)}</span>
         </div>
         <div class="preview-effectiveness-slot">${advantageLine ? `<div class="element-advantage-hint">${advantageLine}</div>` : ""}</div>
         <div class="preview-art-row">
           <div class="preview-art-box card-art-v2" style="${artStyle}"></div>
-          <div class="preview-card-desc" data-visual-tier="${visualTier}">${card.fullDescription || card.description}</div>
+          <div class="preview-card-desc" data-visual-tier="${visualTier}">${escapeHtml(card.fullDescription || card.description)}</div>
         </div>
-        <div class="preview-card-keywords">${(card.keywords || card.mechanics || []).slice(0, 7).map(k => `<span class="pill">${k}</span>`).join("")}</div>
-        <div class="preview-card-power">${getCardPowerLabel(card)}</div>
-        <div class="preview-detail-grid"><span class="pill">类型 ${EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType}</span><span class="pill">目标 ${target}</span><span class="pill">消耗 ${card.cost}</span></div>
+        <div class="preview-card-keywords">${(card.keywords || card.mechanics || []).slice(0, 7).map(k => `<span class="pill">${escapeHtml(k)}</span>`).join("")}</div>
+        <div class="preview-card-power">${escapeHtml(getCardPowerLabel(card))}</div>
+        <div class="preview-detail-grid"><span class="pill">类型 ${escapeHtml(EFFECT_TYPE_LABELS_CN[card.effectType] || card.effectType)}</span><span class="pill">目标 ${target}</span><span class="pill">消耗 ${escapeHtml(card.cost)}</span></div>
       `;
     };
 
