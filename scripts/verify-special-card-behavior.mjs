@@ -26,35 +26,26 @@ vm.createContext(context);
 // 确定性 rng（仅 draw/shuffle 用，便于复现）
 context.rng = (() => { let s = 0x9e3779b9; return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; })();
 
-// 从 index.html 原样抽取的真实纯函数（数值解析必须与线上一致）
-const helpers = `
-function deterministicId(prefix){ return prefix + "-" + Math.floor(rng()*0x100000000).toString(36); }
-function shuffle(list){ const copy=list.slice(); for(let i=copy.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); const t=copy[i]; copy[i]=copy[j]; copy[j]=t; } return copy; }
-function levelHp(level){ const anchors=[[1,100],[10,1000],[20,5000],[30,25000],[40,100000],[50,500000],[60,2000000],[70,12000000],[80,96000000],[90,1000000000],[100,19000000000]]; for(let i=0;i<anchors.length-1;i++){ const l1=anchors[i][0],v1=anchors[i][1],l2=anchors[i+1][0],v2=anchors[i+1][1]; if(level>=l1&&level<=l2){ const t=(level-l1)/(l2-l1); return Math.round(v1*Math.pow(v2/v1,t)); } } return anchors[anchors.length-1][1]; }
-function formatNumber(value){ const abs=Math.abs(value); if(abs>=1e9) return (value/1e9).toFixed(abs>=1e10?0:1).replace(/\\.0$/,"")+"B"; if(abs>=1e6) return (value/1e6).toFixed(abs>=1e7?0:1).replace(/\\.0$/,"")+"M"; if(abs>=1e3) return (value/1e3).toFixed(abs>=1e4?0:1).replace(/\\.0$/,"")+"K"; return String(Math.round(value)); }
-function resolveEffectAmount(effect, actor, card){
-  const base = typeof levelHp==="function" ? levelHp(actor && actor.level!=null ? actor.level : 50) : 1e6;
-  if(effect && effect.percentageOfMax && (effect.type==="heal"||effect.type==="shield")){
-    const maxHp = Number(actor && actor.maxHp) || (typeof levelHp==="function" ? levelHp(actor && actor.level!=null ? actor.level : 50) : 0);
-    return Math.max(0, Math.round(maxHp * (Number(effect.ratio)||0)));
+// 数值解析函数必须取自 index.html 的"线上真实实现"，而非测试内的副本。
+// 这样一旦线上解析器改动而测试未同步，测试会被真实行为暴露（而不是被复制到测试里的旧实现悄悄通过）。
+const indexSource = await read("index.html");
+
+// 按函数名从 index.html 抽出真实定义（括号配平，不依赖行号）。
+// 与 verify-fixed-card-library.mjs 一致：读源码 + 抽取，不内联副本。
+function extractFunction(src, name) {
+  const start = src.indexOf(`function ${name}(`);
+  if (start < 0) throw new Error("无法从 index.html 定位函数：" + name);
+  let i = src.indexOf("{", start);
+  let depth = 0;
+  for (; i < src.length; i++) {
+    const ch = src[i];
+    if (ch === "{") depth++;
+    else if (ch === "}") { depth--; if (depth === 0) { i++; break; } }
   }
-  if(effect && effect.type==="status" && Number.isFinite(effect.burnRatio)) return Math.max(0, Math.round(base*effect.burnRatio));
-  if(Number.isFinite(effect && effect.ratio)){
-    const prof = (actor && actor.profile) || {damage:1,heal:1,defense:1};
-    if(effect.type==="damage"||effect.type==="bonusDamage") return Math.max(0, Math.round(base*effect.ratio*(prof.damage||1)));
-    if(effect.type==="heal") return Math.max(0, Math.round(base*effect.ratio*(prof.heal||1)));
-    if(effect.type==="shield") return Math.max(0, Math.round(base*effect.ratio*(prof.defense||1)));
-    const multiplier = ["减伤","闪避","灵巧防御"].includes(effect.status) ? prof.defense : (effect.status==="复生"||effect.type==="revive") ? prof.heal : prof.damage;
-    return Math.max(0, Math.round(base*effect.ratio*(multiplier||1)));
-  }
-  if(Number.isFinite(effect && effect.amount)) return Math.max(0, Math.round(Number(effect.amount)||0));
-  if(Number.isFinite(card && card.power) && card.power!==0) return Math.max(0, Math.round(Number(card.power)||0));
-  return 0;
+  return src.slice(start, i);
 }
-function resolveCardEffectAmount(effect, actor, card){ return Math.max(0, Math.round(resolveEffectAmount(effect, actor, card) * (Number(card && card.effectMultiplier)||1))); }
-globalThis.resolveCardEffectAmount = resolveCardEffectAmount;
-globalThis.resolveEffectAmount = resolveEffectAmount;
-`;
+const helperNames = ["deterministicId", "shuffle", "levelHp", "formatNumber", "resolveEffectAmount", "resolveCardEffectAmount"];
+const helpers = helperNames.map(n => extractFunction(indexSource, n)).join("\n\n");
 vm.runInContext(helpers, context, { filename: "helpers-from-index" });
 
 // 加载真实战斗规则
@@ -241,8 +232,10 @@ for (const name of SPECIAL_NAMES) {
   r2.enemy.shield = 1000;
   const b2 = r2.enemy.hp;
   gameEngine.applyCard(r2.player, r2.enemy, dmgCard);
-  const lostNo = r2.enemy.hp - b2;
-  assert.ok(lostNo < lostTrue, `无真实时护盾应吸收更多伤害（无真实${lostNo} vs 真实${lostTrue}）`);
+  const lostNo = b2 - r2.enemy.hp;
+  assert.ok(lostNo >= 0, "普通伤害扣血量不应为负数");
+  assert.ok(lostNo < lostTrue, `护盾应降低普通伤害：普通 ${lostNo}，真实 ${lostTrue}`);
+  assert.ok(r2.enemy.shield < 1000, "普通伤害应消耗护盾");
 }
 
 // 递种：施加抽牌压制，且 beginTurn 抽牌数 -1
