@@ -46,7 +46,7 @@
   const isUniversal = name => UNIVERSAL_KEYWORDS.some(k => name.includes(k)) || inferElement(name) === "";
 
   // 费用 → 数值 单调曲线（费用越高数值越大）
-  const COST_MULTIPLIER = { 2:.50, 3:.66, 4:.84, 5:1.05, 6:1.30, 7:1.60, 8:2.00, 9:2.50, 10:3.10 };
+  const COST_MULTIPLIER = { 2:.50, 3:.66, 4:.84, 5:1.05, 6:1.30, 7:1.60, 8:2.00, 9:2.70, 10:3.70 };
 
   // 等级 → 高级卡费用上限：70/80/90 级对应 8/9/10 费（以此类推）
   const maxHighCost = level => level >= 90 ? 10 : level >= 80 ? 9 : level >= 70 ? 8 : 0;

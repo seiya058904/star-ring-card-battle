@@ -6384,16 +6384,16 @@
 
     function combinedProfile(race, profession) {
       const raceProfile = RACE_PROFILES[race] || RACE_PROFILES["人族"];
-      const professionProfile = PROFESSION_PROFILES[profession] || PROFESSION_PROFILES["战士"];
+      // 职业仅为背景世界观，不提供任何数值/机制加成；全部战斗属性只来自种族。
       return {
-        damage: raceProfile.damage * professionProfile.damage,
-        defense: raceProfile.defense * professionProfile.defense,
-        heal: raceProfile.heal * professionProfile.heal,
-        draw: professionProfile.draw,
-        skillRate: raceProfile.skillRate + professionProfile.skillRate,
+        damage: raceProfile.damage,
+        defense: raceProfile.defense,
+        heal: raceProfile.heal,
+        draw: 1,
+        skillRate: raceProfile.skillRate,
         elements: raceProfile.elements,
         symbol: raceProfile.symbols,
-        tags: raceProfile.tags.concat(professionProfile.baseTags)
+        tags: raceProfile.tags
       };
     }
 
@@ -8484,13 +8484,12 @@
       const elementBias = element || allowedElements[0] || "火";
       const profile = combinedProfile(race, profession);
       const basePool = (DEFAULT_BASE_CARD_NAMES.common.concat(DEFAULT_BASE_CARD_NAMES[race] || [])).filter(Boolean);
-      const styleBias = (RACE_PROFILES[race]?.tags || []).concat(PROFESSION_PROFILES[profession]?.baseTags || []);
+      const styleBias = RACE_PROFILES[race]?.tags || [];
       const chosenBase = [];
       const preferred = basePool.filter(n => styleBias.some(tag => n.includes(tag)) || character.elements?.some(e => e !== "全系" && n.includes(e)));
       const baseSource = preferred.length >= 8 ? preferred.concat(basePool) : basePool.concat(preferred);
-      const isMageLike = /法|魔|祭司|导/.test(profession);
-      const isWarriorLike = /战|剑|骑/.test(profession);
-      const baseTarget = isMageLike ? 9 : isWarriorLike ? 11 : 10;
+      // 职业仅为背景世界观，不影响卡组构成；基础牌数量固定。
+      const baseTarget = 10;
       for (let i = 0; i < baseTarget; i++) chosenBase.push(baseSource[i % baseSource.length]);
 
       const skillNames = [];
