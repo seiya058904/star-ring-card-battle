@@ -56,7 +56,12 @@ const SPECIAL_NAMES = [
   "时间回溯", "时间禁锢", "起死回生", "恶魔契约", "不灭魔躯", "绝对死亡",
   "魔法极致化", "元素圣体", "伤害真实化", "统治", "防御极致化", "锁龙", "斩魔剑", "递种"
 ];
-context.DEFAULT_SKILL_NAMES = { normal: [], advanced: [], special: SPECIAL_NAMES.slice() };
+context.DEFAULT_SKILL_NAMES = {
+  normal: [],
+  // 含一张召唤卡（领主/之主/君王 尾缀）以覆盖"召唤机制未丢失"的回归护栏
+  advanced: ["光明之主Ⅲ", "沙王领主Ⅲ", "火焰领主Ⅲ", "大地君王Ⅲ", "暗黑领主Ⅲ"],
+  special: SPECIAL_NAMES.slice()
+};
 
 const templates = [];
 const specialPlan = [
@@ -68,7 +73,7 @@ const specialPlan = [
 ];
 specialPlan.forEach((skills, i) => templates.push({
   id: "sp" + i, name: "特化" + i, title: "", race: "人族", profession: "战士",
-  level: 90, elements: ["全系"], skills
+  level: 90, elements: ["全系"], skills: i === 0 ? [...skills, "光明之主Ⅲ"] : skills
 }));
 for (let i = 0; i < 25; i += 1) templates.push({
   id: "fl" + i, name: "填充" + i, title: "", race: "人族", profession: "战士",
@@ -312,6 +317,18 @@ for (const name of SPECIAL_NAMES) {
   gameEngine.applyCard(player, enemy, findSpecial("元素圣体"));
   assert.ok(player.shield > 0, "元素圣体应给护盾");
   assert.ok(player.statuses.some(s => s.type === "增幅"), "元素圣体应增幅");
+}
+
+// 召唤卡（尾缀 领主/之主/君王）：真实 applyCard 必须生成召唤单位
+{
+  const lordCard = Object.values(lib.cards).find(c => /领主|之主|君王/.test(c.name) && c.effects.some(e => e.type === "summon"));
+  assert.ok(lordCard, "应存在带 summon 效果的领主系卡（旧固定生成器遗漏召唤判定的回归护栏）");
+  const { player, enemy } = makeFighters({ level: 1, maxHp: 5000 }, { level: 1, maxHp: 5000, hp: 5000 });
+  gameEngine.applyCard(player, enemy, lordCard);
+  assert.ok(player.summons && player.summons.length > 0, `领主卡[${lordCard.name}]应召唤单位`);
+  const summon = player.summons[0];
+  assert.ok(summon.hp > 0 && /召唤物$/.test(summon.name), `召唤物应存活且命名规范（实得 ${summon?.name}）`);
+  assert.ok(summon.maxHp > 0 && summon.power > 0, "召唤物应有生命与战力");
 }
 
 console.log("特殊卡真实行为测试通过：14 张特殊卡均生成、语义一致且经 applyCard 实际验证。");

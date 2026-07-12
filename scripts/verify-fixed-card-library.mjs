@@ -10,8 +10,11 @@ const readRepoFile = file => readFile(path.join(repositoryRoot, file), "utf8");
 const source = await readRepoFile("index.html");
 const templates = source.match(/const DEFAULT_CHARACTER_TEMPLATES = \[[\s\S]*?\n    \];/);
 assert.ok(templates, "无法读取角色模板");
+const skillNames = source.match(/const DEFAULT_SKILL_NAMES = \{[\s\S]*?\n    \};/);
+assert.ok(skillNames, "无法读取技能名清单");
 const context = { console, Date, Math };
 vm.createContext(context);
+vm.runInContext(`${skillNames[0]}; globalThis.DEFAULT_SKILL_NAMES = DEFAULT_SKILL_NAMES;`, context);
 vm.runInContext(`${templates[0]}; globalThis.DEFAULT_CHARACTER_TEMPLATES = DEFAULT_CHARACTER_TEMPLATES;`, context);
 for (const file of ["js/battle-rules.js", "js/fixed-card-library.js"]) vm.runInContext(await readRepoFile(file), context, { filename: file });
 
@@ -48,20 +51,22 @@ for (const character of fixedCardLibrary.characterDefinitions) {
       // DOT 状态（燃烧/诅咒）带 burnRatio 的是等级缩放值；带 amount 的是变体3乘数
       if (effect.burnRatio !== undefined) assert.ok(Number.isFinite(effect.burnRatio) && effect.burnRatio > 0, `${cardId} burnRatio 需正数`);
       if (effect.type === "draw" || effect.type === "energy") assert.ok(Number.isFinite(effect.amount) && effect.amount > 0, `${cardId} ${effect.type} 需要 amount`);
-      // 非 DOT 状态（增幅/减伤/闪避/连锁/虚弱，以及变体3的燃烧/诅咒乘数版本）
-      if (effect.type === "status" && effect.burnRatio === undefined) assert.ok(Number.isFinite(effect.ratio) || Number.isFinite(effect.amount), `${cardId} 非dot状态需要 ratio 或 amount`);
+      // 非 DOT 状态（增幅/减伤/闪避/连锁/虚弱，以及变体3的燃烧/诅咒乘数版本）。
+      // 二元控制类状态（禁锢/控制/真实等）只需 turns、无需数值，故 ratio/amount/turns 三者有其一只算合法。
+      if (effect.type === "status" && effect.burnRatio === undefined) assert.ok(Number.isFinite(effect.ratio) || Number.isFinite(effect.amount) || effect.turns !== undefined, `${cardId} 非dot状态需要 ratio/amount/turns 之一`);
     }
     const effectTypes = new Set(card.effects.map(effect => effect.type));
     if (/治愈|治疗|回复|急救/u.test(card.name)) assert.ok(effectTypes.has("heal") || effectTypes.has("revive"), `${cardId} 治疗名称必须有治疗效果`);
     if (/护盾|防御|屏障|壁垒|铠甲|庇护|守护|磐石/u.test(card.name)) assert.ok(effectTypes.has("shield"), `${cardId} 防御名称必须有护盾效果`);
     if (/斩|击|箭|刺|爆|裁决|穿刺|突袭|重击|刀|剑|锤|落雷|雷霆|风暴|反击/u.test(card.name)) assert.ok(effectTypes.has("damage"), `${cardId} 攻击名称必须有伤害效果`);
+    if (/领主|之主|君王/u.test(card.name)) assert.ok(effectTypes.has("summon"), `${cardId} 领主/之主/君王 名称必须是召唤效果`);
     for (const effect of card.effects) {
       if (effect.type === "status" && effect.burnRatio !== undefined) {
         assert.ok(["燃烧", "诅咒"].includes(effect.status), `${cardId} DOT 状态类型必须正确`);
         assert.ok(effect.burnRatio > 0, `${cardId} DOT 数值必须大于0`);
       }
     }
-    if (/冰|霜|寒|冻/u.test(card.name)) assert.ok(!card.effects.some(effect => effect.type === "status" && effect.status === "燃烧"), `${cardId} 冰系名称不能生成燃烧`);
+    if (card.element === "冰") assert.ok(!card.effects.some(effect => effect.type === "status" && effect.status === "燃烧"), `${cardId} 冰系元素不能生成燃烧`);
   }
   assert.equal(new Set(names).size, names.length, `${character.id} 卡牌名称必须唯一`);
 }
