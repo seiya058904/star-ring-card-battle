@@ -6865,7 +6865,9 @@
       rafId: null,
       init() {
         this.canvas = document.getElementById("effectsCanvas");
+        if (!this.canvas) return;
         this.ctx = this.canvas.getContext("2d");
+        if (!this.ctx) return;
         window.addEventListener("resize", () => this.resize());
         this.resize();
       },
@@ -6890,6 +6892,7 @@
         this.ctx.globalAlpha = 1;
       },
       resize() {
+        if (!this.canvas || !this.ctx) return;
         const rect = this.canvas.getBoundingClientRect();
         this.canvas.width = Math.max(1, rect.width * devicePixelRatio);
         this.canvas.height = Math.max(1, rect.height * devicePixelRatio);
@@ -10129,12 +10132,6 @@
 
 
     document.addEventListener("click", (event) => {
-      const codexBtn = event.target.closest("#battleCodexBtn");
-      if (codexBtn) uiRenderer.nav("deck");
-    });
-
-
-
     /* Battle v6 behavior fixes: battle codex is an overlay, not navigation away from the fight. */
     uiRenderer.openBattleCodexOverlay = function() {
       const state = gameEngine.state;
@@ -10307,7 +10304,7 @@
 
     /* Image load fallback — show real buttons if title image fails */
     document.getElementById("homeTitleImage")?.addEventListener("error", function() {
-      var container = this.closest(".home-title-screen");
+      const container = this.closest(".home-title-screen");
       if (container) container.classList.add("image-load-failed");
     });
   </script>

@@ -1,11 +1,16 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const readRepoFile = file => readFile(path.join(repositoryRoot, file), "utf8");
 
 const [html, fixedRules, campaignUi, audioManager] = await Promise.all([
-  readFile("index.html", "utf8"),
-  readFile("js/fixed-game-rules.js", "utf8"),
-  readFile("js/campaign-ui.js", "utf8"),
-  readFile("js/audio-manager.js", "utf8"),
+  readRepoFile("index.html"),
+  readRepoFile("js/fixed-game-rules.js"),
+  readRepoFile("js/campaign-ui.js"),
+  readRepoFile("js/audio-manager.js"),
 ]);
 
 const fixedScript = html.indexOf('src="js/fixed-game-rules.js"');

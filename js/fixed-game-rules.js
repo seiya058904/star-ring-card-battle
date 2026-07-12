@@ -301,7 +301,7 @@
   }
   gameEngine.endTurn = function(side) {
     const state = this.state; if (!state || state.gameOver || state.turn !== side) return false;
-    if (state.turn === side) audioManager?.play(side === "player" ? "turn-end" : "turn-start");
+    audioManager?.play(side === "player" ? "turn-end" : "turn-start");
     resolveSummonAssist(state[side]); this.checkGameOver(); if (state.gameOver) return false;
     const next = side === "player" ? "enemy" : "player"; if (side === "enemy") state.round += 1; state.turn = next;
     this.beginTurn(next); uiRenderer.render();

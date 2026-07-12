@@ -1,19 +1,24 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import path from "node:path";
 import vm from "node:vm";
+import { fileURLToPath } from "node:url";
+
+const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const readRepoFile = file => readFile(path.join(repositoryRoot, file), "utf8");
 
 const context = { console };
 vm.createContext(context);
 for (const file of ["js/battle-rules.js", "js/campaign-data.js", "js/campaign-mode.js"]) {
-  vm.runInContext(await readFile(file, "utf8"), context, { filename: file });
+  vm.runInContext(await readRepoFile(file), context, { filename: file });
 }
 
 const { campaignData, campaignMode, battleRules } = context;
-const campaignDataSource = await readFile("js/campaign-data.js", "utf8");
-const campaignUiSource = await readFile("js/campaign-ui.js", "utf8");
-const campaignModeSource = await readFile("js/campaign-mode.js", "utf8");
-const coreSource = await readFile("js/fixed-game-rules.js", "utf8");
-const htmlSource = await readFile("index.html", "utf8");
+const campaignDataSource = await readRepoFile("js/campaign-data.js");
+const campaignUiSource = await readRepoFile("js/campaign-ui.js");
+const campaignModeSource = await readRepoFile("js/campaign-mode.js");
+const coreSource = await readRepoFile("js/fixed-game-rules.js");
+const htmlSource = await readRepoFile("index.html");
 
 assert.equal(campaignData.characters.length, 6);
 assert.equal(new Set(campaignData.characters.map(({ id }) => id)).size, 6);

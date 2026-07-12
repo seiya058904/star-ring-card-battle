@@ -1,18 +1,23 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import path from "node:path";
 import vm from "node:vm";
+import { fileURLToPath } from "node:url";
 
-const source = await readFile("index.html", "utf8");
+const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const readRepoFile = file => readFile(path.join(repositoryRoot, file), "utf8");
+
+const source = await readRepoFile("index.html");
 const templates = source.match(/const DEFAULT_CHARACTER_TEMPLATES = \[[\s\S]*?\n    \];/);
 assert.ok(templates, "无法读取角色模板");
 const context = { console, Date, Math };
 vm.createContext(context);
 vm.runInContext(`${templates[0]}; globalThis.DEFAULT_CHARACTER_TEMPLATES = DEFAULT_CHARACTER_TEMPLATES;`, context);
-for (const file of ["js/battle-rules.js", "js/fixed-card-library.js"]) vm.runInContext(await readFile(file, "utf8"), context, { filename: file });
+for (const file of ["js/battle-rules.js", "js/fixed-card-library.js"]) vm.runInContext(await readRepoFile(file), context, { filename: file });
 
 const { fixedCardLibrary, battleRules } = context;
-const resolverSource = await readFile("js/fixed-game-rules.js", "utf8");
-const librarySource = await readFile("js/fixed-card-library.js", "utf8");
+const resolverSource = await readRepoFile("js/fixed-game-rules.js");
+const librarySource = await readRepoFile("js/fixed-card-library.js");
 assert.equal(fixedCardLibrary.characterDefinitions.length, 30);
 assert.equal(new Set(Object.keys(fixedCardLibrary.cards)).size, Object.keys(fixedCardLibrary.cards).length);
 for (const character of fixedCardLibrary.characterDefinitions) {
