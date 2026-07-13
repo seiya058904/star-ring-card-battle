@@ -2,11 +2,25 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
+const extractBraceBalanced = (source, signature) => {
+  const start = source.indexOf(signature);
+  const open = source.indexOf("{", start);
+  let depth = 0;
+  for (let index = open; index < source.length; index += 1) {
+    if (source[index] === "{") depth += 1;
+    if (source[index] === "}" && --depth === 0) return source.slice(start, index + 1);
+  }
+  throw new Error(`无法提取 ${signature}`);
+};
+
 const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const fixedRules = await readFile(new URL("../js/fixed-game-rules.js", import.meta.url), "utf8");
-const formatNumber = html.match(/function formatNumber\(value\) \{[\s\S]*?\n    \}/)[0];
-const describeStatus = html.match(/function describeStatus\(type, turns, power, source, maxHp\) \{[\s\S]*?\n    \}/)[0];
-const amountSource = html.match(/function resolveEffectAmount\(effect, actor, card\) \{[\s\S]*?\n    \}\n    function resolveCardEffectAmount\(effect, actor, card\) \{[\s\S]*?\n    \}/)[0];
+const formatNumber = extractBraceBalanced(html, "function formatNumber(");
+const describeStatus = extractBraceBalanced(html, "function describeStatus(");
+const amountSource = [
+  extractBraceBalanced(html, "function resolveEffectAmount("),
+  extractBraceBalanced(html, "function resolveCardEffectAmount("),
+].join("\n");
 const effectAmountSource = fixedRules.match(/const effectAmount = \(fighter, effect, card = null\) => \{[\s\S]*?\n  \};/)[0];
 const fixedDescriptionSource = fixedRules.match(/global\.fixedCardDescription = function fixedCardDescription\(card, ctx\) \{[\s\S]*?\n  \};/)[0]
   .replace("global.fixedCardDescription = function fixedCardDescription", "function fixedCardDescription")

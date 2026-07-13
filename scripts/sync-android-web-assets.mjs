@@ -1,4 +1,4 @@
-import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { copyFile, cp, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -19,6 +19,7 @@ const androidWebRoot = path.join(
 const androidIndex = path.join(androidWebRoot, "index.html");
 const androidAssets = path.join(androidWebRoot, "assets");
 const androidJs = path.join(androidWebRoot, "js");
+const rootIconNames = ["icon.png", "icon-32.png", "icon-192.png"];
 
 const viewportPattern = /<meta name="viewport"[^>]*>/;
 const androidViewport =
@@ -43,5 +44,9 @@ await cp(sourceJs, androidJs, {
   force: true,
   errorOnExist: false,
 });
+for (const iconName of rootIconNames) {
+  await copyFile(path.join(repositoryRoot, iconName), path.join(androidWebRoot, iconName));
+}
 
 console.log("Synced root web assets and injected the Android desktop viewport.");
+await import("./verify-android-web-assets.mjs");

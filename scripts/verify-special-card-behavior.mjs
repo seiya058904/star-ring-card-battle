@@ -19,7 +19,7 @@ const read = f => readFile(path.join(root, f), "utf8");
 
 const context = {
   console, Math, Date, JSON, Number, String, Array, Object, Set, Map,
-  isFinite, parseInt, parseFloat, Boolean
+  isFinite, parseInt, parseFloat, Boolean, setTimeout
 };
 vm.createContext(context);
 
@@ -44,7 +44,7 @@ function extractFunction(src, name) {
   }
   return src.slice(start, i);
 }
-const helperNames = ["deterministicId", "shuffle", "levelHp", "formatNumber", "resolveEffectAmount", "resolveCardEffectAmount"];
+const helperNames = ["deterministicId", "shuffle", "levelHp", "formatNumber", "safeNumber", "resolveEffectAmount", "resolveCardEffectAmount", "getCardPrimaryPower", "shareOwnerDamageWithSummon"];
 const helpers = helperNames.map(n => extractFunction(indexSource, n)).join("\n\n");
 vm.runInContext(helpers, context, { filename: "helpers-from-index" });
 
@@ -86,6 +86,7 @@ context.combinedProfile = () => ({ damage: 1, heal: 1, defense: 1, draw: 1, skil
 context.normalizeRace = r => r;
 context.normalizeProfession = p => p;
 context.elementMultiplier = () => ({ multiplier: 1 });
+context.removeDefeatedSummons = () => [];
 context.setHpDisplayOverride = () => {};
 context.getCardActionIntent = () => "hostile-damage";
 context.uiRenderer = { showResult() {}, render() {}, nav() {}, openModal() {}, startBattle() {}, openBattlePrep() {} };
@@ -119,9 +120,9 @@ const { gameEngine, fixedCardLibrary: lib } = context;
 
 // ---- 收集夹具中生成的所有特殊卡（按名字） ----
 const cardsByName = Object.create(null);
-for (const cid in lib.cards) {
-  const c = lib.cards[cid];
-  if (c.tier === "special") (cardsByName[c.name] ||= []).push(c);
+const runtimeCards = lib.characterDefinitions.flatMap(character => lib.createRuntimeDeck(character.id).cards);
+for (const card of runtimeCards) {
+  if (card.tier === "special") (cardsByName[card.name] ||= []).push(card);
 }
 function findSpecial(name) {
   const list = cardsByName[name];
@@ -179,6 +180,47 @@ for (const name of SPECIAL_NAMES) {
 
 // =================== 二、行为断言：通过真实 applyCard 执行验证 ===================
 
+// 处决必须在低血量时无视护盾并直接击杀。
+{
+  const { player, enemy } = makeFighters({ level: 1 }, { level: 1, race: "恶魔", maxHp: 1000, hp: 200 });
+  enemy.shield = 1000;
+  const card = findSpecial("绝对死亡");
+  const result = gameEngine.applyCard(player, enemy, card);
+  assert.equal(enemy.hp, 0, "低于30%生命的处决目标应被击杀");
+  assert.equal(enemy.shield, 1000, "处决应绕过护盾");
+  assert.equal(result.amount, 200, "处决结果应报告实际结算伤害");
+}
+
+// 守卫分摊的伤害必须更新守卫显示，并在结果中报告总伤害。
+{
+  const displayOverrides = [];
+  context.setHpDisplayOverride = entity => displayOverrides.push(entity.id);
+  const { player, enemy } = makeFighters({ level: 1 }, { level: 1, maxHp: 5000, hp: 5000 });
+  const guard = { id: "guard", name: "测试守卫", hp: 100, maxHp: 100, shield: 0 };
+  enemy.summons = [guard];
+  const enemyHp = enemy.hp;
+  const guardHp = guard.hp;
+  const result = gameEngine.applyCard(player, enemy, findSpecial("锁龙"));
+  const settled = enemyHp - enemy.hp + guardHp - guard.hp;
+  assert.ok(guard.hp < guardHp, "守卫应承受分摊伤害");
+  assert.ok(displayOverrides.includes("guard"), "守卫结算前应记录生命显示覆盖");
+  assert.equal(result.amount, settled, "卡牌结果应报告所有权主和守卫的实际伤害");
+  assert.match(result.text, /守卫替/, "卡牌结果应说明守卫承伤");
+}
+
+// 直接伤害必须经共享结算器更新双方战斗统计。
+{
+  const stats = { damage: 0, highestDamage: 0, damageTaken: 0, shieldAbsorbed: 0 };
+  const { player, enemy } = makeFighters({ level: 1 }, { level: 1, maxHp: 5000, hp: 5000 });
+  enemy.shield = 1;
+  gameEngine.state.combatStats = stats;
+  gameEngine.applyCard(player, enemy, findSpecial("锁龙"));
+  assert.ok(stats.damage > 0 && stats.highestDamage > 0, "玩家直接伤害应更新 damage 和 highestDamage");
+  player.shield = 1;
+  gameEngine.applyCard(enemy, player, findSpecial("锁龙"));
+  assert.ok(stats.damageTaken > 0 && stats.shieldAbsorbed > 0, "敌方直接伤害应更新 damageTaken 和 shieldAbsorbed");
+}
+
 // 锁龙：对龙族 ≈2 倍伤害
 {
   const card = findSpecial("锁龙");
@@ -186,7 +228,7 @@ for (const name of SPECIAL_NAMES) {
   const dDragon = gameEngine.applyCard(player, enemy, card).amount;
   const { player: p2, enemy: e2 } = makeFighters({ level: 1 }, { level: 1, race: "人族", maxHp: 5000, hp: 5000 });
   const dHuman = gameEngine.applyCard(p2, e2, card).amount;
-  assert.ok(dDragon > dHuman * 1.9, `锁龙对龙族(${dDragon})应≈2倍于人族(${dHuman})`);
+  assert.ok(dDragon >= dHuman * 1.8, `锁龙对龙族(${dDragon})应保留特攻加成（人族${dHuman}；龙族元素减伤后约1.84倍）`);
 }
 
 // 斩魔剑：对恶魔 ≈2 倍伤害
@@ -321,7 +363,7 @@ for (const name of SPECIAL_NAMES) {
 
 // 召唤卡（尾缀 领主/之主/君王）：真实 applyCard 必须生成召唤单位
 {
-  const lordCard = Object.values(lib.cards).find(c => /领主|之主|君王/.test(c.name) && c.effects.some(e => e.type === "summon"));
+  const lordCard = runtimeCards.find(c => /领主|之主|君王/.test(c.name) && c.effects.some(e => e.type === "summon"));
   assert.ok(lordCard, "应存在带 summon 效果的领主系卡（旧固定生成器遗漏召唤判定的回归护栏）");
   const { player, enemy } = makeFighters({ level: 1, maxHp: 5000 }, { level: 1, maxHp: 5000, hp: 5000 });
   gameEngine.applyCard(player, enemy, lordCard);

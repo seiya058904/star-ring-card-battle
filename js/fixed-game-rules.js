@@ -144,6 +144,7 @@
     const ownerBefore = target.hp;
     const guard = target.summons?.find(summon => summon.hp > 0);
     const guardBefore = guard?.hp || 0;
+    if (guard) setHpDisplayOverride(guard);
     const shared = instantKill ? { ownerDamage: afterShield, summonDamage: 0, guard: null } : typeof shareOwnerDamageWithSummon === "function" ? shareOwnerDamageWithSummon(target, afterShield) : { ownerDamage: afterShield, summonDamage: 0, guard: null };
     target.hp = Math.max(0, target.hp - shared.ownerDamage);
     const ownerDamage = ownerBefore - target.hp;
@@ -176,8 +177,6 @@
     const defaultIntent = typeof getCardActionIntent === "function" ? getCardActionIntent(card) : "hostile-damage";
     const statusMult = this.statusMultiplier(actor, target, card);
     let power = Math.round(safeNumber(getCardPrimaryPower(card, actor), 0) * statusMult);
-    const elem = typeof elementMultiplier === "function" ? elementMultiplier(card.element, target) : { multiplier: 1, text: "" };
-    if (defaultIntent === "hostile-damage") power = Math.round(power * elem.multiplier);
     const result = { text: `${actor.name}使用「${card.name}」。`, amount: 0, kind: card.effectType, element: card.element, tier: card.skillTier, intent: defaultIntent, actorId: actor.id, targetId: actor.id, popups: [], visualAmounts: [], visualTargets: { number: actor.id, impact: actor.id, shake: false } };
     // ═══ 种族天赋 ═══
     const textNotes = [];
@@ -196,34 +195,21 @@
         if (/星界放逐/.test(rawCardName)) damage = Math.round(damage * 1.35);
         if (card.mechanics?.includes("dragonSlayer") && target.race === "龙族") damage = Math.round(damage * 2);
         if (card.mechanics?.includes("demonSlayer") && target.race === "恶魔") damage = Math.round(damage * 2);
-        if (card.mechanics?.includes("execute") && target.hp / target.maxHp < .3) damage = Math.round(damage * 1.55);
         if (card.mechanics?.includes("chain") && target.shield <= 0) damage += Math.round(power * .3);
         const slayBonus = effect.slayRace && target.race === effect.slayRace ? (effect.slayMultiplier || 2) : 1;
         if (slayBonus > 1) damage = Math.round(damage * slayBonus);
         const trueDamage = actor.statuses.some(s => s.type === "真实" || s.type === "真实伤害");
-        if (!trueDamage && (card.effectType === "pierce" || card.mechanics?.includes("pierce"))) {
-          const pierceCut = Math.round(Math.min(target.shield, damage) * .45);
-          target.shield = Math.max(0, target.shield - pierceCut);
-        }
-        const blocked = trueDamage ? 0 : Math.min(target.shield, damage);
-        if (!trueDamage) { target.shield = Math.max(0, target.shield - blocked); damage = Math.max(0, damage - blocked); }
-        const ownerHpBefore = target.hp;
-        const guardBefore = target.summons?.find(s => s.hp > 0);
-        const guardHpBefore = guardBefore?.hp || 0;
-        if (guardBefore) setHpDisplayOverride(guardBefore);
-        const shared = typeof shareOwnerDamageWithSummon === "function" ? shareOwnerDamageWithSummon(target, damage) : { ownerDamage: damage, summonDamage: 0, guard: null };
-        target.hp = Math.max(0, target.hp - shared.ownerDamage);
-        const actualDamage = ownerHpBefore - target.hp + guardHpBefore - (shared.guard?.hp || 0);
-        result.amount += shared.ownerDamage;
-        result.visualAmounts.push({ amount: shared.ownerDamage, side: target.id, type: "damage" });
-        result.visualTargets = { number: target.id, impact: target.id, shake: shared.ownerDamage > 0 };
+        const settlement = this.resolveDamage({ source: actor, target, amount: damage, element: card.element, pierce: trueDamage ? 1 : (card.effectType === "pierce" || card.mechanics?.includes("pierce") ? .45 : 0), execute: effect.execute || card.mechanics?.includes("execute"), sourceKind: "card" });
+        result.amount += settlement.total;
+        result.visualAmounts.push({ amount: settlement.ownerDamage, side: target.id, type: "damage" });
+        result.visualTargets = { number: target.id, impact: target.id, shake: settlement.total > 0 };
         if (slayBonus > 1) result.text += ` 【对${effect.slayRace}特攻】`;
-        if (shared.guard) result.text += ` ${shared.guard.name}替${target.name}承受${formatNumber(shared.summonDamage)}伤害。`;
-        result.text += ` 造成${formatNumber(shared.ownerDamage)}伤害。`;
+        if (settlement.summonDamage) result.text += ` 守卫替${target.name}承受${formatNumber(settlement.summonDamage)}伤害。`;
+        result.text += ` 造成${formatNumber(settlement.total)}伤害。`;
         if (textNotes.length) result.text += "\n" + textNotes.join("\n");
         // 吸血
-        if (card.mechanics?.includes("lifesteal") && actualDamage > 0) {
-          const heal = Math.round(actualDamage * .28);
+        if (card.mechanics?.includes("lifesteal") && settlement.total > 0) {
+          const heal = Math.round(settlement.total * .28);
           if (heal > 0) { setHpDisplayOverride(actor); actor.hp = Math.min(actor.maxHp, actor.hp + heal); result.popups.push({ type:"status heal", text:`吸血 +${formatNumber(heal)}`, side: actor.id }); result.text += lifestealFromTalent ? `\n[血契] 吸血恢复${formatNumber(heal)}生命。` : `\n吸血恢复${formatNumber(heal)}生命。`; }
         }
         // 附加状态

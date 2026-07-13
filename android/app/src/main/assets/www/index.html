@@ -6078,10 +6078,6 @@
       scheduleImagePreload(srcs, reason);
     }
 
-    function scheduleInitialBattleAssetPreload() {
-      preloadBattleAssets(uiRenderer?.defaultDecks || [], "initial-battle-assets");
-    }
-
     function preloadCriticalAndWait(srcs, timeoutMs = 1000) {
       const unique = [...new Set((srcs || []).map(normalizeImageSrc).filter(Boolean))];
       if (!unique.length) return Promise.resolve(false);
@@ -6094,32 +6090,13 @@
 
     function collectCriticalBattleSrcs(playerDeck, enemyDeck) {
       const srcs = new Set();
-      // backgrounds
-      Object.values(ASSETS.backgrounds).forEach(v => srcs.add(v));
-      // UI atlas
+      srcs.add(battleBackgroundFor(playerDeck, enemyDeck));
       srcs.add(UI_ATLAS.src);
-      Object.keys(UI_ATLAS.sprites || {}).forEach(name => srcs.add(`assets/ui/sprites/${name}.png`));
-      // card backs
       Object.values(ASSETS.cards || {}).forEach(v => srcs.add(v));
-      // cost icons 1-10
-      for (let i = 1; i <= 10; i++) srcs.add(`assets/ui/sprites/cost${i}.png`);
-      // player & enemy unit sprites (mirrors unitSpriteFor logic)
       [playerDeck, enemyDeck].filter(Boolean).forEach(deck => {
-        const r = deck.race || "";
-        const p = deck.profession || "";
-        if (r === "龙族") srcs.add(ASSETS.units.youngDragon);
-        else if (r === "恶魔") srcs.add(ASSETS.units.demonWarrior);
-        else if (r === "兽人族") srcs.add(ASSETS.units.orcWarrior);
-        else if (p === "弓箭手" && /精灵|黑暗精灵/.test(r)) srcs.add(ASSETS.units.elfArcher);
-        else if (p === "魔法师" || /法|魔/.test(p)) srcs.add(ASSETS.units.humanMage);
-        else srcs.add(ASSETS.units.humanKnight);
+        srcs.add(unitSpriteFor(deck));
         (deck.cards || []).forEach(c => collectCardVisualAssetSrcs(c, srcs));
       });
-      // elements, skills, status icons referenced by ASSETS
-      Object.values(ASSETS.elements || {}).forEach(v => srcs.add(v));
-      Object.values(ASSETS.skills || {}).forEach(v => srcs.add(v));
-      Object.values(ASSETS.status || {}).forEach(v => srcs.add(v));
-      Object.values(ASSETS.summons || {}).forEach(v => srcs.add(v));
       return [...srcs].filter(Boolean);
     }
 
@@ -9393,7 +9370,6 @@
       this.renderHomePreview();
       this.renderDefaultDecks();
       this.renderDeckManager();
-      scheduleInitialBattleAssetPreload();
       this.showToast("标准角色卡池已锁定");
     };
 

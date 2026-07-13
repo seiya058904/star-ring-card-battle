@@ -5,6 +5,16 @@ import { fileURLToPath } from "node:url";
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const readRepoFile = file => readFile(path.join(repositoryRoot, file), "utf8");
+const extractBraceBalanced = (source, signature) => {
+  const start = source.indexOf(signature);
+  const open = source.indexOf("{", start);
+  let depth = 0;
+  for (let index = open; index < source.length; index += 1) {
+    if (source[index] === "{") depth += 1;
+    if (source[index] === "}" && --depth === 0) return source.slice(start, index + 1);
+  }
+  throw new Error(`无法提取 ${signature}`);
+};
 
 const [html, fixedRules, campaignUi, audioManager] = await Promise.all([
   readRepoFile("index.html"),
@@ -15,7 +25,7 @@ const [html, fixedRules, campaignUi, audioManager] = await Promise.all([
 
 const fixedScript = html.indexOf('src="js/fixed-game-rules.js"');
 const campaignScript = html.indexOf('src="js/campaign-ui.js"');
-const effectsPlay = html.match(/      play\(card, result\) \{[\s\S]*?\n      \},\n      textColor/)[0];
+const effectsPlay = extractBraceBalanced(html, "play(card, result) {");
 assert.ok(fixedScript >= 0 && campaignScript >= 0 && fixedScript < campaignScript, "固定规则必须先加载，战役层才能包装最终实现");
 
 assert.match(fixedRules, /result\.popups\.push\(\{ type: "status heal"/);
@@ -26,13 +36,13 @@ assert.match(fixedRules, /const expectedTarget = this\.state\?\.\[actor\.id === 
 assert.match(fixedRules, /const hasDamage = result\.visualAmounts\.some/);
 assert.match(fixedRules, /setHpDisplayOverride\(actor\);\s*setHpDisplayOverride\(target\);/);
 assert.match(html, /effect\?\.type === "status" && Number\.isFinite\(effect\?\.burnRatio\)/);
-assert.match(fixedRules, /const recipient = \["增幅", "减伤", "闪避", "连锁", "复生"\]\.includes\(effect\.status\) \? actor : target/);
+assert.match(fixedRules, /const recipient = \["增幅", "减伤", "灵巧防御", "连锁", "复生", "真实"\]\.includes\(effect\.status\) \? actor : target/);
 assert.match(fixedRules, /const shared = instantKill/);
 assert.match(html, /resolveCardEffectAmount/);
 assert.match(html, /Math\.max\(0, Math\.round\(resolveEffectAmount\(effect, actor, card\)/);
 assert.match(html, /getCardActionIntent\(card\)\.startsWith\("friendly"\) \? "自身" : "敌方单体"/);
 assert.match(html, /status: "状态"/);
-assert.match(html, /\["复生", "增幅", "减伤", "闪避", "连锁"\]/);
+assert.match(html, /\["复生", "增幅", "减伤", "闪避", "灵巧防御", "连锁", "真实"\]/);
 assert.match(html, /s\.persistent \? "本场" : s\.turns/);
 assert.match(effectsPlay, /const battleState = gameEngine\.state;\s*const battleSessionId = gameEngine\.sessionId;/);
 assert.ok((effectsPlay.match(/if \(!gameEngine\.isActiveBattle\(battleState, battleSessionId\)\) return;/g) || []).length >= 2, "特效主回调必须忽略已失效战斗");

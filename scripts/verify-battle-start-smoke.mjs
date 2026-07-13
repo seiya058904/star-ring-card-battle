@@ -2,11 +2,22 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
+const extractBraceBalanced = (source, signature) => {
+  const start = source.indexOf(signature);
+  const open = source.indexOf("{", start);
+  let depth = 0;
+  for (let index = open; index < source.length; index += 1) {
+    if (source[index] === "{") depth += 1;
+    if (source[index] === "}" && --depth === 0) return source.slice(start, index + 1);
+  }
+  throw new Error(`无法提取 ${signature}`);
+};
+
 const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
 inlineScripts.forEach((match, index) => new vm.Script(match[1], { filename: `index-inline-${index + 1}.js` }));
-const source = html.match(/start\(playerDeck, enemyDeck\) \{[\s\S]*?\n      \},\n      beginTurn/)[0].replace(/\n      \},\n      beginTurn$/, "\n}");
-const costSource = html.match(/function effectiveCardCost\(state, side, card\) \{[\s\S]*?\n    \}/)[0];
+const source = extractBraceBalanced(html, "start(playerDeck, enemyDeck)");
+const costSource = extractBraceBalanced(html, "function effectiveCardCost(");
 const context = { DEFAULT_ENEMY_NAME_POOL: { 人族: ["测试敌人"] }, pick: values => values[0], campaignMode: { effectiveCardCost: (state, side, card) => Math.max(0, card.cost - (side === "player" ? state.campaign?.costReduction || 0 : 0)) } };
 vm.createContext(context);
 vm.runInContext(costSource, context);

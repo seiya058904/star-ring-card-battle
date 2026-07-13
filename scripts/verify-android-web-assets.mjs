@@ -21,6 +21,7 @@ const androidWebRoot = path.join(
 const androidIndex = path.join(androidWebRoot, "index.html");
 const androidAssets = path.join(androidWebRoot, "assets");
 const androidJs = path.join(androidWebRoot, "js");
+const rootIconNames = ["icon.png", "icon-32.png", "icon-192.png"];
 const mainActivity = path.join(
   repositoryRoot,
   "android",
@@ -93,6 +94,10 @@ requirePath(androidIndex, "Android 版 index.html");
 requirePath(androidAssets, "Android 版 assets/");
 requirePath(androidJs, "Android 版 js/");
 requirePath(mainActivity, "Android MainActivity.kt");
+for (const iconName of rootIconNames) {
+  requirePath(path.join(repositoryRoot, iconName), `根目录图标 ${iconName}`);
+  requirePath(path.join(androidWebRoot, iconName), `Android 图标 ${iconName}`);
+}
 
 if (failures.length === 0) {
   const [sourceHtml, androidHtml, mainActivitySource] = await Promise.all([
@@ -111,6 +116,14 @@ if (failures.length === 0) {
   );
   if (normalizedAndroidHtml !== sourceHtml) {
     failures.push("Android 版 index.html 除 viewport 外与根目录 index.html 内容不一致");
+  }
+
+  for (const iconName of rootIconNames) {
+    const sourceIcon = path.join(repositoryRoot, iconName);
+    const androidIcon = path.join(androidWebRoot, iconName);
+    if ((await sha256(sourceIcon)) !== (await sha256(androidIcon))) {
+      failures.push(`Android 图标文件内容不一致：${iconName}`);
+    }
   }
 
   for (const requiredSetting of requiredWebViewSettings) {
