@@ -194,6 +194,15 @@ The Android project packages the web game into an APK with zero network dependen
 | AGP | 8.5.2 |
 | Kotlin | 1.9.24 |
 
+本机依赖路径（无需全局安装，直接引用即可）：
+- **JDK 17**: `D:\xia zai\6.15 微信小程序双版本\we xin xiao cheng xu-android-apk\toolchain\jdk\jdk-17.0.19+10`
+- **Android SDK**: `D:\xia zai\6.15 微信小程序双版本\we xin xiao cheng xu-android-apk\toolchain\android-sdk`（已在 `android/local.properties` 中配置）
+
+构建前需设置 `JAVA_HOME` 指向上述 JDK 路径：
+```bash
+export JAVA_HOME="D:/xia zai/6.15 微信小程序双版本/we xin xiao cheng xu-android-apk/toolchain/jdk/jdk-17.0.19+10"
+```
+
 Build commands:
 ```bash
 # Sync web assets to Android copy
