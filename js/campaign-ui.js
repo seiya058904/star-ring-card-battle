@@ -8,8 +8,8 @@
   let selectedStage = 1;
   const CAMPAIGN_CHARACTER_MAP = { lisaya: "human-lisaya", luolinfo: "human-luolinfo", eluxia: "elf-eluxia", moluo: "orc-moluo", heka: "demon-heka", su: "godkin-su" };
   const difficulty = () => data.difficulties[selectedDifficulty] || data.difficulties.normal;
-  const progress = () => mode.loadProgress(localStorage.getItem(progressKey), data.characters);
-  const saveProgress = value => localStorage.setItem(progressKey, JSON.stringify(value));
+  const progress = () => { try { return mode.loadProgress(localStorage.getItem(progressKey), data.characters); } catch { return mode.defaultProgress(data.characters); } };
+  const saveProgress = value => { try { localStorage.setItem(progressKey, JSON.stringify(value)); return true; } catch { return false; } };
   const character = () => data.characters.find(item => item.id === selectedCharacter) || data.characters[0];
   const stage = () => data.stages[selectedStage - 1];
   const campaignDeck = item => fixedCardLibrary.createRuntimeDeck(CAMPAIGN_CHARACTER_MAP[item.id]);

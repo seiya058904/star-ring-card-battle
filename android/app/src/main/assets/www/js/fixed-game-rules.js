@@ -505,10 +505,12 @@
     const won = state.winner === "player";
     const stats = state.combatStats || {};
     const score = global.campaignMode.scoreBattle({ victory: won, hpRatio: state.player.hp / state.player.maxHp, damageTaken: stats.damageTaken, maxHp: state.player.maxHp, healing: stats.healing, overheal: stats.overheal, rounds: state.round, difficulty: state.campaign.difficulty, revived: stats.revived });
-    const saved = global.campaignMode.loadProgress(localStorage.getItem(global.campaignMode.STORAGE_KEY), global.campaignData.characters);
+    let saved;
+    try { saved = global.campaignMode.loadProgress(localStorage.getItem(global.campaignMode.STORAGE_KEY), global.campaignData.characters); }
+    catch { saved = global.campaignMode.defaultProgress(global.campaignData.characters); }
     const next = won ? global.campaignMode.recordStageWin(saved, state.campaign.characterId, state.campaign.stage) : global.campaignMode.recordStageLoss(saved, state.campaign.characterId);
     next.recentBattles = global.campaignMode.recentBattles(next.recentBattles, [{ characterId: state.campaign.characterId, stage: state.campaign.stage, difficulty: state.campaign.difficulty, victory: won, score, rounds: state.round, time: new Date().toISOString() }]);
-    localStorage.setItem(global.campaignMode.STORAGE_KEY, JSON.stringify(next));
+    try { localStorage.setItem(global.campaignMode.STORAGE_KEY, JSON.stringify(next)); } catch { /* 存储不可用时仍展示本局结果。 */ }
     this.nav("result");
     audioManager?.play?.(won ? "victory" : "defeat");
     document.getElementById("resultTitle").textContent = won ? `战役胜利 · ${score}级评价` : `战役失败 · ${score}级评价`;
