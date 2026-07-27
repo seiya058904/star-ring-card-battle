@@ -45,6 +45,10 @@ assert.doesNotMatch(campaignModeSource, /Number\(card\.power \|\| 0\) \/ Math\.m
 assert.doesNotMatch(campaignUiSource, /(?<![\w.])effectiveCardCost\(/);
 assert.match(campaignUiSource, /mode\.effectiveCardCost\(state, "enemy", card\)/);
 assert.match(campaignUiSource, /mode\.effectiveCardCost\(state, "player", card\)/);
+assert.match(campaignUiSource, /const progress = \(\) => \{ try \{/);
+assert.match(campaignUiSource, /const saveProgress = value => \{ try \{/);
+assert.match(coreSource, /try \{ saved = global\.campaignMode\.loadProgress\(localStorage\.getItem/);
+assert.match(coreSource, /try \{ localStorage\.setItem\(global\.campaignMode\.STORAGE_KEY/);
 assert.match(htmlSource, /chooseCard\(enemy, player\)\s*\{\s*const state = gameEngine\.state/);
 assert.match(htmlSource, /function effectiveCardCost\(state, side, card\)/);
 assert.match(htmlSource, /renderCard\(card, effectiveCardCost\(gameEngine\.state, "player", card\)/);
