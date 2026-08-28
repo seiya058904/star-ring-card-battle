@@ -1,0 +1,48 @@
+name: verify
+
+on:
+  push:
+    paths:
+      - "index.html"
+      - "js/**"
+      - "scripts/**"
+      - "assets/**"
+      - "android/**"
+      - ".github/**"
+  pull_request:
+    paths:
+      - "index.html"
+      - "js/**"
+      - "scripts/**"
+      - "assets/**"
+      - "android/**"
+      - ".github/**"
+
+jobs:
+  web-android-parity:
+    name: Web verification + Android asset parity
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in js/*.js scripts/*.mjs; do
+            node --check "$file"
+          done
+
+      - name: Run verification firewall
+        shell: bash
+        run: node scripts/verify-all.mjs
+
+      - name: Check whitespace errors
+        shell: bash
+        run: git diff --check

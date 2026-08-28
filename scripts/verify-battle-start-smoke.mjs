@@ -18,7 +18,13 @@ const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script
 inlineScripts.forEach((match, index) => new vm.Script(match[1], { filename: `index-inline-${index + 1}.js` }));
 const source = extractBraceBalanced(html, "start(playerDeck, enemyDeck)");
 const costSource = extractBraceBalanced(html, "function effectiveCardCost(");
-const context = { DEFAULT_ENEMY_NAME_POOL: { 人族: ["测试敌人"] }, pick: values => values[0], campaignMode: { effectiveCardCost: (state, side, card) => Math.max(0, card.cost - (side === "player" ? state.campaign?.costReduction || 0 : 0)) } };
+const context = {
+  DEFAULT_ENEMY_NAME_POOL: { 人族: ["测试敌人"] },
+  pick: values => values[0],
+  campaignMode: { effectiveCardCost: (state, side, card) => Math.max(0, card.cost - (side === "player" ? state.campaign?.costReduction || 0 : 0)) },
+  effectsRenderer: { _playLock: 0 },
+  setCombatInputLocked: () => {},
+};
 vm.createContext(context);
 vm.runInContext(costSource, context);
 const start = vm.runInContext(`({${source}}).start`, context);

@@ -16,6 +16,7 @@ for (const file of ["js/battle-rules.js", "js/campaign-data.js", "js/campaign-mo
 const { campaignData, campaignMode, battleRules } = context;
 const campaignDataSource = await readRepoFile("js/campaign-data.js");
 const campaignUiSource = await readRepoFile("js/campaign-ui.js");
+const campaignRuntimeSource = await readRepoFile("js/campaign-runtime.js");
 const campaignModeSource = await readRepoFile("js/campaign-mode.js");
 const coreSource = await readRepoFile("js/fixed-game-rules.js");
 const htmlSource = await readRepoFile("index.html");
@@ -27,9 +28,9 @@ assert.deepEqual(Array.from([1, 2, 3, 4], round => battleRules.roundEnergy(round
 assert.match(campaignUiSource, /fixedCardLibrary\.createRuntimeDeck/);
 assert.doesNotMatch(campaignUiSource, /cardGenerator\.cardFromName/);
 assert.match(campaignUiSource, /CAMPAIGN_CHARACTER_MAP/);
-assert.match(campaignUiSource, /const sessionId = gameEngine\.sessionId/);
+assert.match(campaignRuntimeSource, /const sessionId = gameEngine\.sessionId/);
 assert.doesNotMatch(campaignUiSource, /gameEngine\.isActiveBattle\(state, state\.sessionId\)/);
-assert.match(campaignUiSource, /card\.effects\?\.some\(effect => effect\.type === "damage"\)/);
+assert.match(campaignRuntimeSource, /card\.effects\?\.some\(effect => effect\.type === "damage"\)/);
 assert.doesNotMatch(campaignUiSource, /damageTakenRatio/);
 assert.doesNotMatch(campaignUiSource, /baseCampaignResult|originalCampaignResult|originalShowResult/);
 assert.doesNotMatch(campaignUiSource, /uiRenderer\.showResult\s*=\s*function/);
@@ -37,7 +38,7 @@ assert.doesNotMatch(campaignDataSource, /combatLevel/);
 assert.doesNotMatch(campaignUiSource, /战役计算等级/);
 assert.match(campaignUiSource, /maxHpMultiplier/);
 assert.match(campaignUiSource, /effectMultiplier: tuning\.power/);
-assert.match(campaignUiSource, /actor: state\.enemy, target: state\.player/);
+assert.match(campaignRuntimeSource, /actor: state\.enemy, target: state\.player/);
 assert.match(campaignModeSource, /\["诅咒", "燃烧"\]/);
 assert.match(campaignModeSource, /resolveCardEffectAmount/);
 assert.match(campaignModeSource, /card\.effects/);

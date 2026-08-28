@@ -21,7 +21,7 @@ for (const file of ["js/battle-rules.js", "js/fixed-card-library.js"]) vm.runInC
 const { fixedCardLibrary, battleRules } = context;
 const resolverSource = await readRepoFile("js/fixed-game-rules.js");
 const librarySource = await readRepoFile("js/fixed-card-library.js");
-const makeFighterSource = resolverSource.match(/const originalMakeFighter = gameEngine\.makeFighter\.bind\(gameEngine\);[\s\S]*?\n  \};\n\n  gameEngine\.draw/)[0].replace(/\n\n  gameEngine\.draw$/, "");
+const makeFighterSource = resolverSource.match(/const originalMakeFighter = gameEngine\.makeFighter\.bind\(gameEngine\);[\s\S]*?\r?\n  \};\r?\n\r?\n  gameEngine\.draw/)[0].replace(/\r?\n\r?\n  gameEngine\.draw$/, "");
 const fighterContext = {
   normalizeRace: race => race === "神人" ? "人族" : race === "黑暗精灵" ? "精灵族" : race,
   normalizeProfession: profession => /法|魔/.test(profession) ? "魔法师" : "战士",

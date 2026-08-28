@@ -32,6 +32,32 @@ node scripts/verify-audio-library.mjs               # 音频元数据与回退
 node scripts/verify-battle-effects.mjs              # 战斗效果与覆写链
 node scripts/verify-battle-start-smoke.mjs          # 战斗启动 smoke
 node scripts/verify-campaign-display-smoke.mjs      # 战役显示 smoke
+node scripts/verify-campaign-apply-card-chain.mjs    # 战役 applyCard 集成边界特征
+node scripts/verify-campaign-play-card-chain.mjs     # 战役 playCard 集成边界特征
+node scripts/verify-campaign-turn-transition.mjs    # 战役回合过渡特征
+node scripts/verify-campaign-ai-turn.mjs            # 战役 AI 回合特征
+node scripts/verify-campaign-runtime-boundaries.mjs # 战役 tickStatuses/draw 边界特征
+node scripts/verify-campaign-rules-module.mjs      # campaign-rules 模块契约
+node scripts/verify-campaign-runtime-module.mjs     # campaign-runtime 模块契约
+node scripts/verify-renderer-ownership.mjs         # 渲染器所有权普查
+node scripts/verify-render-card.mjs                # renderCard 特征
+node scripts/verify-render-fighter.mjs            # renderFighter 特征
+node scripts/verify-render-card-preview.mjs      # renderCardPreview 特征
+node scripts/verify-render-duel-unit.mjs         # renderDuelUnit 特征
+node scripts/verify-ui-render-pipeline.mjs         # uiRenderer.render 管线
+node scripts/verify-effects-play-lock.mjs           # effectsRenderer.play lock 特征
+node scripts/audit-css-ownership.mjs             # CSS 所有权审计（诊断）
+node scripts/verify-css-ownership.mjs            # CSS 所有权校验
+node scripts/verify-battle-layout-css.mjs       # battle-layout CSS 所有权
+node scripts/verify-card-css.mjs               # card CSS 所有权
+node scripts/verify-fighter-css.mjs           # fighter CSS 所有权
+node scripts/verify-preview-css.mjs          # Preview CSS 所有权
+node scripts/verify-campaign-hud-css.mjs       # Campaign HUD CSS 所有权
+node scripts/audit-responsive-ownership.mjs         # 响应式所有权审计（诊断）
+node scripts/verify-responsive-ownership.mjs        # 响应式所有权校验
+node scripts/verify-battle-invariants.mjs           # 战斗不变式回归
+node scripts/verify-runtime-ownership.mjs           # 战斗规则所有权/覆写链检查
+node scripts/verify-all.mjs                         # 聚合全部安全只读验证
 node scripts/sync-android-web-assets.mjs            # 同步 Android 网页镜像并校验
 node scripts/verify-android-web-assets.mjs          # 只读检查镜像、素材和 WebView 设置
 .\android\gradlew.bat -p android assembleDebug      # 构建 Debug APK（需要 JDK 17 与 Android SDK）
