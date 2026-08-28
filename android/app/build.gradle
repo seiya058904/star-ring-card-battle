@@ -3,9 +3,25 @@ plugins {
     id "org.jetbrains.kotlin.android"
 }
 
+def debugKeystorePath = System.getenv("ANDROID_DEBUG_KEYSTORE")
+def debugKeystorePassword = System.getenv("ANDROID_DEBUG_KEYSTORE_PASSWORD")
+def debugKeyAlias = System.getenv("ANDROID_DEBUG_KEY_ALIAS")
+def debugKeyPassword = System.getenv("ANDROID_DEBUG_KEY_PASSWORD")
+
 android {
     namespace = "com.seiya.starcardbattle"
     compileSdk = 34
+
+    signingConfigs {
+        if (debugKeystorePath) {
+            debug {
+                storeFile new File(debugKeystorePath)
+                storePassword debugKeystorePassword
+                keyAlias debugKeyAlias
+                keyPassword debugKeyPassword
+            }
+        }
+    }
 
     defaultConfig {
         applicationId = "com.seiya.starcardbattle"
@@ -22,6 +38,14 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+    }
+
+    buildTypes {
+        debug {
+            if (debugKeystorePath) {
+                signingConfig signingConfigs.debug
+            }
+        }
     }
 }
 

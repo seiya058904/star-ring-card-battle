@@ -14,6 +14,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -24,11 +31,87 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Build debug APK
+      - name: Run canonical verification firewall
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in js/*.js scripts/*.mjs; do
+            node --check "$file"
+          done
+          node scripts/verify-all.mjs
+          git diff --check
+
+      - name: Verify tag and version consistency
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME#v}"
+          VERSION_NAME="$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' android/app/build.gradle | head -1)"
+          VERSION_CODE="$(sed -n 's/.*versionCode = \([0-9][0-9]*\).*/\1/p' android/app/build.gradle | head -1)"
+          if [ "$TAG" != "$VERSION_NAME" ]; then
+            echo "Tag v${TAG} does not match versionName ${VERSION_NAME}" >&2
+            exit 1
+          fi
+          if ! [ "$VERSION_CODE" -gt 0 ] 2>/dev/null; then
+            echo "versionCode must be a positive integer" >&2
+            exit 1
+          fi
+          MAX_PREV=0
+          for tag in $(git tag --list 'v*' --sort=version:refname); do
+            if [ "$tag" = "$GITHUB_REF_NAME" ]; then continue; fi
+            prev="$(git show "$tag:android/app/build.gradle" 2>/dev/null | sed -n 's/.*versionCode = \([0-9][0-9]*\).*/\1/p' | head -1)"
+            if [ -n "$prev" ] && [ "$prev" -gt "$MAX_PREV" ]; then MAX_PREV="$prev"; fi
+          done
+          if [ "$VERSION_CODE" -le "$MAX_PREV" ]; then
+            echo "versionCode ${VERSION_CODE} must be greater than previous max ${MAX_PREV}" >&2
+            exit 1
+          fi
+          echo "Tag/version OK: v${TAG} versionName=${VERSION_NAME} versionCode=${VERSION_CODE} previousMax=${MAX_PREV}"
+
+      - name: Reconstruct debug signing keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_DEBUG_KEYSTORE_BASE64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "Missing required secret ANDROID_DEBUG_KEYSTORE_BASE64" >&2
+            exit 1
+          fi
+          printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/android-debug.keystore"
+
+      - name: Build debug APK with stable signing identity
         working-directory: android
+        shell: bash
+        env:
+          ANDROID_DEBUG_KEYSTORE: ${{ runner.temp }}/android-debug.keystore
+          ANDROID_DEBUG_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_DEBUG_KEYSTORE_PASSWORD }}
+          ANDROID_DEBUG_KEY_ALIAS: ${{ secrets.ANDROID_DEBUG_KEY_ALIAS }}
+          ANDROID_DEBUG_KEY_PASSWORD: ${{ secrets.ANDROID_DEBUG_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
+
+      - name: Verify APK signature
+        shell: bash
+        env:
+          EXPECTED_SHA256: ${{ vars.ANDROID_DEBUG_CERT_SHA256 }}
+        run: |
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          APKSIGNER="$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)"
+          "$APKSIGNER" verify --print-certs "$APK"
+          ACTUAL="$("$APKSIGNER" verify --print-certs "$APK" | sed -n 's/.*SHA-256 digest: //p' | tr -d ':' | tr 'A-F' 'a-f')"
+          EXPECTED="$(printf '%s' "$EXPECTED_SHA256" | tr -d ':' | tr 'A-F' 'a-f')"
+          if [ -z "$EXPECTED" ]; then
+            echo "Missing required repository variable ANDROID_DEBUG_CERT_SHA256" >&2
+            exit 1
+          fi
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo "APK certificate fingerprint does not match expected certificate" >&2
+            exit 1
+          fi
+          echo "APK signature verified: $ACTUAL"
 
       - name: Rename release APK
         run: |
