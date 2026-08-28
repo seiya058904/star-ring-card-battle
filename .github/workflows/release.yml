@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Existing release tag to rebuild and update (for example v1.2.2)"
+        required: true
+        default: "v1.2.2"
 
 permissions:
   contents: write
@@ -41,11 +47,28 @@ jobs:
           node scripts/verify-all.mjs
           git diff --check
 
+      - name: Resolve release tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "push" ]; then
+            RELEASE_TAG="$GITHUB_REF_NAME"
+          else
+            RELEASE_TAG="${{ github.event.inputs.release_tag }}"
+          fi
+          if [ -z "$RELEASE_TAG" ]; then
+            echo "release_tag input is required for workflow_dispatch" >&2
+            exit 1
+          fi
+          VERSION="${RELEASE_TAG#v}"
+          echo "RELEASE_TAG=$RELEASE_TAG" >> "$GITHUB_ENV"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
       - name: Verify tag and version consistency
         shell: bash
         run: |
           set -euo pipefail
-          TAG="${GITHUB_REF_NAME#v}"
+          TAG="${RELEASE_TAG#v}"
           VERSION_NAME="$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' android/app/build.gradle | head -1)"
           VERSION_CODE="$(sed -n 's/.*versionCode = \([0-9][0-9]*\).*/\1/p' android/app/build.gradle | head -1)"
           if [ "$TAG" != "$VERSION_NAME" ]; then
@@ -58,7 +81,7 @@ jobs:
           fi
           MAX_PREV=0
           for tag in $(git tag --list 'v*' --sort=version:refname); do
-            if [ "$tag" = "$GITHUB_REF_NAME" ]; then continue; fi
+            if [ "$tag" = "$GITHUB_REF_NAME" ] || [ "$tag" = "$RELEASE_TAG" ]; then continue; fi
             prev="$(git show "$tag:android/app/build.gradle" 2>/dev/null | sed -n 's/.*versionCode = \([0-9][0-9]*\).*/\1/p' | head -1)"
             if [ -n "$prev" ] && [ "$prev" -gt "$MAX_PREV" ]; then MAX_PREV="$prev"; fi
           done
@@ -115,10 +138,18 @@ jobs:
 
       - name: Rename release APK
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
           cp android/app/build/outputs/apk/debug/app-debug.apk "star-ring-card-battle-v${VERSION}.apk"
 
       - name: Create GitHub Release
+        if: github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
           files: star-ring-card-battle-v*.apk
+
+      - name: Upload APK to existing release
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "$RELEASE_TAG" "star-ring-card-battle-v${VERSION}.apk" --clobber
