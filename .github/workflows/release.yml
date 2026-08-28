@@ -80,7 +80,7 @@ jobs:
             exit 1
           fi
           MAX_PREV=0
-          for tag in $(git tag --list 'v*' --sort=version:refname); do
+          for tag in $(git tag --list 'v[0-9]*' --sort=version:refname); do
             if [ "$tag" = "$GITHUB_REF_NAME" ] || [ "$tag" = "$RELEASE_TAG" ]; then continue; fi
             prev="$(git show "$tag:android/app/build.gradle" 2>/dev/null | sed -n 's/.*versionCode = \([0-9][0-9]*\).*/\1/p' | head -1)"
             if [ -n "$prev" ] && [ "$prev" -gt "$MAX_PREV" ]; then MAX_PREV="$prev"; fi
