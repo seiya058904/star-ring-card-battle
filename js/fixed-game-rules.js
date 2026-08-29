@@ -121,7 +121,7 @@
     return next;
   };
 
-  gameEngine.resolveDamage = function({ source, target, amount, element = "无", pierce = 0, pierceAmount = 0, execute = false, sourceKind = "card" }) {
+  gameEngine.resolveDamage = function({ source, target, amount, element = "无", pierce = 0, pierceAmount = 0, pierceAmountRatio = 0, execute = false, sourceKind = "card" }) {
     const state = this.state;
     if (!state || !target || target.hp <= 0) return { total: 0, ownerDamage: 0, summonDamage: 0, blocked: 0, dodged: false };
     let damage = rounded(amount);
@@ -136,7 +136,7 @@
     const instantKill = execute && target.hp / target.maxHp < .3;
     const pierceRatio = instantKill ? 1 : Math.max(0, Math.min(1, pierce));
     if (instantKill) damage = target.hp;
-    const bypassDamage = Math.min(damage, rounded(damage * pierceRatio) + rounded(pierceAmount));
+    const bypassDamage = Math.min(damage, rounded(damage * pierceRatio) + rounded(damage * Math.max(0, Math.min(1, pierceAmountRatio))));
     const blockableDamage = Math.max(0, damage - bypassDamage);
     const blocked = Math.min(target.shield, blockableDamage);
     target.shield = Math.max(0, target.shield - blocked);
@@ -199,7 +199,9 @@
         const slayBonus = effect.slayRace && target.race === effect.slayRace ? (effect.slayMultiplier || 2) : 1;
         if (slayBonus > 1) damage = Math.round(damage * slayBonus);
         const trueDamage = actor.statuses.some(s => s.type === "真实" || s.type === "真实伤害");
-        const settlement = this.resolveDamage({ source: actor, target, amount: damage, element: card.element, pierce: trueDamage ? 1 : (card.effectType === "pierce" || card.mechanics?.includes("pierce") ? .45 : 0), execute: effect.execute || card.mechanics?.includes("execute"), sourceKind: "card" });
+        // 卡面“其中 X 无视护盾”：按 pierceAmountRatio / 主 ratio 的比例，随本次伤害在 resolveDamage 内一次性换算为固定穿透量
+        const bypassFraction = effect.pierceAmountRatio && effect.ratio ? Math.max(0, Math.min(1, effect.pierceAmountRatio / effect.ratio)) : 0;
+        const settlement = this.resolveDamage({ source: actor, target, amount: damage, element: card.element, pierce: trueDamage ? 1 : (card.effectType === "pierce" || card.mechanics?.includes("pierce") ? .45 : 0), pierceAmountRatio: bypassFraction, execute: effect.execute || card.mechanics?.includes("execute"), sourceKind: "card" });
         result.amount += settlement.total;
         result.visualAmounts.push({ amount: settlement.ownerDamage, side: target.id, type: "damage" });
         result.visualTargets = { number: target.id, impact: target.id, shake: settlement.total > 0 };
@@ -392,6 +394,9 @@
     // 抽牌压制（递种）：回合开始时少抽牌，读取需在 tickStatuses 递减前，保证覆盖完整回合数
     const drawPenalty = fighter.statuses.filter(s => s.type === "抽牌压制").reduce((max, s) => Math.max(max, s.amount || 1), 0);
     this.tickStatuses(fighter);
+    // 回合开始是显示覆写的天然同步点：DOT/召唤分摊等在 tickStatuses 中设置的
+    // 临时 HP 覆写必须在此清零，否则 hasPendingOverrides 会卡住本回合的全部玩家输入。
+    if (typeof clearHpDisplayOverrides === "function") clearHpDisplayOverrides();
     this.checkGameOver(); if (state.gameOver) return false;
     if (!fighter.skipAction) this.draw(fighter, Math.max(0, 5 - fighter.hand.length - drawPenalty));
     if (drawPenalty && !fighter.skipAction) this.log(`[抽牌压制] ${fighter.name} 本回合少抽 ${drawPenalty} 张牌。`);
@@ -463,7 +468,8 @@
   uiRenderer.selectedDeck = uiRenderer.defaultDecks[0];
   // 固定角色模式不读取、保存或构筑本机自定义卡牌。
   if (global.storageManager) {
-    localStorage.removeItem(global.storageManager.customKey);
+    // 存储不可用时安全跳过清理，绝不中断本模块的其余覆写注册。
+    try { localStorage.removeItem(global.storageManager.customKey); } catch { /* localStorage 不可用：跳过 */ }
     global.storageManager.getCustomCards = () => [];
     global.storageManager.saveCustomCard = () => false;
   }
@@ -515,7 +521,7 @@
     audioManager?.play?.(won ? "victory" : "defeat");
     document.getElementById("resultTitle").textContent = won ? `战役胜利 · ${score}级评价` : `战役失败 · ${score}级评价`;
     document.getElementById("resultText").textContent = `${state.campaign.stage} · ${global.campaignData.stages[state.campaign.stage - 1].name}`;
-    document.getElementById("resultStats").innerHTML = [["总伤害", stats.damage], ["最高单次伤害", stats.highestDamage], ["实际治疗", stats.healing], ["过量治疗", stats.overheal], ["真实承伤", stats.damageTaken], ["回合数", state.round], ["评价", score]].map(([label, value]) => `<div class="stat-tile"><b>${formatNumber(value)}</b><span>${label}</span></div>`).join("");
+    document.getElementById("resultStats").innerHTML = [["总伤害", stats.damage], ["最高单次伤害", stats.highestDamage], ["实际治疗", stats.healing], ["过量治疗", stats.overheal], ["真实承伤", stats.damageTaken], ["回合数", state.round], ["评价", score]].map(([label, value]) => `<div class="stat-tile"><b>${typeof value === "number" ? formatNumber(value) : escapeHtml(String(value))}</b><span>${label}</span></div>`).join("");
     global.campaignResultActions?.(state, this);
   };
 })(globalThis);

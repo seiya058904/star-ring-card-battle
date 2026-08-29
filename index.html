@@ -6492,12 +6492,14 @@
         catch { return []; }
       },
       saveCustomCard(card) {
-        const cards = this.getCustomCards();
-        cards.unshift(card);
-        localStorage.setItem(this.customKey, JSON.stringify(cards.slice(0, 80)));
+        try {
+          const cards = this.getCustomCards();
+          cards.unshift(card);
+          localStorage.setItem(this.customKey, JSON.stringify(cards.slice(0, 80)));
+        } catch { /* 存储不可用时静默降级 */ }
       },
       saveCurrentDeck(deck) {
-        localStorage.setItem(this.deckKey, JSON.stringify(deck));
+        try { localStorage.setItem(this.deckKey, JSON.stringify(deck)); } catch { /* 存储不可用时静默降级 */ }
       },
       isValidStoredDeck(deck) {
         return Boolean(deck && typeof deck === "object" && !Array.isArray(deck) && typeof deck.name === "string" && deck.name.trim().length > 0 && deck.name.length <= 80 && Array.isArray(deck.cards) && deck.cards.length > 0 && deck.cards.length <= 60 && deck.cards.every(card => card && typeof card === "object" && typeof card.name === "string" && card.name.trim().length > 0 && card.name.length <= 80 && Number.isFinite(Number(card.cost)) && Number(card.cost) >= 0 && Number(card.cost) <= 10 && EFFECT_TYPES.includes(card.effectType)));
@@ -6507,7 +6509,7 @@
           const deck = JSON.parse(localStorage.getItem(this.deckKey) || "null");
           if (deck === null || this.isValidStoredDeck(deck)) return deck;
         } catch {}
-        localStorage.removeItem(this.deckKey);
+        try { localStorage.removeItem(this.deckKey); } catch { /* 存储不可用时静默降级 */ }
         return null;
       },
       getSettings() {
@@ -6515,7 +6517,7 @@
         catch { return { ...DEFAULT_GAME_SETTINGS }; }
       },
       saveSettings(settings) {
-        localStorage.setItem(this.settingsKey, JSON.stringify({ ...DEFAULT_GAME_SETTINGS, ...settings }));
+        try { localStorage.setItem(this.settingsKey, JSON.stringify({ ...DEFAULT_GAME_SETTINGS, ...settings })); } catch { /* 存储不可用时静默降级 */ }
       }
     };
 
@@ -7287,7 +7289,7 @@
         modal.setAttribute("aria-hidden", "true");
       },
 
-      openConfirm({ title, message, confirmText = "确认", cancelText = "取消", onConfirm }) {
+      openConfirm({ title, message, confirmText = "确认", cancelText = "取消", onConfirm, onCancel }) {
         this.openModal(title, `
           <p class="small-note">${message}</p>
           <div class="modal-actions">
@@ -7295,7 +7297,7 @@
             <button class="danger" id="modalConfirmBtn" type="button">${confirmText}</button>
           </div>
         `, { afterRender: () => {
-          document.getElementById("modalCancelBtn").addEventListener("click", () => this.closeModal());
+          document.getElementById("modalCancelBtn").addEventListener("click", () => { this.closeModal(); onCancel?.(); });
           document.getElementById("modalConfirmBtn").addEventListener("click", () => { this.closeModal(); onConfirm?.(); });
         }});
       },
@@ -7376,7 +7378,7 @@
             this.openSettings();
             this.showToast("已恢复默认设置");
           });
-          document.getElementById("settingsCampaignResetBtn").addEventListener("click", () => this.openConfirm({ title: "重置战役进度？", message: "六名角色的战役进度和最近记录都会清除。", confirmText: "确认重置", onConfirm: () => { localStorage.removeItem("star-ring-campaign-progress-v1"); this.showToast("战役进度已重置"); } }));
+          document.getElementById("settingsCampaignResetBtn").addEventListener("click", () => this.openConfirm({ title: "重置战役进度？", message: "六名角色的战役进度和最近记录都会清除。", confirmText: "确认重置", onConfirm: () => { try { localStorage.removeItem("star-ring-campaign-progress-v1"); this.showToast("战役进度已重置"); } catch { this.showToast("存储不可用，重置失败", "error"); } } }));
         }});
       },
 
@@ -14157,6 +14159,87 @@
   }
   .home-title-screen.image-load-failed .home-mobile-menu {
     display: flex !important;
+  }
+  /* ── ≤768px 战斗手牌专用布局：原生横向滑动触达全部手牌、结束回合独立成行不被遮挡、战役意图独立成行保持可读 ── */
+  @media (max-width: 768px) {
+    body.battle-mode .hand-dock-v3 {
+      grid-template-columns: minmax(0, 1fr) !important;
+      grid-template-rows: auto auto !important;
+      height: auto !important;
+      min-height: 0 !important;
+      gap: 8px !important;
+      padding: 6px 6px 8px !important;
+    }
+    /* 卡牌预览依赖鼠标悬停，触屏端隐藏以让位给手牌滑动区 */
+    body.battle-mode .hand-dock-v3 .card-preview-panel {
+      display: none !important;
+    }
+    body.battle-mode .hand-command-strip {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 14px !important;
+      padding: 6px 8px !important;
+    }
+    body.battle-mode .hand-command-strip #endTurnBtn {
+      width: 128px !important;
+      height: 128px !important;
+      min-width: 128px !important;
+      min-height: 128px !important;
+      background-size: 1002px 752px !important;
+      background-position: -16px -271px !important;
+    }
+    body.battle-mode .hand-dock-v3 .hand-row,
+    body.battle-mode #playerHand {
+      height: 372px !important;
+      min-height: 372px !important;
+      max-height: 372px !important;
+      padding: 22px 10px 10px !important;
+      gap: 10px !important;
+      justify-content: flex-start !important;
+      align-items: center !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-x;
+      scroll-snap-type: x proximity;
+      z-index: auto !important;
+    }
+    body.battle-mode .hand-dock-v3 #playerHand .card {
+      scroll-snap-align: start;
+      flex-shrink: 0 !important;
+    }
+    body.battle-mode .battle-layout-v3 {
+      grid-template-rows: auto minmax(0, 1fr) auto !important;
+      height: 100vh !important;
+      min-height: 100vh !important;
+      max-height: 100vh !important;
+      overflow: hidden !important;
+    }
+    body.battle-mode .battle-stage-v3 {
+      grid-template-columns: minmax(0, 1fr) !important;
+      grid-template-rows: minmax(0, 1fr) auto !important;
+    }
+    body.battle-mode .duel-unit {
+      width: 128px !important;
+    }
+    body.battle-mode .duel-unit .unit-sprite {
+      width: 128px !important;
+    }
+    body.battle-mode .duel-unit.player-unit {
+      left: 4% !important;
+      bottom: 8% !important;
+    }
+    body.battle-mode .duel-unit.enemy-unit {
+      right: 4% !important;
+      bottom: 12% !important;
+    }
+    body.battle-mode .log-panel-v3 {
+      max-height: 64px !important;
+    }
+    .campaign-hud { flex-wrap: wrap; row-gap: 3px; padding: 6px 8px; }
+    .campaign-intent { flex: 1 1 100%; }
   }
   body.home-mode .home-title-screen.image-load-failed {
     background: linear-gradient(135deg, #1a1108, #0d0804);

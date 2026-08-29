@@ -26,7 +26,7 @@ const jsStyleWrites = (html.match(/\.style\./g) || []).length;
 
 assert.ok(importantCount < 5000, `!important 数量应低于 5000（当前 ${importantCount}）`);
 assert.ok(importantCount > 0, `!important 数量应大于 0（当前 ${importantCount}）`);
-assert.equal(mediaCount, 20, `@media 区域应为 20（当前 ${mediaCount}）`);
+assert.equal(mediaCount, 21, `@media 区域应为 21（当前 ${mediaCount}；含 ≤768px 战斗手牌专用断点）`);
 assert.ok(keyframesCount >= 50, `@keyframes 数量应不少于 50（当前 ${keyframesCount}）`);
 assert.ok(inlineStyleAttrs > 20, `内联 style 属性应存在（当前 ${inlineStyleAttrs}）`);
 assert.ok(jsStyleWrites > 20, `JS .style 写入应存在（当前 ${jsStyleWrites}）`);

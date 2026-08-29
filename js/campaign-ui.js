@@ -16,11 +16,20 @@
   const character = () => data.characters.find(item => item.id === selectedCharacter) || data.characters[0];
   const stage = () => data.stages[selectedStage - 1];
   const campaignDeck = item => fixedCardLibrary.createRuntimeDeck(CAMPAIGN_CHARACTER_MAP[item.id]);
+  // 第五关 Boss（level 100 元祖龙神）防御经济定标：以审计实测面板为基准，
+  // damage/defense/heal 三因子直接作用于战斗 profile（伤害、固定减伤、护盾、治疗全链路）。
+  const STAGE5_BOSS_TUNING = { hp: .07, damage: .09, defense: .004, heal: .01 };
+
   const enemyDeck = currentStage => {
     const source = fixedCardLibrary.characterDefinitions.find(item => item.name === currentStage.enemyName) || fixedCardLibrary.charactersById["dragon-yemosu"];
     const deck = fixedCardLibrary.createRuntimeDeck(source.id);
     const tuning = difficulty();
-    deck.maxHpMultiplier = tuning.hp;
+    // 第五关首领战专项调参：审计实测 levelHp(100) 指数曲线使 Boss 生命 29.45B、
+    // 每回合伤害 1~2B、护盾 0.6B~4.7B 不衰减、固定减伤 ~770M，首领二阶段真实不可达。
+    // 生命压缩走 maxHpMultiplier；伤害/防御/治疗压缩在 startCampaign 中按 profile 统一缩放，
+    // 保留敌方行为、星环共鸣与首领阶段机制，使战斗“难但可通过合理游玩获胜”。
+    const bossTuning = currentStage.id === "ancestral-dragon" ? STAGE5_BOSS_TUNING : null;
+    deck.maxHpMultiplier = tuning.hp * (bossTuning ? bossTuning.hp : 1);
     deck.cards = deck.cards.map(card => ({ ...card, effectMultiplier: tuning.power }));
     return deck;
   };
@@ -36,12 +45,21 @@
     document.querySelectorAll("[data-campaign-stage]").forEach(button => button.onclick = () => { selectedStage = Number(button.dataset.campaignStage); renderCampaignHome(); });
     document.getElementById("campaignCloseBtn").onclick = () => uiRenderer.closeModal();
     document.getElementById("campaignStartBtn").onclick = startCampaign;
-    document.getElementById("campaignResetBtn").onclick = () => uiRenderer.openConfirm({ title: "重置战役进度？", message: "六名角色的首章进度和最近战斗记录都会清除。", confirmText: "确认重置", onConfirm: () => { saveProgress(mode.defaultProgress(data.characters)); selectedStage = 1; renderCampaignHome(); } });
+    document.getElementById("campaignResetBtn").onclick = () => uiRenderer.openConfirm({ title: "重置战役进度？", message: "六名角色的首章进度和最近战斗记录都会清除。", confirmText: "确认重置", onConfirm: () => { saveProgress(mode.defaultProgress(data.characters)); selectedStage = 1; renderCampaignHome(); }, onCancel: () => renderCampaignHome() });
   }
   function startCampaign() {
     const player = character(); const currentStage = stage(); const state = gameEngine.start(campaignDeck(player), enemyDeck(currentStage));
     state.gameMode = "campaign"; state.campaign = { characterId: player.id, stage: selectedStage, difficulty: selectedDifficulty, playerRing: 0, enemyRing: 0, resonanceUsed: false, enemyResonanceUsed: false, costReduction: 0, enemyCostReduction: 0, intent: null, passiveTriggers: 0, passives: { turn: {}, match: {}, round: 0 } };
     state.enemy.name = currentStage.enemyName; state.enemy.campaignStyle = currentStage.style;
+    // 第五关首领战：按 STAGE5_BOSS_TUNING 缩放战斗 profile（伤害/固定减伤/护盾/治疗全链路各只缩放一次）。
+    if (currentStage.id === "ancestral-dragon" && state.enemy?.profile) {
+      state.enemy.profile = {
+        ...state.enemy.profile,
+        damage: (state.enemy.profile.damage || 1) * STAGE5_BOSS_TUNING.damage,
+        defense: (state.enemy.profile.defense || 1) * STAGE5_BOSS_TUNING.defense,
+        heal: (state.enemy.profile.heal || 1) * STAGE5_BOSS_TUNING.heal,
+      };
+    }
     const enemyEnergy = battleRules.roundEnergy(state.round, state.enemy.maxEnergy); const openingPlan = mode.intentFor(state.enemy.hand.map(card => ({ ...card, effectiveCost: mode.effectiveCardCost(state, "enemy", card) })), enemyEnergy, state.enemy.campaignStyle, { actor: state.enemy, target: state.player, playerLowHp: state.player.hp / state.player.maxHp < .3, enemyLowHp: state.enemy.hp / state.enemy.maxHp < .35, handSize: state.enemy.hand.length, playerHasCurse: state.player.statuses.some(status => status.type === "诅咒") }); state.campaign.intent = { type: openingPlan.type, cardInstanceId: openingPlan.card?.instanceId || "", description: `${state.enemy.name}正在准备${openingPlan.type}。`, generatedRound: state.round };
     // 难度倍率已写入敌方卡组和生命，玩家仍使用角色真实等级。
     state.campaignStats = state.combatStats;
