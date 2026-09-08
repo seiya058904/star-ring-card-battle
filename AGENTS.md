@@ -19,6 +19,11 @@
 
 网页资源必须保持相对`assets/...`路径，以同时兼容本地静态服务器、GitHub Pages 和`WebViewAssetLoader`。根网页、`assets/`、`js/`及根图标发生 Android 相关变更时，先改权威根文件，再使用同步脚本生成镜像。
 
+## 稳定规则（勿轻易改动）
+
+- Stage 5 首领战平衡已定版为 `campaign-ui.js` 的 `STAGE5_BOSS_TUNING = { hp:.07, damage:.09, defense:.004, heal:.01 }`（按敌方 profile 缩放）。**无新证据不要重新调参，也不要把小数值当 bug 修。**
+- `pierceAmountRatio` 按卡面比例随本次伤害在 `resolveDamage` 内一次性换算为固定穿透量；这是已确认的结算语义。
+
 ## Build, Test & Development Commands
 
 只记录已有命令；运行前按任务授权：
@@ -98,7 +103,7 @@ node scripts/verify-android-web-assets.mjs          # 只读检查镜像、素�
 
 The user's shared long-term AI context lives at `D:\xia zai\AI project\Knowledge`.
 
-For substantial work, read `Knowledge\AGENTS.md`, locate this project in `Knowledge\01-Projects\Repository-Index.md`, then read this project's Project Page and `AI-HANDOFF.md`. Read `CONTEXT-HISTORY.md` only when historical decisions, rejected directions, architecture rationale, prior user instructions, or redesign context matters. This repository's current files and Git state are the source of truth when they conflict with Knowledge. Follow Minimum Necessary Context; do not load the entire Vault by default.
+This repository's `AGENTS.md` / `CLAUDE.md` / docs and Git state are the source of truth for this project's long-term context. The user's shared cross-project reusable knowledge (prompts, protocols, workflows) lives at `D:\xia zai\AI project\Knowledge`; consult its `AGENTS.md` only when the task needs one of those reusable items or to locate this project's repository. Do not mirror project context back into Knowledge — it is a collection, not project memory.
 
 When the user explicitly says the project/task is ready to “收工” or gives an equivalent finalization instruction, read and follow `D:\xia zai\AI project\Knowledge\02-AI\Prompts\项目收工提示词.md`. This trigger does not expand current task permissions; do not merge, deploy, force-push, resolve remote conflicts, or modify unrelated files unless separately authorized.
 
