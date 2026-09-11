@@ -70,6 +70,17 @@ node scripts/verify-android-web-assets.mjs          # 只读检查镜像、素�
 
 仓库没有`package.json`、通用测试框架、formatter 或 type-check 命令；不要臆造 npm 命令。同步会写入 Android 镜像，只在 Android 交付需要时运行。commit、push、合并、部署、Release、数据库写入和签名操作均需明确授权。
 
+## 依赖来源与地址（记忆）
+
+- Android Gradle Wrapper：版本与下载地址见`android/gradle/wrapper/gradle-wrapper.properties`，当前为 Gradle 8.7：<https://services.gradle.org/distributions/gradle-8.7-bin.zip>。优先使用仓库内`android/gradlew.bat`，不要手动猜测或升级 Gradle。
+- Android Gradle Plugin：`android/build.gradle` 当前为 8.5.2；插件解析源为 Google Maven、Maven Central、Gradle Plugin Portal，配置见`android/settings.gradle`。
+- Kotlin Gradle Plugin：`android/build.gradle` 当前为 1.9.24；解析源同上。
+- AndroidX WebKit：`android/app/build.gradle` 当前依赖`androidx.webkit:webkit:1.11.0`，来源为 Google Maven：<https://dl.google.com/dl/android/maven2/androidx/webkit/webkit/1.11.0/>。
+- Android SDK：应用使用 `compileSdk = 34`、`targetSdk = 34`、`minSdk = 23`；本地安装入口见 Android 官方命令行工具：<https://developer.android.com/studio#command-tools>。
+- JDK：Android 构建需要 JDK 17；GitHub Release 使用 Temurin 17（`.github/workflows/release.yml` 的`actions/setup-java@v4`），本地可从 Adoptium 获取：<https://adoptium.net/temurin/releases/?version=17>。
+- Windows NSIS（可选安装包依赖）：本机目录为 `D:\xia zai\NSIS`，编译器为 `D:\xia zai\NSIS\Bin\makensis.exe`；官方获取入口：<https://nsis.sourceforge.io/Download>。仓库当前没有 NSIS 脚本或 workflow 接入，只有明确需要 Windows 安装包时才使用。
+- 依赖版本变更前，先同步检查`android/build.gradle`、`android/settings.gradle`、`android/app/build.gradle`、Wrapper 配置和 Release workflow；不要把 APK、keystore、`local.properties` 或构建缓存提交进仓库。
+
 ## Coding Style & Naming Conventions
 
 遵循相邻代码：JavaScript 用`const`、camelCase、两空格缩进；Kotlin 用四空格。UI 文案以中文为主。保持 seeded randomness、存储键、固定 30 张卡组规则、卡牌数值与 Android/Web 兼容性；未明确要求不得改变平衡、角色设定或职业/种族规则。不要自动格式化`index.html`。
