@@ -415,3 +415,161 @@ function freshTurn(state, characterId) {
 }
 
 console.log("战役 applyCard 集成边界特征测试通过：沙盒隔离、玩家/敌方被动、Boss 阶段、单次结算均符合当前行为。");
+
+// Issue #6–#9: real fixed cards, independent numerical expectations.
+for (const name of ["DEFAULT_CHARACTER_TEMPLATES", "DEFAULT_SKILL_NAMES"]) {
+  const declaration = indexSource.match(new RegExp(`const ${name} = [\\s\\S]*?\\n    [\\]\\}];`))[0];
+  vm.runInContext(`${declaration}; globalThis.${name} = ${name};`, context);
+}
+vm.runInContext(await read("js/fixed-card-library.js"), context);
+const runtimeCards = context.fixedCardLibrary.characterDefinitions.flatMap(c => context.fixedCardLibrary.createRuntimeDeck(c.id).cards);
+const fixedCard = name => structuredClone(runtimeCards.find(c => c.baseName === name || c.name === name));
+const failures = [];
+function regression(name, run) {
+  try { run(); } catch (error) { failures.push(`${name}: ${error.message}`); }
+}
+function neutral(characterId) {
+  const state = startCampaignState(characterId || "none");
+  if (!characterId) delete state.campaign;
+  for (const fighter of [state.player, state.enemy]) {
+    Object.assign(fighter, { level: 50, hp: 500000, maxHp: 500000, race: "中立", energy: 10, talentUsed: true, profile: { damage: 1, heal: 1, defense: 1 } });
+  }
+  context.elementMultiplier = () => ({ multiplier: 1 });
+  return state;
+}
+function hit(state, card = fixedCard("普通攻击")) {
+  return gameEngine.applyCard(state.player, state.enemy, card).visualAmounts.filter(item => item.type === "damage").reduce((sum, item) => sum + item.amount, 0);
+}
+for (const [type, side, expected] of [["增幅", "player", 13200], ["连锁", "player", 13200], ["虚弱", "enemy", 13200], ["减伤", "enemy", 9600]]) {
+  regression(`#6 ${type}`, () => {
+    const state = neutral();
+    state[side].statuses = [{ type, unit: "fixed", power: 1800, turns: 2, charges: 1 }];
+    assert.equal(hit(state), expected);
+    assert.equal(state[side].statuses.length, 0);
+    assert.equal(hit(state), 11400);
+  });
+}
+regression("#6 units and fixed-card compatibility", () => {
+  const state = neutral();
+  gameEngine.applyStatus(state.enemy, { status: "减伤", unit: "fixed", power: 1800, turns: 2, charges: 2 });
+  gameEngine.applyStatus(state.enemy, { status: "减伤", unit: "fixed", power: 900, turns: 3, charges: 3 });
+  gameEngine.applyStatus(state.enemy, { status: "减伤", unit: "ratio", power: .1, turns: 2 });
+  assert.equal(state.enemy.statuses.length, 2);
+  assert.equal(hit(state), 8460);
+});
+regression("#6 level scaling and elemental order", () => {
+  for (const level of [1, 50, 100]) for (const points of [2, 1800, 9000]) {
+    const state = neutral(); state.player.level = level;
+    state.enemy.hp = state.enemy.maxHp = 1e15;
+    state.player.statuses = [{ type: "增幅", unit: "fixed", power: points, turns: 2 }];
+    assert.equal(hit(state), Math.round(context.levelHp(level) * .0228) + points);
+  }
+  for (const [element, multiplier, expected] of [["火", 1.2, 11520], ["冰", .8, 7680]]) {
+    const state = neutral();
+    context.elementMultiplier = () => ({ multiplier });
+    state.enemy.statuses = [{ type: "减伤", unit: "fixed", power: 1800, turns: 2 }];
+    assert.equal(hit(state, { ...fixedCard("普通攻击"), element }), expected);
+  }
+});
+for (const [multiplier, expected] of [[.9, 10260], [1, 11400], [1.06, 12084], [1.15, 13110]]) regression(`#7 multiplier ${multiplier}`, () => {
+  assert.equal(hit(neutral(), { ...fixedCard("普通攻击"), effectMultiplier: multiplier }), expected);
+});
+regression("#7 each damage effect", () => {
+  const card = fixedCard("普通攻击");
+  card.effects = [{ type: "shield", amount: 700 }, { type: "damage", amount: 1000 }, { type: "damage", amount: 2000 }];
+  assert.equal(hit(neutral(), card), 3000);
+});
+for (const [id, factor, element] of [["luolinfo", 1.15, "雷"], ["su", 1.1, "光"], ["moluo", 1.12, "火"]]) regression(`#7 ${id} damage-only`, () => {
+  const candidates = runtimeCards.filter(c => c.effects.some(e => e.type === "damage") && c.effects.some(e => ["shield", "heal", "status"].includes(e.type)));
+  for (const kind of ["shield", "heal", "status"]) {
+    // Current runtime decks have damage+shield/status, but no damage+heal card.
+    // Compose the latter from actual fixed attack/heal effects to cover that interface.
+    const source = kind === "heal" ? { ...fixedCard("普通攻击"), effects: [...fixedCard("普通攻击").effects, ...fixedCard("急救").effects] } : candidates.find(c => c.effects.some(e => e.type === kind));
+    assert.ok(source, `复合牌 ${kind}`);
+    const run = enabled => {
+      const state = neutral(id); state.player.hp = 200000;
+      if (!enabled) { state.campaign.characterId = "none"; }
+      const card = { ...structuredClone(source), element, effectMultiplier: 1.06 };
+      const result = hit(state, card);
+      assert.equal(card.effectMultiplier, 1.06);
+      assert.equal(card.damageMultiplier, undefined);
+      return { result, hp: state.player.hp, shield: state.player.shield, statuses: JSON.stringify([state.player.statuses, state.enemy.statuses]) };
+    };
+    const base = run(false), boosted = run(true);
+    assert.equal(boosted.result, Math.round(base.result * factor));
+    assert.equal(boosted.hp, base.hp); assert.equal(boosted.shield, base.shield); assert.equal(boosted.statuses, base.statuses);
+  }
+});
+regression("#8 talents and mechanics isolation", () => {
+  let state = neutral(); state.player.race = "兽人族"; state.player.hp = 200000;
+  assert.equal(hit(state), 12768);
+  state = neutral(); state.player.race = "恶魔"; state.player.hp = 200000;
+  const card = fixedCard("普通攻击"), mechanics = JSON.stringify(card.mechanics);
+  assert.equal(hit(state, card), 11400); assert.equal(state.player.hp, 203192); assert.equal(JSON.stringify(card.mechanics), mechanics);
+  state.player.hp = 499999; hit(state, card); assert.equal(state.player.hp, 500000);
+  state.player.hp = 200000; state.enemy.shield = 100000; hit(state, card); assert.equal(state.player.hp, 200000);
+  state = neutral(); state.enemy.race = "精灵族"; state.enemy.turnFlags.firstHit = true;
+  assert.equal(hit(state), 10032); assert.equal(state.enemy.turnFlags.firstHit, false); assert.equal(hit(state), 11400);
+  gameEngine.beginTurn("enemy"); assert.equal(state.enemy.turnFlags.firstHit, true);
+  state = neutral(); state.enemy.race = "精灵族"; state.enemy.turnFlags.firstHit = true;
+  hit(state, fixedCard("格挡")); hit(state, fixedCard("急救")); hit(state, fixedCard("战术调整"));
+  assert.equal(state.enemy.turnFlags.firstHit, true);
+});
+regression("#8 unchanged race modifiers", () => {
+  for (const [race, expected] of [["龙族", 10488], ["黑暗精灵", 11970], ["神人", 10260]]) {
+    const state = neutral(); state.enemy.race = race;
+    assert.equal(hit(state, { ...fixedCard("普通攻击"), element: "火" }), expected);
+  }
+  const state = neutral(); state.player.race = "神人"; assert.equal(hit(state), 12540);
+});
+regression("#9 real playCard resource accounting", () => {
+  for (const name of ["战术调整", "魔力恢复"]) for (const race of ["中立", "精灵族"]) {
+    const state = neutral(), card = fixedCard(name); state.player.race = race;
+    state.player.energy = 4 + card.cost; state.player.hand = [card];
+    state.player.drawPile = Array.from({ length: 8 }, (_, i) => ({ ...fixedCard("普通攻击"), instanceId: `draw-${i}` }));
+    assert.equal(gameEngine.playCard("player", card.instanceId), true);
+    assert.equal(state.player.energy, name === "魔力恢复" ? 5 : 4);
+    assert.equal(state.player.hand.length, (name === "魔力恢复" ? 1 : 2) + (race === "精灵族" ? 1 : 0));
+  }
+});
+regression("#6 combined flat effects, shield, pierce and summon sharing", () => {
+  const state = neutral();
+  state.player.statuses = ["增幅", "连锁"].map(type => ({ type, unit: "fixed", power: 1800, turns: 2, charges: 1 }));
+  state.enemy.statuses = ["虚弱", "减伤"].map(type => ({ type, unit: "fixed", power: 1800, turns: 2, charges: 1 }));
+  state.enemy.shield = 20000;
+  state.enemy.summons = [{ name: "护卫", hp: 10000, maxHp: 10000 }];
+  const card = fixedCard("普通攻击");
+  card.effects[0].pierceAmountRatio = .0114; // half of this damage effect's .0228 ratio
+  const result = gameEngine.applyCard(state.player, state.enemy, card);
+  // 11400 + 3*1800 - 1800 = 15000; half bypasses, then half of 7500 goes to the guard.
+  assert.equal(result.amount, 7500);
+  assert.equal(state.enemy.hp, 496250); assert.equal(state.enemy.summons[0].hp, 6250); assert.equal(state.enemy.shield, 12500);
+  assert.equal(state.player.statuses.length + state.enemy.statuses.length, 0);
+});
+regression("#8 DOT/summon do not gain attack talents", () => {
+  const state = neutral(); state.player.race = "恶魔"; state.player.hp = 200000;
+  state.enemy.race = "精灵族"; state.enemy.turnFlags.firstHit = true;
+  for (const sourceKind of ["dot", "summon"]) {
+    assert.equal(gameEngine.resolveDamage({ source: state.player, target: state.enemy, amount: 1000, sourceKind }).total, 1000);
+    assert.equal(state.player.hp, 200000); assert.equal(state.enemy.turnFlags.firstHit, true);
+  }
+  state.enemy.statuses = [{ type: "减伤", unit: "fixed", power: 500, turns: 1, charges: 1 }];
+  gameEngine.tickStatuses(state.enemy);
+  assert.equal(state.enemy.statuses.length, 0, "过期状态不参与结算");
+});
+regression("#9 draw/energy boundaries", () => {
+  for (const race of ["中立", "精灵族"]) for (const amount of [0, 1, 2]) for (const energy of [false, true]) {
+    const state = neutral(); state.player.race = race; state.player.energy = 9;
+    const card = fixedCard("战术调整");
+    card.effects = [{ type: "draw", amount }, ...(energy ? [{ type: "energy", amount: 1 }] : [])];
+    state.player.hand = Array.from({ length: 8 }, (_, i) => ({ ...fixedCard("普通攻击"), instanceId: `full-${i}` }));
+    state.player.drawPile = [fixedCard("普通攻击")];
+    hit(state, card);
+    assert.equal(state.player.hand.length, 8); assert.equal(state.player.energy, energy ? 10 : 9);
+    assert.equal(state.player.hand.length + state.player.drawPile.length + state.player.discardPile.length, 9);
+    state.player.hand = []; state.player.drawPile = []; state.player.discardPile = [];
+    hit(state, card); assert.equal(state.player.hand.length, 0); assert.equal(state.player.energy, energy ? 10 : 9);
+  }
+});
+assert.deepEqual(failures, [], failures.join("\n"));
+console.log("Issue #6–#9 数值及资源合同回归通过。");

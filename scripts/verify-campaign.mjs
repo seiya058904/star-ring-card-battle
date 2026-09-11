@@ -14,6 +14,27 @@ for (const file of ["js/battle-rules.js", "js/campaign-data.js", "js/campaign-mo
 }
 
 const { campaignData, campaignMode, battleRules } = context;
+// A valid JSON document can contain invalid optional history entries.
+{
+  const saved = campaignMode.defaultProgress(campaignData.characters);
+  const id = campaignData.characters[0].id;
+  saved.characters[id].unlockedStage = 5;
+  const valid = { characterId: id, stage: 3, victory: true, score: "A", rounds: 8 };
+  saved.recentBattles = [null, valid, [], "bad", {}, { ...valid, score: "<img>" }, { ...valid, rounds: -1 }, { ...valid, victory: "yes" }];
+  const loaded = campaignMode.loadProgress(JSON.stringify(saved), campaignData.characters);
+  assert.equal(loaded.characters[id].unlockedStage, 5);
+  assert.equal(loaded.recentBattles.length, 1, "坏战绩必须逐项过滤，保留合法记录");
+  assert.equal(loaded.recentBattles[0].score, "A");
+  saved.recentBattles = [null, ...Array.from({ length: 25 }, (_, rounds) => ({ ...valid, rounds, difficulty: "hard", time: "2026-09-11T00:00:00Z", extra: "discard" }))];
+  const bounded = campaignMode.loadProgress(JSON.stringify(saved), campaignData.characters).recentBattles;
+  assert.equal(bounded.length, 20); assert.equal(bounded[0].rounds, 0); assert.equal(bounded[19].rounds, 19);
+  assert.equal(bounded[0].difficulty, "hard"); assert.equal(bounded[0].extra, undefined);
+  assert.equal(bounded[0].time, "2026-09-11T00:00:00.000Z");
+  for (const patch of [{ characterId: "unknown" }, { stage: 0 }, { stage: 6 }, { stage: "1" }, { rounds: 1.5 }, { rounds: Number.MAX_SAFE_INTEGER + 1 }]) {
+    saved.recentBattles = [{ ...valid, ...patch }];
+    assert.equal(campaignMode.loadProgress(JSON.stringify(saved), campaignData.characters).recentBattles.length, 0);
+  }
+}
 const campaignDataSource = await readRepoFile("js/campaign-data.js");
 const campaignUiSource = await readRepoFile("js/campaign-ui.js");
 const campaignRuntimeSource = await readRepoFile("js/campaign-runtime.js");

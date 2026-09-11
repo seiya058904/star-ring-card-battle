@@ -30,6 +30,8 @@ vm.createContext(context);
 vm.runInContext(`${formatNumber}\n${describeStatus}\n${amountSource}\n${effectAmountSource}\n${fixedDescriptionSource}`, context);
 
 assert.match(context.describeStatus("增幅", null, 40_000), /额外造成 40K 点伤害/);
+assert.match(context.describeStatus("减伤", 3, .1, "兼容卡", null, "ratio"), /受到伤害降低 10%/);
+assert.match(context.describeStatus("减伤", 3, 1800, "固定卡", null, "fixed"), /减少 .* 点伤害/);
 assert.match(context.describeStatus("复生", null, 420_000), /致命伤害时恢复 420K 生命/);
 assert.equal(context.resolveCardEffectAmount({ type: "shield", ratio: .1 }, { level: 60, profile: { defense: 1, damage: 1, heal: 1 } }, { effectMultiplier: .9 }), 180_000);
 assert.equal(context.resolveCardEffectAmount({ type: "heal", ratio: .1 }, { level: 60, profile: { defense: 1, damage: 1, heal: 1 } }, { effectMultiplier: 1.06 }) % 1, 0);

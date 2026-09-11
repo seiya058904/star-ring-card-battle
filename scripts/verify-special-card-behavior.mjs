@@ -248,6 +248,11 @@ for (const name of SPECIAL_NAMES) {
   gameEngine.applyCard(player, enemy, findSpecial("防御极致化"));
   assert.equal(player.shield, 1000, `防御极致化护盾应为最大生命50%（实得 ${player.shield}）`);
   assert.ok(player.statuses.some(s => s.type === "减伤" && s.turns === 3), "防御极致化应给自身减伤3回合");
+  const reductions = player.statuses.filter(s => s.type === "减伤");
+  assert.equal(reductions.length, 1, "不能叠加旧名字分支的10%减伤");
+  assert.equal(reductions[0].unit, "fixed");
+  const declared = findSpecial("防御极致化").effects.find(e => e.status === "减伤");
+  assert.equal(reductions[0].power, context.resolveCardEffectAmount(declared, player, findSpecial("防御极致化")));
 }
 
 // 起死回生：恢复最大生命 50%（低血量与溢出钳制）

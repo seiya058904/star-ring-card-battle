@@ -39,13 +39,35 @@
     uiRenderer.openModal("战役模式", `<p class="small-note">固定角色 · 连续关卡 · 本地进度</p><p class="small-note">星环共鸣：每打出一张牌获得星环格；集满 6 格后，可在己方回合点击“共鸣”选择特殊效果。</p><h3 style="margin:14px 0 8px">选择角色</h3><div class="campaign-grid">${data.characters.map(item => `<button type="button" class="campaign-card ${item.id === selectedCharacter ? "selected" : ""}" data-campaign-character="${item.id}"><h3>${item.name}</h3><div>${item.title} · ${item.race}</div><div>世界观等级 ${item.loreLevel}</div><div>${item.elements.join(" / ")} · ${item.passive}</div><small>${item.playStyle}</small><p style="margin-top:6px">首章进度：${saved.characters[item.id].completed ? "已完成" : `第 ${saved.characters[item.id].unlockedStage} 关已解锁`}</p></button>`).join("")}</div><h3 style="margin:14px 0 8px">难度</h3><div class="campaign-grid">${Object.entries(data.difficulties).map(([id, value]) => `<button type="button" class="campaign-stage ${id === selectedDifficulty ? "selected" : ""}" data-campaign-difficulty="${id}"><b>${value.label}</b><small>生命 ×${value.hp} · 威力 ×${value.power}</small></button>`).join("")}</div><h3 style="margin:14px 0 8px">关卡路线</h3><div class="campaign-grid">${data.stages.map(item => `<button type="button" class="campaign-stage ${item.order === selectedStage ? "selected" : ""}" data-campaign-stage="${item.order}" ${item.order > current.unlockedStage ? "disabled" : ""}><h3>${item.order}. ${item.name}</h3><div>${item.enemyName}</div><small>${item.intent}</small></button>`).join("")}</div><div class="modal-actions"><button class="ghost" id="campaignResetBtn" type="button">重置进度</button><button class="ghost" id="campaignCloseBtn" type="button">取消</button><button id="campaignStartBtn" type="button" ${mode.authorizeStage(current, selectedStage) ? "" : "disabled"}>进入第${selectedStage}关</button></div>`, { modalClass: "campaign-modal", afterRender: bindCampaignHome });
   }
   function bindCampaignHome() {
-    const recent = progress().recentBattles.slice(0, 5); if (recent.length) document.getElementById("modalBody")?.insertAdjacentHTML("beforeend", `<div class="campaign-recent"><h3 style="margin:14px 0 8px">最近战绩</h3>${recent.map(item => `<p class="small-note">${data.characters.find(character => character.id === item.characterId)?.name || "未知角色"} · 第${item.stage}关 · ${item.victory ? "胜利" : "失败"} · ${item.score} · ${item.rounds}回合</p>`).join("")}</div>`);
     document.querySelectorAll("[data-campaign-character]").forEach(button => button.onclick = () => { selectedCharacter = button.dataset.campaignCharacter; selectedStage = mode.clampStage(progress().characters[selectedCharacter], selectedStage); renderCampaignHome(); });
     document.querySelectorAll("[data-campaign-difficulty]").forEach(button => button.onclick = () => { selectedDifficulty = button.dataset.campaignDifficulty; renderCampaignHome(); });
     document.querySelectorAll("[data-campaign-stage]").forEach(button => button.onclick = () => { selectedStage = Number(button.dataset.campaignStage); renderCampaignHome(); });
     document.getElementById("campaignCloseBtn").onclick = () => uiRenderer.closeModal();
     document.getElementById("campaignStartBtn").onclick = startCampaign;
-    document.getElementById("campaignResetBtn").onclick = () => uiRenderer.openConfirm({ title: "重置战役进度？", message: "六名角色的首章进度和最近战斗记录都会清除。", confirmText: "确认重置", onConfirm: () => { saveProgress(mode.defaultProgress(data.characters)); selectedStage = 1; renderCampaignHome(); }, onCancel: () => renderCampaignHome() });
+    document.getElementById("campaignResetBtn").onclick = () => uiRenderer.openConfirm({ title: "重置战役进度？", message: "六名角色的首章进度和最近战斗记录都会清除。", confirmText: "确认重置", onConfirm: () => {
+      if (!saveProgress(mode.defaultProgress(data.characters))) {
+        renderCampaignHome();
+        uiRenderer.showToast("重置失败：无法保存战役进度，请重试。");
+        return;
+      }
+      selectedStage = 1;
+      renderCampaignHome(); }, onCancel: () => renderCampaignHome() });
+    const recent = progress().recentBattles.slice(0, 5);
+    if (recent.length) {
+      const container = document.createElement("div");
+      container.className = "campaign-recent";
+      const title = document.createElement("h3");
+      title.style.margin = "14px 0 8px";
+      title.textContent = "最近战绩";
+      container.appendChild(title);
+      recent.forEach(item => {
+        const row = document.createElement("p");
+        row.className = "small-note";
+        row.textContent = `${data.characters.find(character => character.id === item.characterId)?.name || "未知角色"} · 第${item.stage}关 · ${item.victory ? "胜利" : "失败"} · ${item.score} · ${item.rounds}回合`;
+        container.appendChild(row);
+      });
+      document.getElementById("modalBody")?.appendChild(container);
+    }
   }
   function startCampaign() {
     const player = character(); const currentStage = stage(); const state = gameEngine.start(campaignDeck(player), enemyDeck(currentStage));

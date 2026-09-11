@@ -8643,7 +8643,7 @@
     }
 
     /* 状态 tooltip 说明生成器 */
-    function describeStatus(type, turns, power, source, maxHp) {
+    function describeStatus(type, turns, power, source, maxHp, unit = "fixed") {
       const map = {
         "增幅": { label:"增益", desc: p => `下一次攻击额外造成 ${formatNumber(p||0)} 点伤害` },
         "虚弱": { label:"减益", desc: p => `接下来受到攻击时额外受到 ${formatNumber(p||0)} 点伤害` },
@@ -8668,7 +8668,9 @@
       };
       const entry = map[type];
       if (!entry) return type + (turns != null ? "（剩余 " + turns + " 回合）" : "");
-      let text = "[" + entry.label + "] " + entry.desc(power);
+      const ratioDescriptions = { "增幅": "造成伤害提高", "连锁": "造成伤害提高", "虚弱": "受到伤害提高", "减伤": "受到伤害降低", "闪避": "受到伤害降低" };
+      const detail = unit === "ratio" && ratioDescriptions[type] ? `${ratioDescriptions[type]} ${Math.round((power || 0) * 100)}%` : entry.desc(power);
+      let text = "[" + entry.label + "] " + detail;
       if (type === "召唤" && maxHp) text += `；召唤物生命值 ${formatNumber(maxHp)}`;
       if (turns != null && type !== "召唤") text += "（剩余 " + turns + " 回合）";
       if (source) text += "\n来源：" + source;
@@ -9976,7 +9978,7 @@
           <div class="energy-row">${Array.from({ length: fighter.maxEnergy }, (_, i) => `<span class="energy-dot ${i < fighter.energy ? "full" : ""}"></span>`).join("")}<span class="status">${fighter.energy}/${fighter.maxEnergy}</span></div>
           <div class="status-line">
             <span class="status" title="优先抵扣受到的伤害">${atlasStatusIcon("shield")}护盾 ${formatNumber(displayShield(fighter))}</span>
-            ${visibleStatuses.map(s => `<span class="status" title="${describeStatus(s.type, s.turns, s.power, s.source, s.maxHp)}">${atlasStatusIcon(s.type)}${s.type} ${s.persistent ? "本场" : s.turns}</span>`).join("")}
+            ${visibleStatuses.map(s => `<span class="status" title="${describeStatus(s.type, s.turns, s.power, s.source, s.maxHp, s.unit)}">${atlasStatusIcon(s.type)}${s.type} ${s.persistent ? "本场" : s.turns}</span>`).join("")}
           </div>
           ${enemyHandHtml}
         </div>`;

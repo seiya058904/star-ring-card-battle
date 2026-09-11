@@ -116,7 +116,7 @@ assert.equal(takeTurnAssignments.length, 1, `campaign-runtime 应只有 1 个 ai
 assert.ok(runtime.includes("function runSandboxAiTurn("), "campaign-runtime 缺少 runSandboxAiTurn");
 assert.ok(runtime.includes("function chooseCampaignAiCard("), "campaign-runtime 缺少 chooseCampaignAiCard");
 assert.ok(runtime.includes("function runCampaignAiTurn("), "campaign-runtime 缺少 runCampaignAiTurn");
-assert.match(runtime, /runSandboxAiTurn\.call\(this, state\)/, "AI 编排边界必须调用 runSandboxAiTurn");
+assert.match(runtime, /runSandboxAiTurn\.call\(this, state, sessionId\)/, "AI 编排边界必须调用 runSandboxAiTurn");
 assert.match(runtime, /runCampaignAiTurn\.call\(this, state, sessionId\)/, "AI 编排边界必须调用 runCampaignAiTurn");
 assert.match(runtime, /chooseCampaignAiCard\.call\(this, state\)/, "战役 AI 循环必须调用 chooseCampaignAiCard");
 

@@ -433,3 +433,67 @@ function resetApplyCounter() {
 }
 
 console.log("战役 AI turn 特征测试通过：沙盒/战役 AI、零行动、控制、多行动、game-over、陈旧入口与共鸣均符合当前行为。");
+
+// Controlled timer queue around the real playCard -> ring -> await chain.
+const asyncFailures = [];
+for (const scenario of ["exit", "replace", "identity", "gameOver", "turn", "timeout", "idle", "entry", "limit"]) {
+  const timers = []; let now = 0; let events = 0; let rejection;
+  context.Date = class extends Date { static now() { return now; } };
+  context.setTimeout = (callback, delay = 0) => { timers.push({ callback, at: now + delay }); return timers.length; };
+  context.effectsRenderer = { _playLock: 0 };
+  context.gameEngine.log = function (message) { this.state.log.unshift(message); events += 1; };
+  context.campaignRuntime.configurePresentation({ renderHud() { events += 1; }, notice() { events += 1; }, playSound() { events += 1; }, playDrawSound() { events += 1; } });
+  vm.runInContext(`gameEngine.invalidateBattle = function ${extractObjectMethod(indexSource, "invalidateBattle() {")}`, context);
+  const state = startState({ enemyRing: scenario === "entry" ? 6 : 5 });
+  state.campaignStats.highestDamage = state.enemy.maxHp;
+  state.enemy.hand = [makeCard({ category: "base", skillTier: "base", instanceId: "last-ring" })];
+  context.dramaTimingForCard = () => ({ totalMin: 10000 });
+  if (scenario === "entry") state.actionLocked = true;
+  const originalResolve = gameEngine.resolveAction;
+  let calls = 0;
+  if (scenario === "limit") gameEngine.resolveAction = function(action) {
+    if (action.type === "playCard") {
+      calls += 1;
+      if (calls === 15) this.invalidateBattle();
+      return false;
+    }
+    return originalResolve.call(this, action);
+  };
+  const pending = aiController.takeTurn().catch(error => { rejection = error; });
+  for (let i = 0; i < 40; i += 1) await Promise.resolve();
+  try {
+    if (!["entry", "limit"].includes(scenario)) assert.equal(state.campaign.enemyRing, 6, "真实出牌先增加星环");
+    if (scenario === "exit" || scenario === "entry" || scenario === "replace") gameEngine.invalidateBattle();
+    if (scenario === "replace" || scenario === "identity") startState();
+    if (scenario === "gameOver") state.gameOver = true;
+    if (scenario === "turn") state.turn = "player";
+    if (scenario === "idle") state.actionLocked = false;
+    const frozen = JSON.stringify(state), current = JSON.stringify(gameEngine.state), beforeEvents = events;
+    now = scenario === "timeout" ? 8001 : 50;
+    const ready = timers.filter(t => t.at <= now); timers.splice(0, timers.length, ...timers.filter(t => t.at > now));
+    for (const timer of ready) timer.callback();
+    for (let i = 0; i < 40; i += 1) await Promise.resolve();
+    // No real-time wait: all continuation work must settle after the controlled poll.
+    let settled = false; pending.then(() => { settled = true; });
+    for (let i = 0; i < 10; i += 1) await Promise.resolve();
+    assert.equal(settled, true, `${scenario} promise should finish`);
+    assert.equal(rejection, undefined);
+    if (scenario === "idle") {
+      assert.equal(state.campaignStats.enemyResonance, 1);
+      assert.equal(state.log.filter(line => line.includes("[星环共鸣]")).length, 1);
+    } else {
+      assert.equal(JSON.stringify(state), frozen, "取消后旧局冻结");
+      assert.equal(JSON.stringify(gameEngine.state), current, "不能污染新局");
+      assert.equal(events, beforeEvents, "不能追加日志/HUD/音效");
+      if (["exit", "replace", "identity", "entry", "limit"].includes(scenario)) {
+        for (const timer of timers.splice(0)) timer.callback();
+        for (let i = 0; i < 10; i += 1) await Promise.resolve();
+        assert.equal(JSON.stringify(gameEngine.state), current, "全部迟到任务不得影响新局");
+        assert.equal(events, beforeEvents);
+      }
+    }
+  } catch (error) { asyncFailures.push(`${scenario}: ${error.message}`); }
+  gameEngine.resolveAction = originalResolve;
+}
+assert.deepEqual(asyncFailures, [], asyncFailures.join("\n"));
+console.log("异步取消、终局、超时、初始等待及第15步隔离回归通过。");

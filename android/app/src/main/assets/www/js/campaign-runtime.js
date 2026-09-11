@@ -83,7 +83,7 @@
     if (actor.id !== "player") return null;
     campaignRules.ensureCampaignPassives(state);
     const id = campaign.characterId;
-    const oldEffectMultiplier = card.effectMultiplier;
+    const oldDamageMultiplier = card.damageMultiplier;
     const targetShieldBefore = target.shield;
     let triggered = false;
     const mark = scope => {
@@ -94,13 +94,13 @@
     const hasDamage = card.effects?.some(effect => effect.type === "damage");
     const hasBurn = card.effects?.some(effect => effect.type === "status" && effect.status === "燃烧");
     if (id === "luolinfo" && card.element === "雷" && hasDamage && mode.passiveAllowed(campaign.passives, id, "turn")) {
-      card.effectMultiplier = 1.15;
+      card.damageMultiplier = (Number(oldDamageMultiplier) || 1) * 1.15;
       mark("turn");
     } else if (id === "su" && ["光", "暗", "雷"].includes(card.element) && global.getCardActionIntent(card) === "hostile-damage" && mode.passiveAllowed(campaign.passives, id, "turn")) {
-      card.effectMultiplier = 1.10;
+      card.damageMultiplier = (Number(oldDamageMultiplier) || 1) * 1.10;
       mark("turn");
     } else if (id === "moluo" && actor.hp / actor.maxHp < .5 && (hasDamage || hasBurn)) {
-      card.effectMultiplier = 1.12;
+      card.damageMultiplier = (Number(oldDamageMultiplier) || 1) * 1.12;
       if (actor.hp / actor.maxHp < .3 && mode.passiveAllowed(campaign.passives, id, "match")) {
         campaign.extraEnergyNext = true;
         campaign.passives = mode.consumePassive(campaign.passives, id, "match");
@@ -110,15 +110,14 @@
       }
     }
     const beforeHp = actor.hp;
-    return { id, oldEffectMultiplier, targetShieldBefore, triggered, beforeHp, mark };
+    return { id, oldDamageMultiplier, targetShieldBefore, triggered, beforeHp, mark };
   }
 
   function campaignPlayerPassiveAfter(actor, target, card, pre) {
     if (!pre) return;
     const state = this.state;
     const campaign = state.campaign;
-    const { id, oldEffectMultiplier, targetShieldBefore, triggered, beforeHp, mark } = pre;
-    card.effectMultiplier = oldEffectMultiplier;
+    const { id, targetShieldBefore, triggered, beforeHp, mark } = pre;
     if (id === "luolinfo" && triggered && target.shield < targetShieldBefore) target.shield = Math.max(0, target.shield - Math.round(target.shield * .1));
     if (id === "eluxia" && ["冰", "风"].includes(card.element) && mode.passiveAllowed(campaign.passives, id, "turn")) {
       this.draw(actor, 1);
@@ -209,8 +208,12 @@
     checkCampaignBossPhase(fighter, beforeHp);
   }
 
-  function activateEnemyResonance(state) {
-    if (state.campaign.enemyRing < 6 || state.campaign.enemyResonanceUsed) return false;
+  function canContinueAiTurn(state, sessionId) {
+    return Boolean(state && gameEngine.isActiveBattle(state, sessionId) && !state.gameOver && state.turn === "enemy");
+  }
+
+  function activateEnemyResonance(state, sessionId) {
+    if (!canContinueAiTurn(state, sessionId) || !state.campaign || state.campaign.enemyRing < 6 || state.campaign.enemyResonanceUsed) return false;
     const enemy = state.enemy;
     const choice = mode.enemyResonanceChoice({ hpRatio: enemy.hp / enemy.maxHp, playerThreat: state.campaignStats.highestDamage > enemy.maxHp * .12, hand: enemy.hand, energy: enemy.energy });
     state.campaign.enemyRing = 0;
@@ -238,7 +241,7 @@
     const controlStatus = state.enemy.statuses.find(s => s.type === "禁锢");
     gameEngine.log(`[控制] ${state.enemy.name} 被${controlStatus?.type || "控制"}束缚，无法行动。`);
     setTimeout(() => {
-      if (gameEngine.isActiveBattle(state, sessionId)) gameEngine.resolveAction({ type: "endTurn", side: "enemy" });
+      if (canContinueAiTurn(state, sessionId)) gameEngine.resolveAction({ type: "endTurn", side: "enemy" });
     }, 650);
     return true;
   }
@@ -247,26 +250,25 @@
     if (mode.drawCount(beforeHandSize, fighter.hand.length) > 0) presentation.playDrawSound();
   }
 
-  const waitForCombatIdle = (sessionId = gameEngine.sessionId, timeoutMs = 8000) => new Promise(resolve => {
+  const waitForCombatIdle = (state, sessionId, timeoutMs = 8000) => new Promise(resolve => {
     const startedAt = Date.now();
     const poll = Math.max(8, global.battleSpeedDelay ? global.battleSpeedDelay(40) : 40);
     const check = () => {
-      if (sessionId != null && gameEngine.sessionId !== sessionId) return resolve();
-      if (!gameEngine.state || gameEngine.state.gameOver) return resolve();
-      if (Date.now() - startedAt >= timeoutMs) return resolve();
-      if (!gameEngine.state.actionLocked && !global.effectsRenderer?._playLock && !global.hasPendingOverrides()) return resolve();
+      if (!canContinueAiTurn(state, sessionId)) return resolve("cancelled");
+      if (Date.now() - startedAt >= timeoutMs) return resolve("timeout");
+      if (!state.actionLocked && !global.effectsRenderer?._playLock && !global.hasPendingOverrides()) return resolve("idle");
       setTimeout(check, poll);
     };
     check();
   });
 
-  async function runSandboxAiTurn(state) {
-    while (gameEngine.state === state && !state.gameOver && state.turn === "enemy") {
+  async function runSandboxAiTurn(state, sessionId) {
+    while (canContinueAiTurn(state, sessionId)) {
       const card = this.chooseCard(state.enemy, state.player);
       if (!card) { gameEngine.resolveAction({ type: "endTurn", side: "enemy" }); return; }
       const played = gameEngine.resolveAction({ type: "playCard", side: "enemy", cardInstanceId: card.instanceId });
-      if (!played) { await waitForCombatIdle(); continue; }
-      await waitForCombatIdle();
+      if (await waitForCombatIdle(state, sessionId) !== "idle" || !canContinueAiTurn(state, sessionId)) return;
+      if (!played) continue;
     }
   }
 
@@ -290,7 +292,8 @@
   }
 
   async function runCampaignAiTurn(state, sessionId) {
-    const resonanceActivated = activateEnemyResonance(state);
+    if (!canContinueAiTurn(state, sessionId)) return;
+    const resonanceActivated = activateEnemyResonance(state, sessionId);
     if (resonanceActivated && state.campaign.enemyCostReduction > 0) {
       state.campaign.intent = null;
       gameEngine.log("[意图] 敌方借助星耀调整了战术。");
@@ -302,12 +305,15 @@
       const card = chooseCampaignAiCard.call(this, state);
       if (!card) { gameEngine.resolveAction({ type: "endTurn", side: "enemy" }); return; }
       const played = gameEngine.resolveAction({ type: "playCard", side: "enemy", cardInstanceId: card.instanceId });
-      if (!played) { await waitForCombatIdle(); continue; }
+      if (!played) {
+        if (await waitForCombatIdle(state, sessionId) !== "idle" || !canContinueAiTurn(state, sessionId)) return;
+        continue;
+      }
       state.campaign.intent = null;
-      await waitForCombatIdle();
-      activateEnemyResonance(state);
+      if (await waitForCombatIdle(state, sessionId) !== "idle" || !canContinueAiTurn(state, sessionId)) return;
+      activateEnemyResonance(state, sessionId);
     }
-    if (_aiSteps >= 15) {
+    if (_aiSteps >= 15 && canContinueAiTurn(state, sessionId)) {
       gameEngine.log("[AI] 敌方达到行动上限，强制结束回合。");
       gameEngine.resolveAction({ type: "endTurn", side: "enemy" });
     }
@@ -359,7 +365,14 @@
       const targetHp = target.hp;
       const beforeStatuses = target.statuses.slice();
       const pre = campaignPlayerPassiveBefore.call(this, actor, target, card);
-      const result = baseApplyCard.call(this, actor, target, card);
+      let result;
+      try { result = baseApplyCard.call(this, actor, target, card); }
+      finally {
+        if (pre) {
+          if (pre.oldDamageMultiplier === undefined) delete card.damageMultiplier;
+          else card.damageMultiplier = pre.oldDamageMultiplier;
+        }
+      }
       campaignPlayerPassiveAfter.call(this, actor, target, card, pre);
       campaignBossAndEnemyPassiveAfter.call(this, actor, target, card, beforeStatuses);
       campaignHealthThresholdAfter.call(this, actor, target, card, targetHp);
@@ -392,9 +405,9 @@
       const sessionId = gameEngine.sessionId;
       if (!state || state.gameOver || state.turn !== "enemy") return;
       if (skipEnemyControlledTurn(state)) return;
-      await waitForCombatIdle();
+      if (await waitForCombatIdle(state, sessionId) !== "idle" || !canContinueAiTurn(state, sessionId)) return;
       if (!state.campaign) {
-        await runSandboxAiTurn.call(this, state);
+        await runSandboxAiTurn.call(this, state, sessionId);
         return;
       }
       await runCampaignAiTurn.call(this, state, sessionId);

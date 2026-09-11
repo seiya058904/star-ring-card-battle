@@ -11,7 +11,7 @@
     cards[definition.id] = Object.freeze({ afterPlay: "discard", artKey: definition.element, soundKey: definition.tier, ...definition, effects: Object.freeze(definition.effects.map(item => Object.freeze({ ...item }))) });
     return definition.id;
   };
-  const effect = (type, value = {}) => ({ type, ...value });
+  const effect = (type, value = {}) => ({ type, ...(type === "status" ? { unit: "fixed" } : {}), ...value });
   const baseNames = ["普通攻击", "格挡", "集中", "急救", "战术调整", "裁决突刺", "反击", "重击", "护盾", "压制", "蓄势", "闪避", "魔力恢复", "破甲斩"];
 
   // 保底生成池（仅在批量清单用尽时使用，保证 30 张唯一、且元素一致）
