@@ -7,6 +7,9 @@ on:
       - "js/**"
       - "scripts/**"
       - "assets/**"
+      - "icon.png"
+      - "icon-32.png"
+      - "icon-192.png"
       - "android/**"
       - ".github/**"
   pull_request:
@@ -15,6 +18,9 @@ on:
       - "js/**"
       - "scripts/**"
       - "assets/**"
+      - "icon.png"
+      - "icon-32.png"
+      - "icon-192.png"
       - "android/**"
       - ".github/**"
 
