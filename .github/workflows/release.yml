@@ -7,9 +7,8 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "Existing release tag to rebuild and update (for example v1.2.2)"
+        description: "Existing release tag to rebuild and update (for example v1.2.4)"
         required: true
-        default: "v1.2.2"
 
 permissions:
   contents: write

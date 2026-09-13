@@ -52,11 +52,11 @@ Current focus:
 
 ## Features / 功能特性
 
-### v1.1.0 campaign prototype / v1.1.0 战役原型
+### 固定角色战斗与战役模式 / Fixed-character battles and campaign mode
 
-The existing **开始战斗** remains the free sandbox for generated, custom, and random-deck testing. **战役模式** adds six fixed characters, five first-chapter stages, three difficulties, one-time opening mulligan, six-slot Star Ring resonance, enemy intent, local per-character progression, campaign scoring, and offline CC0 sound effects. It remains a continuously developed playable prototype rather than a finished release.
+Both **开始战斗** (sandbox) and **战役模式** now run on the same fixed-character system: six fixed characters with locked 30-card decks, five first-chapter campaign stages, three difficulties, one-time opening mulligan, six-slot Star Ring resonance, enemy intent, local per-character progression, campaign scoring, and offline CC0 sound effects. Custom card generation is retired; decks cannot be generated or modified. It remains a continuously developed playable prototype rather than a finished release.
 
-现有“开始战斗”仍是自由沙盒，可继续使用生成卡组、自定义卡牌/卡组和随机敌人。新增“战役模式”包含六名首发角色、五个首章关卡、三种难度、开局换牌、六格星环共鸣、敌方意图、按角色保存的本地进度、战斗评分和离线 CC0 音效。项目仍是持续开发中的可玩原型。
+**开始战斗**（沙盒）与**战役模式**现在共用同一套固定角色系统：六名固定角色、各 30 张锁定卡组、五个首章关卡、三种难度、开局换牌、六格星环共鸣、敌方意图、按角色保存的本地进度、战斗评分和离线 CC0 音效。自定义卡牌生成已退役，卡组不可生成或修改。项目仍是持续开发中的可玩原型。
 
 Audio sources are recorded in `assets/audio/AUDIO_SOURCES.md`. Web and Android parity checks:
 
@@ -219,7 +219,7 @@ Recommended steps:
 ```bash
 node scripts/sync-android-web-assets.mjs
 node scripts/verify-android-web-assets.mjs
-gradle -p android assembleDebug
+.\android\gradlew.bat -p android assembleDebug
 ```
 
 Debug APK output:
@@ -335,7 +335,7 @@ node scripts/verify-android-web-assets.mjs
 Build Android debug APK:
 
 ```bash
-gradle -p android assembleDebug
+.\android\gradlew.bat -p android assembleDebug
 ```
 
 ---

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Single-file HTML5 card battle game ("星环卡牌战场" / Star Ring Card Battlefield) with procedural card generation, AI opponent, and a dark fantasy UI. No build system, no package.json, no tests — pure frontend. Everything runs in the browser via `localStorage`.
+Single-file HTML5 card battle game ("星环卡牌战场" / Star Ring Card Battlefield) with fixed character decks, AI opponent, and a dark fantasy UI. No build system and no conventional unit-test framework/package.json are required, but the repository has a substantial Node-based verification firewall under `scripts/` — `node scripts/verify-all.mjs` is mandatory after any change. Pure frontend; everything runs in the browser via `localStorage`. Custom card generation is retired: both sandbox and campaign modes use fixed characters with locked decks, and the active rules live in an external override chain (`js/fixed-game-rules.js` → `js/campaign-ui.js`) that overwrites `index.html` methods loaded via `globalThis`.
 
 The project also includes an **Android WebView wrapper** (`android/`) that packages the web game into a standalone APK using `WebViewAssetLoader`.
 
@@ -98,9 +98,9 @@ The code loads via a single `<script>` tag. Major sections in order of appearanc
 - **Helpers**: `pick()`, `shuffle()`, `clamp()`, `formatNumber()`, `normalizeRace()`, `inferElement()`, `inferEffectType()`
 
 ### Game Logic (~line 6154+)
-- **cardGenerator** — procedural card creation: name gen, power/cost/rarity formulas
-- **deckBuilder** — creates full 30-card decks from race+profession+level params
-- **storageManager** — localStorage persistence for custom cards, current deck, settings
+- **cardGenerator** — legacy procedural card creation; fixed mode no longer generates cards
+- **deckBuilder** — fixed mode: all entries serve the locked 30-card deck system (`js/fixed-card-library.js` is the source of truth)
+- **storageManager** — localStorage persistence for settings/deck; custom-card access is stubbed off in fixed mode and legacy custom-card data is left untouched in storage
 - **gameEngine** — turn-based combat: fighters, draw/discard piles, energy, card resolution, status effects, game-over
 - **aiController** (~line 6441+) — simple scoring AI
 
