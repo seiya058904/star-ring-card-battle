@@ -1,4 +1,4 @@
-import { copyFile, cp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { copyFile, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -32,7 +32,12 @@ if (!viewportPattern.test(sourceHtml)) {
 
 const androidHtml = sourceHtml.replace(viewportPattern, androidViewport);
 
+// 先删除镜像目录再整树复制：cp(force) 只覆盖不删除，
+// 源头已移除的素材/脚本必须在同步时从镜像中一并消失。
+// www 根目录只存放本脚本产物（index.html/assets/js/图标），可以安全清空子树。
 await mkdir(androidWebRoot, { recursive: true });
+await rm(androidAssets, { recursive: true, force: true });
+await rm(androidJs, { recursive: true, force: true });
 await writeFile(androidIndex, androidHtml, "utf8");
 await cp(sourceAssets, androidAssets, {
   recursive: true,

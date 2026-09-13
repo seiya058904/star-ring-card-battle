@@ -78,7 +78,9 @@ async function sha256(targetPath) {
 
 function findConcreteAssetReferences(html) {
   const references = new Set();
-  const pattern = /assets\/[A-Za-z0-9_./-]+\.[A-Za-z0-9]+/g;
+  // Unicode 安全提取：素材文件名可能包含中文（如 assets/3 下的原始设计图），
+  // 不能用 ASCII 字符类截断；改为排除引号、括号、空白等引用边界字符。
+  const pattern = /assets\/[^\s"'`\\()<>[\]{}]+?\.[A-Za-z0-9]+/g;
 
   for (const match of html.matchAll(pattern)) {
     references.add(match[0]);
