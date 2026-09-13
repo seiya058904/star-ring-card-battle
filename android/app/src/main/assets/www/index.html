@@ -14164,11 +14164,19 @@
   }
   /* ── ≤768px 战斗手牌专用布局：原生横向滑动触达全部手牌、结束回合独立成行不被遮挡、战役意图独立成行保持可读 ── */
   @media (max-width: 768px) {
+    /* 窄视口必须允许整条布局链收缩：fr 轨道在内在尺寸计算中会取内容 max-content，
+       不加 min-width:0 时 hand-dock 会把 battle-layout 的轨道撑到视口之外，
+       导致结束回合按钮被裁出屏幕（如 x=-56）。 */
+    body.battle-mode .battle-layout-v3 {
+      grid-template-columns: minmax(0, 1fr) !important;
+    }
     body.battle-mode .hand-dock-v3 {
       grid-template-columns: minmax(0, 1fr) !important;
       grid-template-rows: auto auto !important;
       height: auto !important;
       min-height: 0 !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
       gap: 8px !important;
       padding: 6px 6px 8px !important;
     }
@@ -14181,8 +14189,15 @@
       flex-direction: row !important;
       align-items: center !important;
       justify-content: center !important;
+      /* 窄视口允许换行：结束回合保持完整可点，牌堆计数器整行下移，不再挤压重叠 */
+      flex-wrap: wrap !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
       gap: 14px !important;
       padding: 6px 8px !important;
+    }
+    body.battle-mode .hand-command-strip .deck-counters {
+      flex-shrink: 0 !important;
     }
     body.battle-mode .hand-command-strip #endTurnBtn {
       width: 128px !important;
