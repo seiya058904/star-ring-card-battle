@@ -485,10 +485,9 @@
 
   uiRenderer.defaultDecks = library.characterDefinitions.map(character => library.createRuntimeDeck(character.id));
   uiRenderer.selectedDeck = uiRenderer.defaultDecks[0];
-  // 固定角色模式不读取、保存或构筑本机自定义卡牌。
+  // 固定角色模式不读取、保存或构筑本机自定义卡牌；
+  // 历史 localStorage 自定义卡数据保留原地，不做主动删除。
   if (global.storageManager) {
-    // 存储不可用时安全跳过清理，绝不中断本模块的其余覆写注册。
-    try { localStorage.removeItem(global.storageManager.customKey); } catch { /* localStorage 不可用：跳过 */ }
     global.storageManager.getCustomCards = () => [];
     global.storageManager.saveCustomCard = () => false;
   }

@@ -79,6 +79,11 @@ assert.match(resolverSource, /if \(existing\.length >= 3\)/);
 assert.match(resolverSource, /controlImmuneTurns/);
 assert.match(resolverSource, /resolveDamage\(\{ source: fighter, target, amount: Math\.max\(1, Math\.round\(summon\.power \* multiplier\)\)/);
 assert.match(resolverSource, /delete summon\.nextAssistMultiplier/);
+// 历史自定义卡 localStorage 数据必须保留：固定模式只覆写读取/保存入口，不主动删除。
+assert.doesNotMatch(resolverSource, /localStorage\.removeItem\(global\.storageManager\.customKey\)/);
+assert.doesNotMatch(resolverSource, /removeItem\(.*customKey/);
+assert.match(resolverSource, /getCustomCards = \(\) => \[\]/);
+assert.match(resolverSource, /saveCustomCard = \(\) => false/);
 assert.match(resolverSource, /const total = ownerDamage \+ summonDamage/);
 assert.match(resolverSource, /const effectAmount = \(fighter, effect(?:, card = null)?\) => \{/);
 assert.doesNotMatch(resolverSource, /maxHp \* Number\(effect\.ratio/);
