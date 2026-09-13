@@ -69,8 +69,11 @@ assert.match(campaignUiSource, /mode\.effectiveCardCost\(state, "enemy", card\)/
 assert.match(campaignUiSource, /mode\.effectiveCardCost\(state, "player", card\)/);
 assert.match(campaignUiSource, /const progress = \(\) => \{ try \{/);
 assert.match(campaignUiSource, /const saveProgress = value => \{ try \{/);
-assert.match(coreSource, /try \{ saved = global\.campaignMode\.loadProgress\(localStorage\.getItem/);
+assert.match(coreSource, /try \{ latest = global\.campaignMode\.loadProgress\(localStorage\.getItem/);
 assert.match(coreSource, /try \{ localStorage\.setItem\(global\.campaignMode\.STORAGE_KEY/);
+// 跨标签页并发合同：结算必须重读最新进度、校验重置代际并递增 revision。
+assert.match(coreSource, /latest\.resetGeneration/);
+assert.match(coreSource, /next\.revision = \(Number\(latest\.revision\) \|\| 0\) \+ 1/);
 assert.match(htmlSource, /chooseCard\(enemy, player\)\s*\{\s*const state = gameEngine\.state/);
 assert.match(htmlSource, /function effectiveCardCost\(state, side, card\)/);
 assert.match(htmlSource, /renderCard\(card, effectiveCardCost\(gameEngine\.state, "player", card\)/);

@@ -2,7 +2,7 @@
   const MAX_RING = 6;
   const STORAGE_KEY = "star-ring-campaign-progress-v1";
   function flattenDeck(deck) { return ["base", "normal", "advanced", "special"].flatMap(tier => deck[tier] || []); }
-  function defaultProgress(characters) { return { version: 1, characters: Object.fromEntries(characters.map(c => [c.id, { unlockedStage: 1, completed: false }])), recentBattles: [] }; }
+  function defaultProgress(characters) { return { version: 1, revision: 0, resetGeneration: 0, characters: Object.fromEntries(characters.map(c => [c.id, { unlockedStage: 1, completed: false }])), recentBattles: [] } }
   function loadProgress(raw, characters) { try { return normalizeProgress(JSON.parse(raw || ""), characters); } catch { return defaultProgress(characters); } }
   function clone(value) { return JSON.parse(JSON.stringify(value)); }
   function recordStageWin(progress, characterId, stage) { const next = clone(progress); const entry = next.characters[characterId]; if (!entry) return next; entry.unlockedStage = Math.max(entry.unlockedStage, Math.min(5, stage + 1)); if (stage >= 5) entry.completed = true; return next; }
@@ -26,7 +26,8 @@
       return next;
     });
   }
-  function normalizeProgress(rawProgress, characters) { const fallback = defaultProgress(characters); const source = rawProgress && rawProgress.version === 1 && rawProgress.characters && typeof rawProgress.characters === "object" ? rawProgress : fallback; const normalized = defaultProgress(characters); characters.forEach(character => { const entry = source.characters[character.id]; if (!entry || typeof entry !== "object") return; const stage = Number(entry.unlockedStage); const completed = entry.completed === true || entry.completed === 1 || entry.completed === "true" || entry.completed === "yes"; normalized.characters[character.id] = { unlockedStage: Number.isFinite(stage) ? Math.min(5, Math.max(1, Math.round(stage))) : 1, completed }; }); normalized.recentBattles = normalizeRecentBattles(source.recentBattles, characters); return normalized; }
+  // revision/resetGeneration 为跨标签页并发控制字段：旧 version=1 存档缺失时归零，兼容读取。
+  function normalizeProgress(rawProgress, characters) { const fallback = defaultProgress(characters); const source = rawProgress && rawProgress.version === 1 && rawProgress.characters && typeof rawProgress.characters === "object" ? rawProgress : fallback; const normalized = defaultProgress(characters); const revision = Number(source.revision); normalized.revision = Number.isSafeInteger(revision) && revision >= 0 ? revision : 0; const resetGeneration = Number(source.resetGeneration); normalized.resetGeneration = Number.isSafeInteger(resetGeneration) && resetGeneration >= 0 ? resetGeneration : 0; characters.forEach(character => { const entry = source.characters[character.id]; if (!entry || typeof entry !== "object") return; const stage = Number(entry.unlockedStage); const completed = entry.completed === true || entry.completed === 1 || entry.completed === "true" || entry.completed === "yes"; normalized.characters[character.id] = { unlockedStage: Number.isFinite(stage) ? Math.min(5, Math.max(1, Math.round(stage))) : 1, completed }; }); normalized.recentBattles = normalizeRecentBattles(source.recentBattles, characters); return normalized; }
   function authorizeStage(progressEntry, stage) { return Number.isInteger(stage) && stage >= 1 && stage <= 5 && stage <= Number(progressEntry?.unlockedStage || 1); }
   function clampStage(progressEntry, stage) { return Math.min(5, Math.max(1, Math.min(Number(progressEntry?.unlockedStage || 1), Number(stage) || 1))); }
   function passiveAllowed(flags, characterId, scope) { const bucket = flags?.[scope] || {}; return !bucket[characterId]; }

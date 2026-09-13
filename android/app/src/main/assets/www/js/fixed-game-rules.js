@@ -530,12 +530,33 @@
     const won = state.winner === "player";
     const stats = state.combatStats || {};
     const score = global.campaignMode.scoreBattle({ victory: won, hpRatio: state.player.hp / state.player.maxHp, damageTaken: stats.damageTaken, maxHp: state.player.maxHp, healing: stats.healing, overheal: stats.overheal, rounds: state.round, difficulty: state.campaign.difficulty, revived: stats.revived });
-    let saved;
-    try { saved = global.campaignMode.loadProgress(localStorage.getItem(global.campaignMode.STORAGE_KEY), global.campaignData.characters); }
-    catch { saved = global.campaignMode.defaultProgress(global.campaignData.characters); }
-    const next = won ? global.campaignMode.recordStageWin(saved, state.campaign.characterId, state.campaign.stage) : global.campaignMode.recordStageLoss(saved, state.campaign.characterId);
-    next.recentBattles = global.campaignMode.recentBattles(next.recentBattles, [{ characterId: state.campaign.characterId, stage: state.campaign.stage, difficulty: state.campaign.difficulty, victory: won, score, rounds: state.round, time: new Date().toISOString() }]);
-    try { localStorage.setItem(global.campaignMode.STORAGE_KEY, JSON.stringify(next)); } catch { /* 存储不可用时仍展示本局结果。 */ }
+    // 结算写回：重新读取最新进度（不使用开战时缓存），在最新状态上合并本局结果，
+    // 避免多标签页相互覆盖；若战斗期间其他标签页执行过重置，则拒绝写回旧状态。
+    // 存储不可用时仍展示本局结果，但必须明确告知玩家进度未写入，不得静默成功。
+    const commitCampaignResult = () => {
+      let latest;
+      try { latest = global.campaignMode.loadProgress(localStorage.getItem(global.campaignMode.STORAGE_KEY), global.campaignData.characters); }
+      catch { latest = global.campaignMode.defaultProgress(global.campaignData.characters); }
+      if ((Number(latest.resetGeneration) || 0) !== (Number(state.campaign.progressGeneration) || 0)) {
+        this.showToast?.("战役进度已在其他标签页发生变化，本局结果未写入。", "error");
+        return;
+      }
+      const next = won ? global.campaignMode.recordStageWin(latest, state.campaign.characterId, state.campaign.stage) : global.campaignMode.recordStageLoss(latest, state.campaign.characterId);
+      next.recentBattles = global.campaignMode.recentBattles(latest.recentBattles, [{ characterId: state.campaign.characterId, stage: state.campaign.stage, difficulty: state.campaign.difficulty, victory: won, score, rounds: state.round, time: new Date().toISOString() }]);
+      next.revision = (Number(latest.revision) || 0) + 1;
+      let progressSaved = true;
+      try { localStorage.setItem(global.campaignMode.STORAGE_KEY, JSON.stringify(next)); } catch { progressSaved = false; }
+      if (!progressSaved) this.showToast?.("战役进度保存失败，本局结果未写入本地存档。", "error");
+    };
+    // Web Locks 可用时在固定锁内严格序列化 read → merge → write（强跨标签页原子性）。
+    // 不可用时退化为 best-effort fallback：写入前重读 latest 并校验 resetGeneration，
+    // 能防止旧战斗复活 reset 前状态、并让不同字段的合并基于最新数据，
+    // 但不宣称能阻止两个标签页完全同时写入造成的 lost update（P3 不引入更强并发机制）。
+    if (typeof navigator !== "undefined" && navigator?.locks?.request) {
+      navigator.locks.request(`${global.campaignMode.STORAGE_KEY}-commit`, () => { commitCampaignResult(); });
+    } else {
+      commitCampaignResult();
+    }
     this.nav("result");
     audioManager?.play?.(won ? "victory" : "defeat");
     document.getElementById("resultTitle").textContent = won ? `战役胜利 · ${score}级评价` : `战役失败 · ${score}级评价`;

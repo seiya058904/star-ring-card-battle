@@ -45,7 +45,12 @@
     document.getElementById("campaignCloseBtn").onclick = () => uiRenderer.closeModal();
     document.getElementById("campaignStartBtn").onclick = startCampaign;
     document.getElementById("campaignResetBtn").onclick = () => uiRenderer.openConfirm({ title: "重置战役进度？", message: "六名角色的首章进度和最近战斗记录都会清除。", confirmText: "确认重置", onConfirm: () => {
-      if (!saveProgress(mode.defaultProgress(data.characters))) {
+      // resetGeneration 递增后，其他标签页进行中的战斗结算会检测到代际变化而拒绝写回旧状态。
+      const latest = progress();
+      const fresh = mode.defaultProgress(data.characters);
+      fresh.revision = (Number(latest.revision) || 0) + 1;
+      fresh.resetGeneration = (Number(latest.resetGeneration) || 0) + 1;
+      if (!saveProgress(fresh)) {
         renderCampaignHome();
         uiRenderer.showToast("重置失败：无法保存战役进度，请重试。");
         return;
@@ -71,7 +76,8 @@
   }
   function startCampaign() {
     const player = character(); const currentStage = stage(); const state = gameEngine.start(campaignDeck(player), enemyDeck(currentStage));
-    state.gameMode = "campaign"; state.campaign = { characterId: player.id, stage: selectedStage, difficulty: selectedDifficulty, playerRing: 0, enemyRing: 0, resonanceUsed: false, enemyResonanceUsed: false, costReduction: 0, enemyCostReduction: 0, intent: null, passiveTriggers: 0, passives: { turn: {}, match: {}, round: 0 } };
+    // 记录开战时的重置代际：结算时若其他标签页执行过重置，则拒绝写回本局结果。
+    state.gameMode = "campaign"; state.campaign = { characterId: player.id, stage: selectedStage, difficulty: selectedDifficulty, playerRing: 0, enemyRing: 0, resonanceUsed: false, enemyResonanceUsed: false, costReduction: 0, enemyCostReduction: 0, intent: null, passiveTriggers: 0, passives: { turn: {}, match: {}, round: 0 }, progressGeneration: Number(progress().resetGeneration) || 0 };
     state.enemy.name = currentStage.enemyName; state.enemy.campaignStyle = currentStage.style;
     // 第五关首领战：按 STAGE5_BOSS_TUNING 缩放战斗 profile（伤害/固定减伤/护盾/治疗全链路各只缩放一次）。
     if (currentStage.id === "ancestral-dragon" && state.enemy?.profile) {
