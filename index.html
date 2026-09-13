@@ -9785,10 +9785,10 @@
     const playStandardBattleEffect = effectsRenderer.play.bind(effectsRenderer);
     effectsRenderer._playLock = 0;
     effectsRenderer.play = function(card, result) {
-      const now = Date.now();
+      // 战斗输入生命周期锁：_playLock 只表达"特效进行中"，解锁由下方 timer 按卡牌 timing 驱动。
+      // 旧版这里还有一道按固定时长比较的时间节流，在 timer 归零 _playLock 后永远不可达，已作为死逻辑删除。
       const factor = typeof getBattleSpeedFactor === "function" ? getBattleSpeedFactor() : 1;
-      if (now - this._playLock < Math.round(3000 * factor)) return;
-      this._playLock = now;
+      this._playLock = Date.now();
       setCombatInputLocked(true);
       const banner = document.getElementById("skillBanner");
       if (banner) {

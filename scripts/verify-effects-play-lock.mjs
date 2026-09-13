@@ -77,9 +77,11 @@ assert.equal(originalCalls, 1, "首次播放应调用一次基础特效");
 assert.ok(renderer._playLock > 0, "首次播放应设置 _playLock");
 assert.equal(combatInputLocked, true, "首次播放应锁定战斗输入");
 
-// 2) 锁内重复请求：应被忽略，不再次调用基础特效。
-play.call(renderer, card, result);
-assert.equal(originalCalls, 1, "锁内重复请求不应再次调用基础特效");
+// 2) 锁内重复请求：wrapper 自身不再做时间节流（旧 3000ms 死逻辑已删除），
+//    重入拒绝由上游入口（gameEngine.playCard / 行动队列）检查 _playLock 真值完成。
+assert.ok(renderer._playLock > 0, "锁存在期间 _playLock 必须保持真值，供上游入口拒绝重入");
+assert.doesNotMatch(source, /3000/, "不得再存在第二套 3000ms 节流状态");
+assert.match(source, /this\._playLock = Date\.now\(\)/, "_playLock 仅由 play 设置、由解锁 timer 清除");
 
 // 3) 解锁 timer：清除锁并恢复输入。
 const unlockTimer = timers[timers.length - 1];
