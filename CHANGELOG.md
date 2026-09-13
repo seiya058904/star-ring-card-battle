@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- 战役进度"重置"与战斗结算改为共用同一把 Web Lock（`campaignMode.commitProgress`），锁内重读最新进度并递增 `resetGeneration`，消除 reset 与结算跨标签页竞态；开战授权与代际记录改用单次 progress 快照。新增锁路径回归（verify-campaign-progress-lock）。
+- release workflow 手动重建改为 checkout 输入的 tag 后再构建，保证 Release APK 与 tag 源码一致；下一 APK 版本应为 1.2.5（versionCode 10）+ 新 tag v1.2.5，不再覆盖 v1.2.4。
+
 ## v1.2.4 — 2026-09-11
 
 - 修复战斗效果与战役生命周期：区分固定/比例状态、限定战役伤害加成作用域、恢复种族天赋、修正抽牌资源。
