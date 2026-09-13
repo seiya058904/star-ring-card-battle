@@ -23,6 +23,7 @@ const suites = [
   { name: "召唤协击强化", file: "scripts/verify-summon-assist.mjs" },
   { name: "战役保存失败提示", file: "scripts/verify-campaign-save-failure.mjs" },
   { name: "战役跨标签页进度", file: "scripts/verify-campaign-progress-concurrency.mjs" },
+  { name: "战役进度锁路径", file: "scripts/verify-campaign-progress-lock.mjs" },
   { name: "战役 AI turn", file: "scripts/verify-campaign-ai-turn.mjs" },
   { name: "战役 runtime boundaries", file: "scripts/verify-campaign-runtime-boundaries.mjs" },
   { name: "campaign-rules 模块契约", file: "scripts/verify-campaign-rules-module.mjs" },

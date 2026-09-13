@@ -45,18 +45,22 @@
     document.getElementById("campaignCloseBtn").onclick = () => uiRenderer.closeModal();
     document.getElementById("campaignStartBtn").onclick = startCampaign;
     document.getElementById("campaignResetBtn").onclick = () => uiRenderer.openConfirm({ title: "重置战役进度？", message: "六名角色的首章进度和最近战斗记录都会清除。", confirmText: "确认重置", onConfirm: () => {
-      // resetGeneration 递增后，其他标签页进行中的战斗结算会检测到代际变化而拒绝写回旧状态。
-      const latest = progress();
-      const fresh = mode.defaultProgress(data.characters);
-      fresh.revision = (Number(latest.revision) || 0) + 1;
-      fresh.resetGeneration = (Number(latest.resetGeneration) || 0) + 1;
-      if (!saveProgress(fresh)) {
+      // 与战斗结算共用 campaignMode.commitProgress 的唯一 progress 锁：
+      // 锁内重读最新进度，再递增 resetGeneration 写回，避免锁外的 reset 与锁内的结算互相踩踏。
+      mode.commitProgress(() => {
+        const latest = progress();
+        const fresh = mode.defaultProgress(data.characters);
+        fresh.revision = (Number(latest.revision) || 0) + 1;
+        fresh.resetGeneration = (Number(latest.resetGeneration) || 0) + 1;
+        if (!saveProgress(fresh)) {
+          renderCampaignHome();
+          uiRenderer.showToast("重置失败：无法保存战役进度，请重试。");
+          return;
+        }
+        selectedStage = 1;
         renderCampaignHome();
-        uiRenderer.showToast("重置失败：无法保存战役进度，请重试。");
-        return;
-      }
-      selectedStage = 1;
-      renderCampaignHome(); }, onCancel: () => renderCampaignHome() });
+      });
+    }, onCancel: () => renderCampaignHome() });
     const recent = progress().recentBattles.slice(0, 5);
     if (recent.length) {
       const container = document.createElement("div");
@@ -74,10 +78,12 @@
       document.getElementById("modalBody")?.appendChild(container);
     }
   }
-  function startCampaign() {
+  function startCampaign(snapshot) {
+    // 使用包装层传入的单次 progress 快照：authorizeStage、代际记录与开战基于同一状态，
+    // 防止其他标签页刚执行 reset 后，旧 UI 上仍显示为已解锁的关卡趁机启动。
+    const saved = snapshot || progress();
     const player = character(); const currentStage = stage(); const state = gameEngine.start(campaignDeck(player), enemyDeck(currentStage));
-    // 记录开战时的重置代际：结算时若其他标签页执行过重置，则拒绝写回本局结果。
-    state.gameMode = "campaign"; state.campaign = { characterId: player.id, stage: selectedStage, difficulty: selectedDifficulty, playerRing: 0, enemyRing: 0, resonanceUsed: false, enemyResonanceUsed: false, costReduction: 0, enemyCostReduction: 0, intent: null, passiveTriggers: 0, passives: { turn: {}, match: {}, round: 0 }, progressGeneration: Number(progress().resetGeneration) || 0 };
+    state.gameMode = "campaign"; state.campaign = { characterId: player.id, stage: selectedStage, difficulty: selectedDifficulty, playerRing: 0, enemyRing: 0, resonanceUsed: false, enemyResonanceUsed: false, costReduction: 0, enemyCostReduction: 0, intent: null, passiveTriggers: 0, passives: { turn: {}, match: {}, round: 0 }, progressGeneration: Number(saved.resetGeneration) || 0 };
     state.enemy.name = currentStage.enemyName; state.enemy.campaignStyle = currentStage.style;
     // 第五关首领战：按 STAGE5_BOSS_TUNING 缩放战斗 profile（伤害/固定减伤/护盾/治疗全链路各只缩放一次）。
     if (currentStage.id === "ancestral-dragon" && state.enemy?.profile) {
@@ -113,7 +119,7 @@
   const originalNav = uiRenderer.nav.bind(uiRenderer); uiRenderer.nav = function (name) { if (name === "home") clearCampaignUi(); return originalNav(name); };
   const originalSandboxStart = uiRenderer.startBattle.bind(uiRenderer); uiRenderer.startBattle = async function () { clearCampaignUi(); if (gameEngine.state?.campaign) gameEngine.invalidateBattle(); return originalSandboxStart(); };
   const originalStartCampaign = startCampaign;
-  startCampaign = function () { const saved = progress(); const entry = saved.characters[selectedCharacter]; if (!entry || !data.stages[selectedStage - 1] || !mode.authorizeStage(entry, selectedStage)) { selectedStage = mode.clampStage(entry, selectedStage); uiRenderer.showToast("当前角色尚未解锁该关卡", "error"); renderCampaignHome(); return false; } setCombatInputLocked(false); clearHpDisplayOverrides(); pendingGameOverCheck.flag = false; resetBattleViewTransform(); clearCampaignUi(); return originalStartCampaign(); };
+  startCampaign = function () { const saved = progress(); const entry = saved.characters[selectedCharacter]; if (!entry || !data.stages[selectedStage - 1] || !mode.authorizeStage(entry, selectedStage)) { selectedStage = mode.clampStage(entry, selectedStage); uiRenderer.showToast("当前角色尚未解锁该关卡", "error"); renderCampaignHome(); return false; } setCombatInputLocked(false); clearHpDisplayOverrides(); pendingGameOverCheck.flag = false; resetBattleViewTransform(); clearCampaignUi(); return originalStartCampaign(saved); };
   document.addEventListener("visibilitychange", () => { if (document.hidden) audioManager.stop(); });
   global.campaignResultActions = function campaignResultActions(state, ui) { const row = document.querySelector("#screen-result .button-row"); if (!row) return; const won = state.winner === "player"; row.innerHTML = mode.resultActions({ victory: won, stage: state.campaign.stage }).map(action => `<button type="button" data-campaign-result="${action}">${action === "next" ? "下一关" : action === "retry" ? "重试本关" : action === "route" ? "返回战役路线" : "返回首页"}</button>`).join(""); row.querySelectorAll("[data-campaign-result]").forEach(button => button.onclick = () => { const action = button.dataset.campaignResult; if (action === "home") { ui.nav("home"); return; } if (action === "route") { renderCampaignHome(); return; } selectedStage = action === "next" ? Math.min(5, state.campaign.stage + 1) : state.campaign.stage; startCampaign(); }); };
   campaignRuntime.configurePresentation({

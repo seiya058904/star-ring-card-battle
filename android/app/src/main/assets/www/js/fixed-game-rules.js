@@ -547,15 +547,9 @@
       try { localStorage.setItem(global.campaignMode.STORAGE_KEY, JSON.stringify(next)); } catch { progressSaved = false; }
       if (!progressSaved) this.showToast?.("战役进度保存失败，本局结果未写入本地存档。", "error");
     };
-    // Web Locks 可用时在固定锁内严格序列化 read → merge → write（强跨标签页原子性）。
-    // 不可用时退化为 best-effort fallback：写入前重读 latest 并校验 resetGeneration，
-    // 能防止旧战斗复活 reset 前状态、并让不同字段的合并基于最新数据，
-    // 但不宣称能阻止两个标签页完全同时写入造成的 lost update（P3 不引入更强并发机制）。
-    if (typeof navigator !== "undefined" && navigator?.locks?.request) {
-      navigator.locks.request(`${global.campaignMode.STORAGE_KEY}-commit`, () => { commitCampaignResult(); });
-    } else {
-      commitCampaignResult();
-    }
+    // 与"重置进度"共用 campaignMode.commitProgress 的唯一 progress 锁，
+    // 保证 reset 与结算 read → merge → write 在锁内严格串行。
+    global.campaignMode.commitProgress(commitCampaignResult);
     this.nav("result");
     audioManager?.play?.(won ? "victory" : "defeat");
     document.getElementById("resultTitle").textContent = won ? `战役胜利 · ${score}级评价` : `战役失败 · ${score}级评价`;

@@ -78,6 +78,7 @@ function makeContext(setItemImpl) {
     recordStageWin: (progress, characterId) => progress,
     recordStageLoss: progress => progress,
     recentBattles: (existing, incoming) => incoming,
+    commitProgress: write => write(),
   };
   context.global.campaignData = { characters: [], stages: [{ name: "第一章" }] };
   vm.createContext(context);

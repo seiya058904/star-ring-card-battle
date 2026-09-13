@@ -44,5 +44,15 @@
   function createCombatStats() { return { damage: 0, highestDamage: 0, damageTaken: 0, healing: 0, overheal: 0, shield: 0, shieldAbsorbed: 0, elementalAdvantage: 0, passiveTriggers: 0, resonance: 0, enemyResonance: 0, summonDamage: 0, cards: 0, advanced: 0, special: 0, rounds: 0, revived: false }; }
   function recordCombatEvent(stats, event) { const amount = Math.max(0, Number(event.amount || 0)); if (event.type === "damage") { stats.damage += amount; stats.highestDamage = Math.max(stats.highestDamage, amount); if (event.summon) stats.summonDamage += amount; } if (event.type === "heal") stats.healing += amount; if (event.type === "shield") stats.shield += amount; if (event.type === "shieldAbsorbed") stats.shieldAbsorbed += amount; if (event.type === "elementalAdvantage") stats.elementalAdvantage += 1; if (event.type === "passive") stats.passiveTriggers += 1; if (event.type === "resonance") stats[event.side === "enemy" ? "enemyResonance" : "resonance"] += 1; }
   function drawCount(before, after) { return Math.max(0, Number(after) - Number(before)); }
-  global.campaignMode = { MAX_RING, STORAGE_KEY, flattenDeck, defaultProgress, loadProgress, recordStageWin, recordStageLoss, mulligan, addRingEnergy, resonanceCost, resonanceShield, intentFor, scoreBattle, normalizeProgress, authorizeStage, clampStage, passiveAllowed, consumePassive, enemyResonanceChoice, shouldEnterBossPhase, recentBattles, resultActions, effectiveCardCost, expireResonance, isFormalIntent, passiveTriggerState, aiCardScore, createCombatStats, recordCombatEvent, drawCount };
+  // 战役进度唯一写入口：结算写回与"重置进度"都必须经此函数。
+  // Web Locks 可用时在同一把固定锁内严格串行化 read → merge → write；
+  // 不可用时同步执行，属于 best-effort fallback：仍保证写入前基于最新数据并校验代际，
+  // 但不宣称能阻止两个标签页完全同时写入造成的 lost update（P3 不引入更强并发机制）。
+  function commitProgress(write) {
+    if (typeof navigator !== "undefined" && typeof navigator.locks?.request === "function") {
+      return navigator.locks.request(`${STORAGE_KEY}-commit`, () => write());
+    }
+    return write();
+  }
+  global.campaignMode = { MAX_RING, STORAGE_KEY, flattenDeck, defaultProgress, loadProgress, recordStageWin, recordStageLoss, mulligan, addRingEnergy, resonanceCost, resonanceShield, intentFor, scoreBattle, normalizeProgress, authorizeStage, clampStage, passiveAllowed, consumePassive, enemyResonanceChoice, shouldEnterBossPhase, recentBattles, resultActions, effectiveCardCost, expireResonance, isFormalIntent, passiveTriggerState, aiCardScore, createCombatStats, recordCombatEvent, drawCount, commitProgress };
 })(globalThis);
