@@ -20,6 +20,7 @@ const suites = [
   { name: "战役 applyCard 集成边界", file: "scripts/verify-campaign-apply-card-chain.mjs" },
   { name: "战役 playCard 集成边界", file: "scripts/verify-campaign-play-card-chain.mjs" },
   { name: "战役 turn transition", file: "scripts/verify-campaign-turn-transition.mjs" },
+  { name: "召唤协击强化", file: "scripts/verify-summon-assist.mjs" },
   { name: "战役 AI turn", file: "scripts/verify-campaign-ai-turn.mjs" },
   { name: "战役 runtime boundaries", file: "scripts/verify-campaign-runtime-boundaries.mjs" },
   { name: "campaign-rules 模块契约", file: "scripts/verify-campaign-rules-module.mjs" },

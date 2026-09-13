@@ -445,11 +445,16 @@
     const target = fighter.id === "player" ? gameEngine.state.enemy : gameEngine.state.player;
     for (const summon of fighter.summons || []) {
       if (summon.hp <= 0 || target.hp <= 0) continue;
-      const settlement = gameEngine.resolveDamage({ source: fighter, target, amount: summon.power, element: fighter.element, sourceKind: "summon" });
-      if (settlement.total) {
-        gameEngine.log(`[召唤协击] ${summon.name}造成${formatNumber(settlement.total)}伤害。`);
-        effectsRenderer?.showSummonAssistAttack?.({ side: fighter.id, targetSide: target.id, summon, amount: settlement.total });
-      }
+      // 重复召唤写入的 nextAssistMultiplier 语义是"下一次协击伤害提高"：
+      // 只要双方存活并完成一次 resolveDamage 结算即消费，即使被护盾/固定减伤完全吸收（实际 HP 伤害为 0）。
+      const multiplierRaw = Number(summon.nextAssistMultiplier);
+      const multiplier = Number.isFinite(multiplierRaw) ? Math.max(1, multiplierRaw) : 1;
+      const settlement = gameEngine.resolveDamage({ source: fighter, target, amount: Math.max(1, Math.round(summon.power * multiplier)), element: fighter.element, sourceKind: "summon" });
+      delete summon.nextAssistMultiplier;
+      delete summon.reinforcedBy;
+      // 强化标识只看本次实际使用的 multiplier，与消费后的字段无关。
+      gameEngine.log(`[召唤协击] ${summon.name}造成${formatNumber(settlement.total)}伤害${multiplier > 1 ? "（强化协击）" : ""}。`);
+      effectsRenderer?.showSummonAssistAttack?.({ side: fighter.id, targetSide: target.id, summon, amount: settlement.total });
     }
   }
   gameEngine.endTurn = function(side) {
