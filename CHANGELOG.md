@@ -1,9 +1,11 @@
 # Changelog
 
-## Unreleased
+## v1.2.5 — 2026-09-13
 
-- 战役进度"重置"与战斗结算改为共用同一把 Web Lock（`campaignMode.commitProgress`），锁内重读最新进度并递增 `resetGeneration`，消除 reset 与结算跨标签页竞态；开战授权与代际记录改用单次 progress 快照。新增锁路径回归（verify-campaign-progress-lock）。
-- release workflow 手动重建改为 checkout 输入的 tag 后再构建，保证 Release APK 与 tag 源码一致；下一 APK 版本应为 1.2.5（versionCode 10）+ 新 tag v1.2.5，不再覆盖 v1.2.4。
+- 审计修复批次：召唤强化协击结算修复（1.5 倍乘数进入统一 resolveDamage、结算即消费，护盾全吸收也消费）；战役进度保存失败不再静默并给出错误提示；保留历史自定义卡 localStorage 数据；≤768px 窄视口战斗布局修复（结束回合按钮不再被裁出屏幕）；删除战斗特效死节流；CI 覆盖根 icon、Android 同步具备删除语义、文档纠偏。
+- 战役进度"重置"与战斗结算共用同一把 Web Lock（`campaignMode.commitProgress`），锁内重读最新进度并递增 `resetGeneration`，消除 reset 与结算跨标签页竞态；开战授权与代际记录改用单次 progress 快照，新增锁路径回归（verify-campaign-progress-lock）。
+- release workflow 手动重建改为 checkout 输入的 tag 后再构建，保证 Release APK 与 tag 源码一致。
+- 版本升级：versionCode 10 / versionName 1.2.5。
 
 ## v1.2.4 — 2026-09-11
 
