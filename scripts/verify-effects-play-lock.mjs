@@ -35,6 +35,8 @@ const timers = [];
 let combatInputLocked = null;
 let renderCalls = 0;
 let battleActive = true;
+// 战斗速度因子：本测试固定为标准档（1），单独验证解锁定时器是否走缩放后的时间轴。
+let speedFactor = 1;
 const context = {
   console,
   Math,
@@ -44,9 +46,11 @@ const context = {
     getElementById() { return null; },
     body: { classList: { add() {}, remove() {}, toggle() {} } },
   },
-  setTimeout: fn => timers.push(fn),
+  setTimeout: (fn, delay) => { timers.push({ fn, delay }); },
   clearTimeout: () => {},
-  getBattleSpeedFactor: () => 1,
+  getBattleSpeedFactor: () => speedFactor,
+  // index.html 的缩放入口：特效锁与出牌输入恢复都必须经它换算时间。
+  scaledDramaMs: ms => Math.round((Number(ms) || 0) * speedFactor),
   setCombatInputLocked: value => { combatInputLocked = value; },
   battlePerfMonitor: { markFirstCard() {} },
   preloadCardVisualAssets: () => {},
@@ -76,6 +80,7 @@ play.call(renderer, card, result);
 assert.equal(originalCalls, 1, "首次播放应调用一次基础特效");
 assert.ok(renderer._playLock > 0, "首次播放应设置 _playLock");
 assert.equal(combatInputLocked, true, "首次播放应锁定战斗输入");
+assert.equal(timers[timers.length - 1].delay, 300, "标准档位特效锁应在 totalMin + 200 释放");
 
 // 2) 锁内重复请求：wrapper 自身不再做时间节流（旧 3000ms 死逻辑已删除），
 //    重入拒绝由上游入口（gameEngine.playCard / 行动队列）检查 _playLock 真值完成。
@@ -84,7 +89,7 @@ assert.doesNotMatch(source, /3000/, "不得再存在第二套 3000ms 节流状�
 assert.match(source, /this\._playLock = Date\.now\(\)/, "_playLock 仅由 play 设置、由解锁 timer 清除");
 
 // 3) 解锁 timer：清除锁并恢复输入。
-const unlockTimer = timers[timers.length - 1];
+const unlockTimer = timers[timers.length - 1].fn;
 battleActive = true;
 renderCalls = 0;
 unlockTimer();
@@ -92,13 +97,21 @@ assert.equal(renderer._playLock, 0, "解锁 timer 应清除 _playLock");
 assert.equal(combatInputLocked, false, "解锁 timer 应恢复战斗输入");
 assert.ok(renderCalls >= 1, "解锁 timer 应触发 uiRenderer.render");
 
+// 3b) 极快档位：特效锁必须在缩放后的时间释放（完整动作时间轴随速度档位一起缩短）。
+speedFactor = 0.3;
+timers.length = 0;
+play.call(renderer, { ...card, cost: 10, skillTier: "special" }, result);
+assert.equal(timers[timers.length - 1].delay, Math.round(300 * 0.3), "极快档位特效锁释放时间必须缩放");
+speedFactor = 1;
+renderer._playLock = 0;
+
 // 4) 陈旧 timer：战斗失效时不得渲染或恢复输入。
 renderer._playLock = 123;
 combatInputLocked = true;
 renderCalls = 0;
 timers.length = 0;
 play.call(renderer, card, result);
-const staleTimer = timers[timers.length - 1];
+const staleTimer = timers[timers.length - 1].fn;
 battleActive = false;
 staleTimer();
 assert.equal(renderCalls, 0, "陈旧 timer 不应触发渲染");
@@ -112,7 +125,7 @@ renderer._playLock = 0;
 battleActive = true;
 play.call(renderer, card, result);
 const battleALock = renderer._playLock;
-const battleATimer = timers[timers.length - 1];
+const battleATimer = timers[timers.length - 1].fn;
 assert.ok(battleALock > 0, "Battle A 应持有 visual lock");
 
 // 模拟 Battle B start：新战斗重置 renderer visual lock。

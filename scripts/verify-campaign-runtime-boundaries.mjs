@@ -92,6 +92,8 @@ context.effectiveCardCost = (state, side, card) => {
   return Math.max(0, Number(card?.cost || 0));
 };
 context.dramaTimingForCard = () => ({ totalMin: 1 });
+// index.html 的完整动作时间缩放入口：标准档位下等价于原值。
+context.scaledDramaMs = ms => Math.round(Number(ms) || 0);
 context.preloadCardVisualAssets = () => {};
 context.stripCardTaxonomyPrefix = value => value;
 context.mechanicsForCard = () => [];

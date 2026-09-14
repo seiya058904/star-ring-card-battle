@@ -81,9 +81,18 @@ jobs:
             echo "versionCode must be a positive integer" >&2
             exit 1
           fi
+          # 新版本发布（tag push）：versionCode 必须严格递增，防止覆盖更新时被系统拒绝。
+          # 重建既有 Release（workflow_dispatch）：构建的是历史 tag 源码，其 versionCode
+          # 必然小于等于后续版本，不能再与未来版本比较大小；只校验 tag / versionName /
+          # versionCode 与该 tag 源码自洽。
+          if [ "${{ github.event_name }}" != "push" ]; then
+            echo "Rebuild of existing release ${RELEASE_TAG}: skipping monotonic versionCode check (tag/versionName/versionCode consistency verified: versionCode=${VERSION_CODE})."
+            exit 0
+          fi
+          GITHUB_REF_NAME_VALUE="${GITHUB_REF_NAME:-}"
           MAX_PREV=0
           for tag in $(git tag --list 'v[0-9]*' --sort=version:refname); do
-            if [ "$tag" = "$GITHUB_REF_NAME" ] || [ "$tag" = "$RELEASE_TAG" ]; then continue; fi
+            if [ "$tag" = "$GITHUB_REF_NAME_VALUE" ] || [ "$tag" = "$RELEASE_TAG" ]; then continue; fi
             prev="$(git show "$tag:android/app/build.gradle" 2>/dev/null | sed -n 's/.*versionCode = \([0-9][0-9]*\).*/\1/p' | head -1)"
             if [ -n "$prev" ] && [ "$prev" -gt "$MAX_PREV" ]; then MAX_PREV="$prev"; fi
           done

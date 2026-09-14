@@ -94,6 +94,26 @@ const fresh = campaignMode.defaultProgress(campaignData.characters);
 assert.equal(fresh.characters.lisaya.unlockedStage, 1);
 assert.equal(campaignMode.recordStageWin(fresh, "lisaya", 1).characters.lisaya.unlockedStage, 2);
 assert.equal(campaignMode.scoreBattle({ victory: true, hpRatio: .9, damageTaken: 100, maxHp: 1000, healing: 100, overheal: 0, rounds: 6, difficulty: "hard" }), "S");
+// R06：healing 是"实际恢复量"、overheal 是"未生效的请求量"，
+// 治疗效率必须按"有效治疗占比"计算，不能拿 overheal 除以 healing。
+{
+  // 旧公式 1 - overheal / healing 混用了两个字段的口径：
+  //   overheal ≥ healing 时效率被算成 0（实际有效率 = actual/total > 0）；
+  //   overheal 很小时又把效率算成 1 - overheal/healing，高于真实有效治疗占比。
+  assert.equal(campaignMode.healingEfficiency(50, 50), 0.5, "半量有效治疗应为 50%");
+  assert.ok(Math.abs(campaignMode.healingEfficiency(50, 25) - 50 / 75) < 1e-12, "2/3 有效治疗应为 66.7%（旧公式给出 50%）");
+  assert.ok(Math.abs(campaignMode.healingEfficiency(50, 2) - 50 / 52) < 1e-12, "50/52 有效治疗应为 96.2%");
+  assert.equal(campaignMode.healingEfficiency(50, 0), 1, "完全有效治疗应为 100%");
+  assert.equal(campaignMode.healingEfficiency(0, 100), 0, "完全没有实际治疗时必须为 0");
+  assert.equal(campaignMode.healingEfficiency(0, 0), 0, "没有治疗请求时为 0");
+  assert.equal(campaignMode.healingEfficiency(-5, 10), 0, "非法输入不得产生负效率或超过 1");
+  // 评分口径：同一组战绩参数下，过量治疗必须降低该分项贡献（0.1 × 效率），
+  // 且 A/S 分界不得被口径混用影响。
+  const base = { victory: true, hpRatio: .7492, damageTaken: 250, maxHp: 1000, rounds: 25, difficulty: "normal" };
+  assert.equal(campaignMode.scoreBattle({ ...base, healing: 50, overheal: 50 }), "B", "半量有效治疗应为 B");
+  assert.equal(campaignMode.scoreBattle({ ...base, healing: 50, overheal: 0 }), "A", "完全有效治疗的同一战绩应为 A");
+  assert.equal(campaignMode.scoreBattle({ ...base, healing: 0, overheal: 100 }), "B", "完全没有实际治疗时治疗效率为 0");
+}
 assert.equal(campaignMode.authorizeStage({ unlockedStage: 1 }, 2), false);
 assert.equal(campaignMode.resonanceShield(1000), 120);
 console.log("战役规则、固定卡组接入与通用能量验证通过。");

@@ -12,7 +12,16 @@
   function resonanceCost(cost, reduction) { return Math.max(0, cost - reduction); }
   function resonanceShield(maxHp) { return Math.round(maxHp * .12); }
   function intentFor(cards, energy, style, context = {}) { const playable = cards.filter(card => Number(card.effectiveCost ?? card.cost) <= energy); if (!playable.length) return { type: "蓄力", card: null }; const card = playable.slice().sort((a, b) => aiCardScore(b, { ...context, style }) - aiCardScore(a, { ...context, style }))[0]; const type = card.skillTier === "special" ? "特殊技能" : card.skillTier === "advanced" ? "高级技能" : ["shield", "defense"].includes(card.effectType) ? "防御" : ["heal", "revive"].includes(card.effectType) ? "治疗" : ["control", "freeze"].includes(card.effectType) ? "控制" : "普通攻击"; return { type, card }; }
-  function scoreBattle({ victory, hpRatio = 0, damageTaken = 0, maxHp = 1, healing = 0, overheal = 0, rounds = 99, difficulty = "normal", revived = false }) { if (!victory) return "C"; const damageRatio = Math.min(1, Math.max(0, damageTaken / Math.max(1, maxHp))); const healingEfficiency = healing <= 0 ? 0 : Math.max(0, 1 - overheal / healing); const bonus = difficulty === "hard" ? .08 : difficulty === "easy" ? -.03 : 0; const score = hpRatio * .35 + (1 - damageRatio) * .25 + healingEfficiency * .1 + Math.max(0, 1 - rounds / 30) * .2 + bonus - (revived ? .1 : 0); return score >= .78 ? "S" : score >= .58 ? "A" : score >= .36 ? "B" : "C"; }
+  // healing 字段口径是"实际恢复的生命"，overheal 是"超出上限未生效的请求量"，
+  // 因此效率必须用 实际治疗 /（实际治疗 + 过量治疗）；拿 overheal 去除以 healing 会在
+  // overheal ≥ healing 时把效率算成 0、在 overheal 很小时又低估，两者都不是有效治疗占比。
+  function healingEfficiency(healing, overheal) {
+    const actual = Math.max(0, Number(healing) || 0);
+    const wasted = Math.max(0, Number(overheal) || 0);
+    const total = actual + wasted;
+    return total <= 0 ? 0 : Math.min(1, actual / total);
+  }
+  function scoreBattle({ victory, hpRatio = 0, damageTaken = 0, maxHp = 1, healing = 0, overheal = 0, rounds = 99, difficulty = "normal", revived = false }) { if (!victory) return "C"; const damageRatio = Math.min(1, Math.max(0, damageTaken / Math.max(1, maxHp))); const bonus = difficulty === "hard" ? .08 : difficulty === "easy" ? -.03 : 0; const score = hpRatio * .35 + (1 - damageRatio) * .25 + healingEfficiency(healing, overheal) * .1 + Math.max(0, 1 - rounds / 30) * .2 + bonus - (revived ? .1 : 0); return score >= .78 ? "S" : score >= .58 ? "A" : score >= .36 ? "B" : "C"; }
   function normalizeRecentBattles(records, characters) {
     if (!Array.isArray(records)) return [];
     const characterIds = new Set(characters.map(character => character.id));
@@ -54,5 +63,5 @@
     }
     return write();
   }
-  global.campaignMode = { MAX_RING, STORAGE_KEY, flattenDeck, defaultProgress, loadProgress, recordStageWin, recordStageLoss, mulligan, addRingEnergy, resonanceCost, resonanceShield, intentFor, scoreBattle, normalizeProgress, authorizeStage, clampStage, passiveAllowed, consumePassive, enemyResonanceChoice, shouldEnterBossPhase, recentBattles, resultActions, effectiveCardCost, expireResonance, isFormalIntent, passiveTriggerState, aiCardScore, createCombatStats, recordCombatEvent, drawCount, commitProgress };
+  global.campaignMode = { MAX_RING, STORAGE_KEY, flattenDeck, defaultProgress, loadProgress, recordStageWin, recordStageLoss, mulligan, addRingEnergy, resonanceCost, resonanceShield, intentFor, scoreBattle, healingEfficiency, normalizeProgress, authorizeStage, clampStage, passiveAllowed, consumePassive, enemyResonanceChoice, shouldEnterBossPhase, recentBattles, resultActions, effectiveCardCost, expireResonance, isFormalIntent, passiveTriggerState, aiCardScore, createCombatStats, recordCombatEvent, drawCount, commitProgress };
 })(globalThis);

@@ -121,7 +121,17 @@
   const originalStartCampaign = startCampaign;
   startCampaign = function () { const saved = progress(); const entry = saved.characters[selectedCharacter]; if (!entry || !data.stages[selectedStage - 1] || !mode.authorizeStage(entry, selectedStage)) { selectedStage = mode.clampStage(entry, selectedStage); uiRenderer.showToast("当前角色尚未解锁该关卡", "error"); renderCampaignHome(); return false; } setCombatInputLocked(false); clearHpDisplayOverrides(); pendingGameOverCheck.flag = false; resetBattleViewTransform(); clearCampaignUi(); return originalStartCampaign(saved); };
   document.addEventListener("visibilitychange", () => { if (document.hidden) audioManager.stop(); });
-  global.campaignResultActions = function campaignResultActions(state, ui) { const row = document.querySelector("#screen-result .button-row"); if (!row) return; const won = state.winner === "player"; row.innerHTML = mode.resultActions({ victory: won, stage: state.campaign.stage }).map(action => `<button type="button" data-campaign-result="${action}">${action === "next" ? "下一关" : action === "retry" ? "重试本关" : action === "route" ? "返回战役路线" : "返回首页"}</button>`).join(""); row.querySelectorAll("[data-campaign-result]").forEach(button => button.onclick = () => { const action = button.dataset.campaignResult; if (action === "home") { ui.nav("home"); return; } if (action === "route") { renderCampaignHome(); return; } selectedStage = action === "next" ? Math.min(5, state.campaign.stage + 1) : state.campaign.stage; startCampaign(); }); };
+  // 结果页按钮区按"当前结算属于哪种模式"整体重建：
+  // 战役结算写入战役按钮；沙盒分支由 fixed-game-rules.js 负责恢复沙盒按钮，
+  // 两边都不依赖"上一次是哪种模式"的顺序假设。
+  function resultButtonRow() { return document.querySelector("#screen-result .button-row"); }
+  global.campaignResultActions = function campaignResultActions(state, ui) {
+    const row = resultButtonRow();
+    if (!row) return;
+    const won = state.winner === "player";
+    row.innerHTML = mode.resultActions({ victory: won, stage: state.campaign.stage }).map(action => `<button type="button" data-campaign-result="${action}">${action === "next" ? "下一关" : action === "retry" ? "重试本关" : action === "route" ? "返回战役路线" : "返回首页"}</button>`).join("");
+    row.querySelectorAll("[data-campaign-result]").forEach(button => button.onclick = () => { const action = button.dataset.campaignResult; if (action === "home") { ui.nav("home"); return; } if (action === "route") { renderCampaignHome(); return; } selectedStage = action === "next" ? Math.min(5, state.campaign.stage + 1) : state.campaign.stage; startCampaign(); });
+  };
   campaignRuntime.configurePresentation({
     renderHud: renderCampaignHud,
     notice: campaignNotice,

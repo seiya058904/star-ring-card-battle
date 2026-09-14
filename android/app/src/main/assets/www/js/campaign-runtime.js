@@ -208,8 +208,32 @@
     checkCampaignBossPhase(fighter, beforeHp);
   }
 
+  // 战役生命阈值检查的唯一注册点：fixed-game-rules 的伤害路径（卡牌、持续伤害、召唤协击）
+  // 通过 campaignHealthChangeHook 通知，战役被动与首领阶段只在这里判定一次。
+  function registerHealthChangeHooks() {
+    global.registerCampaignHealthChangeHook?.((fighter, previousHp, context) => {
+      const state = gameEngine.state;
+      if (!state?.campaign || state.gameOver) return;
+      if (fighter !== state.player && fighter !== state.enemy) return;
+      checkCampaignHealthThresholds(fighter, previousHp, context);
+      checkCampaignBossPhase(fighter, previousHp);
+    });
+  }
+
   function canContinueAiTurn(state, sessionId) {
     return Boolean(state && gameEngine.isActiveBattle(state, sessionId) && !state.gameOver && state.turn === "enemy");
+  }
+
+  // 等待本回合的视觉/结算动作真正结束。
+  // 超时只表示"这一轮还没空闲"，不代表敌方回合可以放弃：调用方必须继续等待或恢复，
+  // 否则 AI 会在动作锁释放后永久停留在敌方回合。
+  async function waitForAiResumable(state, sessionId, timeoutMs = 8000) {
+    while (true) {
+      const result = await waitForCombatIdle(state, sessionId, timeoutMs);
+      if (result !== "timeout") return result;
+      // 超时后复核：只有战斗仍然有效且仍是敌方回合才继续等待，旧局一律按取消处理。
+      if (!canContinueAiTurn(state, sessionId)) return "cancelled";
+    }
   }
 
   function activateEnemyResonance(state, sessionId) {
@@ -255,6 +279,8 @@
     const poll = Math.max(8, global.battleSpeedDelay ? global.battleSpeedDelay(40) : 40);
     const check = () => {
       if (!canContinueAiTurn(state, sessionId)) return resolve("cancelled");
+      // 超时优先于空闲判定：已经超过本轮等待期限时不再声称"空闲"，
+      // 由调用方重新开一轮等待（战斗仍有效）或判定取消，避免把过期结果当作完成。
       if (Date.now() - startedAt >= timeoutMs) return resolve("timeout");
       if (!state.actionLocked && !global.effectsRenderer?._playLock && !global.hasPendingOverrides()) return resolve("idle");
       setTimeout(check, poll);
@@ -267,7 +293,7 @@
       const card = this.chooseCard(state.enemy, state.player);
       if (!card) { gameEngine.resolveAction({ type: "endTurn", side: "enemy" }); return; }
       const played = gameEngine.resolveAction({ type: "playCard", side: "enemy", cardInstanceId: card.instanceId });
-      if (await waitForCombatIdle(state, sessionId) !== "idle" || !canContinueAiTurn(state, sessionId)) return;
+      if (await waitForAiResumable(state, sessionId) !== "idle" || !canContinueAiTurn(state, sessionId)) return;
       if (!played) continue;
     }
   }
@@ -306,11 +332,11 @@
       if (!card) { gameEngine.resolveAction({ type: "endTurn", side: "enemy" }); return; }
       const played = gameEngine.resolveAction({ type: "playCard", side: "enemy", cardInstanceId: card.instanceId });
       if (!played) {
-        if (await waitForCombatIdle(state, sessionId) !== "idle" || !canContinueAiTurn(state, sessionId)) return;
+        if (await waitForAiResumable(state, sessionId) !== "idle" || !canContinueAiTurn(state, sessionId)) return;
         continue;
       }
       state.campaign.intent = null;
-      if (await waitForCombatIdle(state, sessionId) !== "idle" || !canContinueAiTurn(state, sessionId)) return;
+      if (await waitForAiResumable(state, sessionId) !== "idle" || !canContinueAiTurn(state, sessionId)) return;
       activateEnemyResonance(state, sessionId);
     }
     if (_aiSteps >= 15 && canContinueAiTurn(state, sessionId)) {
@@ -322,6 +348,7 @@
   function install() {
     if (install.installed) return;
     install.installed = true;
+    registerHealthChangeHooks();
 
     const basePlayCard = gameEngine.playCard.bind(gameEngine);
     gameEngine.playCard = function (side, instanceId) {
@@ -405,7 +432,7 @@
       const sessionId = gameEngine.sessionId;
       if (!state || state.gameOver || state.turn !== "enemy") return;
       if (skipEnemyControlledTurn(state)) return;
-      if (await waitForCombatIdle(state, sessionId) !== "idle" || !canContinueAiTurn(state, sessionId)) return;
+      if (await waitForAiResumable(state, sessionId) !== "idle" || !canContinueAiTurn(state, sessionId)) return;
       if (!state.campaign) {
         await runSandboxAiTurn.call(this, state, sessionId);
         return;

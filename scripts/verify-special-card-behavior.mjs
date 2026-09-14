@@ -54,7 +54,8 @@ vm.runInContext(await read("js/battle-rules.js"), context, { filename: "js/battl
 // 14 张特殊卡的语义（单一事实来源）必须全部被生成：用明确标注的夹具卡组覆盖
 const SPECIAL_NAMES = [
   "时间回溯", "时间禁锢", "起死回生", "恶魔契约", "不灭魔躯", "绝对死亡",
-  "魔法极致化", "元素圣体", "伤害真实化", "统治", "防御极致化", "锁龙", "斩魔剑", "递种"
+  "魔法极致化", "元素圣体", "伤害真实化", "统治", "防御极致化", "锁龙", "斩魔剑", "递种",
+  "星界放逐"
 ];
 context.DEFAULT_SKILL_NAMES = {
   normal: [],
@@ -69,7 +70,7 @@ const specialPlan = [
   ["恶魔契约", "不灭魔躯", "绝对死亡"],
   ["魔法极致化", "元素圣体", "伤害真实化"],
   ["统治", "防御极致化", "锁龙"],
-  ["斩魔剑", "递种"]
+  ["斩魔剑", "递种", "星界放逐"]
 ];
 specialPlan.forEach((skills, i) => templates.push({
   id: "sp" + i, name: "特化" + i, title: "", race: "人族", profession: "战士",
@@ -171,8 +172,15 @@ assertEffects("不灭魔躯", e => e.some(x => x.type === "shield") && e.some(x 
 assertEffects("绝对死亡", e => e.length === 1 && e[0].type === "damage" && e[0].execute === true, "应为处决伤害");
 assertEffects("魔法极致化", e => e.some(x => x.type === "damage") && e.some(x => x.status === "增幅"), "应伤害+增幅");
 assertEffects("元素圣体", e => e.some(x => x.type === "shield") && e.some(x => x.status === "增幅"), "应护盾+增幅");
+// R07：星界放逐的 35% 倍率必须是固定卡数据的一部分（effect.damageMultiplier），
+// 不得再依赖显示名正则；基线的暗属性诅咒必须保留在 effects 里。
+assertEffects("星界放逐", e =>
+  e.length === 2
+  && e[0].type === "damage" && e[0].ratio === 0.1776 && e[0].damageMultiplier === 1.35
+  && e[1].type === "status" && e[1].status === "诅咒" && e[1].burnRatio === .01344 && e[1].turns === 3,
+  "应为 damage(ratio .1776 × damageMultiplier 1.35) + 诅咒 .01344/3回合，与基线 1360839 等价");
 
-// 全部 14 张都存在且效果非空（审计核心 bug：特殊卡丢失机制）
+// 全部 15 张都存在且效果非空（审计核心 bug：特殊卡丢失机制）
 for (const name of SPECIAL_NAMES) {
   const c = findSpecial(name);
   assert.ok(c.effects && c.effects.length > 0, `特殊卡[${name}]效果为空（审计 bug 复现）`);
@@ -378,4 +386,136 @@ for (const name of SPECIAL_NAMES) {
   assert.ok(summon.maxHp > 0 && summon.power > 0, "召唤物应有生命与战力");
 }
 
-console.log("特殊卡真实行为测试通过：14 张特殊卡均生成、语义一致且经 applyCard 实际验证。");
+// 星界放逐：35% 加成必须来自固定卡数据而不是显示名，且基线的伤害/诅咒强度保持不变（R07）。
+{
+  const card = findSpecial("星界放逐");
+  const damageEffect = card.effects.find(e => e.type === "damage");
+  const snapshot = () => {
+    // 50 级数值：1 级时伤害会被取整吃掉，35% 倍率不可观测。
+    const { player, enemy } = makeFighters({ level: 50 }, { level: 50, race: "龙族", maxHp: 50000000, hp: 50000000 });
+    const result = gameEngine.applyCard(player, enemy, card);
+    const curse = enemy.statuses.find(s => s.type === "诅咒");
+    const dotBefore = enemy.hp;
+    gameEngine.tickStatuses(enemy);
+    // 只比较结算数值与状态：日志文本必然包含卡名，与"是否按名字加成"无关。
+    return {
+      dealt: result.amount,
+      curse: curse ? { power: curse.power, turns: curse.turns, unit: curse.unit } : null,
+      dotDamage: dotBefore - enemy.hp,
+      dotType: enemy.statuses.map(s => s.type).sort(),
+    };
+  };
+  // 倍率来自效果字段，ratio 保持基线的 0.1776
+  assert.equal(damageEffect.ratio, 0.1776, "星界放逐 damage.ratio 应保持基线值 0.1776");
+  assert.equal(damageEffect.damageMultiplier, 1.35, "35% 倍率应作为固定卡效果字段存在");
+  const withName = snapshot();
+  const originalName = card.name;
+  // 只改显示名：结算数值与状态必须完全不变（旧实现会因此丢掉 35% 加成）
+  card.name = "无名放逐测试卡";
+  const withoutName = snapshot();
+  card.name = originalName;
+  assert.deepEqual(withoutName, withName, "星界放逐的伤害与诅咒都不得依赖显示名");
+  assert.ok(withName.dealt > 0, "星界放逐应造成伤害");
+  assert.ok(withName.curse && withName.curse.power > 0 && withName.curse.turns === 3, "应施加 3 回合诅咒");
+  assert.ok(withName.dotDamage > 0, "诅咒应产生持续伤害");
+  // 倍率确实生效：去掉 damageMultiplier 后同一张卡的伤害必须下降
+  const stripped = Object.assign({}, card, { effects: card.effects.map(e => e.type === "damage" ? Object.assign({}, e, { damageMultiplier: undefined }) : e) });
+  const { player: p2, enemy: e2 } = makeFighters({ level: 50 }, { level: 50, race: "龙族", maxHp: 50000000, hp: 50000000 });
+  const strippedResult = gameEngine.applyCard(p2, e2, stripped);
+  assert.ok(strippedResult.amount < withName.dealt, `移除 damageMultiplier 后伤害必须下降（${strippedResult.amount} < ${withName.dealt}）`);
+  assert.ok(Math.abs(withName.dealt / strippedResult.amount - 1.35) < 0.01, "有效倍率应为 1.35");
+  // 基线锚点：阿斯特拉的星界放逐Ⅲ（95 级，0.1776 × levelHp(95) = 774140452）实战直接伤害
+  // 必须等于 round(774140452 × 1.35) = 1045089610。这条同时保证：
+  // 倍率没有被丢掉，也没有被外层按显示名再多乘一次。
+  const { player: p3, enemy: e3 } = makeFighters({ level: 95 }, { level: 95, race: "人族", maxHp: 1e11, hp: 1e11 });
+  card.level = 95;
+  const baselineAnchor = gameEngine.applyCard(p3, e3, card);
+  card.level = undefined;
+  assert.equal(baselineAnchor.amount, 1045089610, "95 级实战伤害必须与基线 1360839 一致（774140452 × 1.35）");
+}
+
+// R07 显示闭环：卡面直接伤害必须包含 effect.damageMultiplier，且与同状态的实战结算一致。
+// 旧行为：卡面只显示效果原始数值（774M），与结算（1,045,089,610）相差 1.35 倍。
+{
+  // 生产路径：createRuntimeDeck 用 fixedCardDescription(definition, ctx) 固化卡面，
+  // 这里用同一实现 + 阿斯特拉的真实卡组上下文（95 级 / 人族 / 魔法师）复现。
+  const ctx = { level: 95, race: "人族", profession: "魔法师" };
+  const fixtureCard = findSpecial("星界放逐");
+  const definition = { name: "星界放逐Ⅲ", baseName: "星界放逐Ⅲ", effects: fixtureCard.effects };
+  const damageEffect = definition.effects.find(e => e.type === "damage");
+  const curseEffect = definition.effects.find(e => e.type === "status" && e.status === "诅咒");
+  const fullDescription = context.fixedCardDescription(definition, ctx);
+  const rawEffectAmount = context.levelHp(ctx.level) * damageEffect.ratio;
+  const staleShown = context.formatNumber(rawEffectAmount);
+  assert.equal(damageEffect.damageMultiplier, 1.35, "效果自带倍率必须为 1.35");
+  // 同状态下实战结算（人族目标无种族修正/元素克制），卡面数值必须与之同源
+  const { player, enemy } = makeFighters({ level: 95 }, { level: 95, race: "人族", maxHp: 1e11, hp: 1e11 });
+  const settlement = gameEngine.applyCard(player, enemy, definition);
+  assert.equal(settlement.amount, 1045089610, "同状态实战结算应与基线锚点一致");
+  const shown = context.formatNumber(settlement.amount);
+  assert.match(fullDescription, new RegExp(`造成 ${shown} 伤害`), `卡面应显示自身倍率后的伤害 ${shown}（实得：${fullDescription}）`);
+  assert.doesNotMatch(fullDescription, new RegExp(`造成 ${staleShown} 伤害`), "卡面不得停留在未乘倍率的旧数值（旧行为 774M）");
+  // 卡面只包含卡牌自身倍率：不含元素克制/种族减伤/护盾等目标相关修正
+  assert.notEqual(shown, staleShown, "倍率必须体现在卡面数值上");
+  // 诅咒：仍在 effects、仍 3 回合，卡面数值与结算一致
+  assert.ok(curseEffect && curseEffect.turns === 3 && curseEffect.burnRatio === .01344, "诅咒必须保持 3 回合 / .01344");
+  const curseShown = context.formatNumber(Math.round(context.levelHp(ctx.level) * curseEffect.burnRatio));
+  assert.match(fullDescription, new RegExp(`每回合 ${curseShown} 伤害`), "卡面诅咒数值应与结算一致");
+  // 只改显示名：伤害、诅咒与描述数值全部不变
+  const renamedDescription = context.fixedCardDescription({ ...definition, name: "无名放逐测试卡", baseName: "无名放逐测试卡" }, ctx);
+  const { player: rp, enemy: re } = makeFighters({ level: 95 }, { level: 95, race: "人族", maxHp: 1e11, hp: 1e11 });
+  const renamedSettlement = gameEngine.applyCard(rp, re, { ...definition, name: "无名放逐测试卡", baseName: "无名放逐测试卡" });
+  assert.equal(renamedSettlement.amount, settlement.amount, "改显示名不得影响伤害");
+  assert.equal(re.statuses.find(s => s.type === "诅咒").power, enemy.statuses.find(s => s.type === "诅咒").power, "改显示名不得影响诅咒强度");
+  assert.equal(renamedDescription, fullDescription, "改显示名不得影响卡面描述");
+}
+
+// 兽人低血天赋的作用对象：玩家选择摩罗哥只应替代玩家自己的普通天赋（R04）。
+{
+  // 使用 50 级战斗值：1 级时伤害会被取整吃掉，12% 加伤不可观测。
+  const orcAttack = (actorId, characterId) => {
+    const { player, enemy } = makeFighters({ level: 50 }, { level: 50, race: "人族", maxHp: 50000000, hp: 50000000 });
+    const actor = actorId === "player" ? player : enemy;
+    const target = actorId === "player" ? enemy : player;
+    actor.race = "兽人族";
+    actor.hp = Math.round(actor.maxHp * .4);
+    gameEngine.state.campaign = characterId ? { characterId } : null;
+    const before = target.hp;
+    gameEngine.applyCard(actor, target, runtimeCards.find(c => c.category === "base" && c.effects.some(e => e.type === "damage")));
+    return before - target.hp;
+  };
+  const enemyWithMoluo = orcAttack("enemy", "moluo");
+  const enemyWithLuolinfo = orcAttack("enemy", "luolinfo");
+  assert.ok(enemyWithMoluo > 0 && enemyWithMoluo === enemyWithLuolinfo, `玩家选择摩罗哥不得关闭敌方兽人低血加伤（${enemyWithMoluo} vs ${enemyWithLuolinfo}）`);
+  const playerAsMoluo = orcAttack("player", "moluo");
+  const playerAsLuolinfo = orcAttack("player", "luolinfo");
+  assert.ok(playerAsMoluo > 0 && playerAsLuolinfo > playerAsMoluo, `玩家选择摩罗哥时其普通兽人天赋应被战役被动替代（${playerAsMoluo} vs ${playerAsLuolinfo}）`);
+}
+
+// 恶魔吸血：实际治疗与过量治疗必须进入统计，提示只报告真实恢复量（R05）。
+{
+  const lifestealCard = runtimeCards.find(c => c.category === "base" && c.effects.some(e => e.type === "damage"));
+  // 受伤状态：统计应记录真实回血（50 级保证吸血量大于取整误差）
+  const { player, enemy } = makeFighters({ level: 50, race: "恶魔" }, { level: 50, maxHp: 50000000, hp: 50000000 });
+  player.hp = Math.round(player.maxHp * .5);
+  const stats = { damage: 0, highestDamage: 0, damageTaken: 0, healing: 0, overheal: 0 };
+  gameEngine.state.combatStats = stats;
+  const hpBefore = player.hp;
+  const wounded = gameEngine.applyCard(player, enemy, lifestealCard);
+  const actualHeal = player.hp - hpBefore;
+  assert.ok(actualHeal > 0, "受伤状态吸血应回血");
+  assert.equal(stats.healing, actualHeal, `吸血应进入治疗统计（实得 ${stats.healing} / 期望 ${actualHeal}）`);
+  assert.equal(stats.overheal, 0, "未满血时不应产生过量治疗");
+  assert.match(wounded.text, new RegExp(`吸血恢复${context.formatNumber(actualHeal)}生命`), "提示应报告实际恢复量");
+  // 满血状态：不得宣称恢复，且必须记录过量治疗
+  const { player: p2, enemy: e2 } = makeFighters({ level: 50, race: "恶魔" }, { level: 50, maxHp: 50000000, hp: 50000000 });
+  const stats2 = { damage: 0, highestDamage: 0, damageTaken: 0, healing: 0, overheal: 0 };
+  gameEngine.state.combatStats = stats2;
+  const full = gameEngine.applyCard(p2, e2, lifestealCard);
+  assert.equal(stats2.healing, 0, "满血时不应记录实际治疗");
+  assert.ok(stats2.overheal > 0, "满血时吸血应记录为过量治疗");
+  assert.match(full.text, /吸血恢复0生命/, "满血时不得宣称恢复了生命");
+  assert.ok(!/吸血恢复[1-9]/.test(full.text), "满血时日志不得显示虚假恢复量");
+}
+
+console.log("特殊卡真实行为测试通过：15 张特殊卡均生成、语义一致且经 applyCard 实际验证（含星界放逐显式倍率、兽人天赋作用域与吸血统计回归）。");

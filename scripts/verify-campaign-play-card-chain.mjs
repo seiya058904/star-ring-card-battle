@@ -132,6 +132,8 @@ context.window = { addEventListener() {} };
 
 context.setTimeout = () => 0;
 context.clearTimeout = () => {};
+// index.html 的完整动作时间缩放入口：标准档位下等价于原值，保证本测试的时序语义不变。
+context.scaledDramaMs = ms => Math.round((Number(ms) || 0) * (context.getBattleSpeedFactor ? context.getBattleSpeedFactor() : 1));
 context.audioManager = {
   play() {},
   stop() {},

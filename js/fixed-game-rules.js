@@ -9,6 +9,15 @@
   const statusUnit = status => status.unit || "fixed";
   const activeStatus = status => (status.persistent || status.turns > 0) && (status.charges === undefined || status.charges > 0);
   const rounded = value => Math.max(0, Math.round(Number(value) || 0));
+  // 生命变化事件的唯一出口：战役层（campaign-runtime.js）注册战役被动/首领阶段检查，
+  // 卡牌结算、持续伤害与召唤协击全部经由它通知，避免每条伤害路径各自维护不完整的检查列表。
+  globalThis.registerCampaignHealthChangeHook = function registerCampaignHealthChangeHook(hook) {
+    globalThis.campaignHealthChangeHook = typeof hook === "function" ? hook : null;
+  };
+  const notifyCampaignHealthChange = (fighter, previousHp, context) => {
+    if (!fighter || !Number.isFinite(previousHp) || previousHp === fighter.hp) return;
+    globalThis.campaignHealthChangeHook?.(fighter, previousHp, context || {});
+  };
   // 战斗时按等级 × ratio × 职业档案算出实际数值
   const effectAmount = (fighter, effect, card = null) => {
     const fn = typeof globalThis.resolveCardEffectAmount === "function" ? globalThis.resolveCardEffectAmount : typeof globalThis.resolveEffectAmount === "function" ? (e, a, c) => globalThis.resolveEffectAmount(e, a, c) * (Number(c?.effectMultiplier) || 1) : (e, a, c) => Math.max(0, Math.round(Number(e?.amount || 0))) * (Number(c?.effectMultiplier) || 1);
@@ -25,7 +34,11 @@
     };
     const parts = card.effects.map(effect => {
       if (effect.type === "damage") {
-        const v = descValue(effect);
+        // 效果自身倍率（effect.damageMultiplier，如星界放逐的 1.35）属于卡牌自身伤害，
+        // 必须与结算层同源计入卡面；取整次序也与结算一致（先算效果数值，再乘倍率取整）。
+        // 只含卡牌自身修正，不含元素克制/种族减伤/护盾等目标相关项。
+        const raw = descValue(effect);
+        const v = typeof raw === "number" && Number.isFinite(effect.damageMultiplier) ? Math.round(raw * effect.damageMultiplier) : raw;
         const pierce = effect.pierceAmountRatio ? descValue({ type: "damage", ratio: effect.pierceAmountRatio }) : 0;
         const slay = effect.slayRace ? `（对${effect.slayRace}造成${effect.slayMultiplier || 2}倍伤害）` : "";
         return `造成 ${typeof v === "number" ? formatNumber(v) : v} 伤害${effect.pierce ? "（穿透护盾）" : pierce ? `（其中 ${formatNumber(pierce)} 无视护盾）` : ""}${slay}`;
@@ -184,20 +197,26 @@
       if (!declaresStatus(status.type)) fighter.statuses.push({ ...status, unit: "ratio" });
     };
     const result = { text: `${actor.name}使用「${card.name}」。`, amount: 0, kind: card.effectType, element: card.element, tier: card.skillTier, intent: defaultIntent, actorId: actor.id, targetId: actor.id, popups: [], visualAmounts: [], visualTargets: { number: actor.id, impact: actor.id, shake: false } };
-    const orcTalent = actor.race === "兽人族" && this.state?.campaign?.characterId !== "moluo" && actor.hp / actor.maxHp < .5 && (hasDirectDamage || ["attack","burn","pierce","execute"].includes(card.effectType));
+    // 战役专属被动"替代"同种族普通天赋的例外只作用于玩家自己的战役角色；
+    // 玩家选择了摩罗哥/苏，不应关闭敌方兽人/神人的普通种族天赋。
+    const talentOverriddenByCampaign = characterId => actor.id === "player" && this.state?.campaign?.characterId === characterId;
+    const orcTalent = actor.race === "兽人族" && !talentOverriddenByCampaign("moluo") && actor.hp / actor.maxHp < .5 && (hasDirectDamage || ["attack","burn","pierce","execute"].includes(card.effectType));
     const lifestealFromTalent = actor.race === "恶魔" && (hasDirectDamage || ["attack","burn","curse","lifesteal"].includes(card.effectType)) && !skillHasLifesteal;
     const textNotes = [];
     if (orcTalent) { result.popups.push({ type:"talent", text:"[狂战血性] 伤害 +12%", side: actor.id }); textNotes.push("[狂战血性] 兽人族天赋：生命低于50%，伤害提高12%。"); }
     if (lifestealFromTalent) textNotes.push("[血契] 恶魔天赋：攻击附加吸血。");
-    if (actor.race === "神人" && this.state?.campaign?.characterId !== "su" && defaultIntent === "hostile-damage") textNotes.push("[神血] 神人天赋：攻击+10%。");
+    if (actor.race === "神人" && !talentOverriddenByCampaign("su") && defaultIntent === "hostile-damage") textNotes.push("[神血] 神人天赋：攻击+10%。");
     if (actor.race === "黑暗精灵" && defaultIntent === "hostile-damage" && (card.element === "暗" || card.effectType === "curse" || card.mechanics?.includes("curse"))) textNotes.push("[诅咒遗脉] 暗属性/诅咒伤害+12%。");
     for (const effect of card.effects || []) {
       if (effect.type === "damage") {
         result.targetId = target.id;
         // Per-effect pipeline: card-wide -> damage-only/race/ratio -> flat offense -> resolveDamage.
         let power = Math.round(effectAmount(actor, effect, card) * (Number(card.damageMultiplier) || 1));
+        // 效果自带倍率（与 card.damageMultiplier 同语义，但随固定卡数据走，不依赖显示名）：
+        // 星界放逐的 35% 增伤由此进入，取整次序与基线 1360839 的按名加成一致。
+        if (Number.isFinite(effect.damageMultiplier)) power = Math.round(power * effect.damageMultiplier);
         if (orcTalent) power = Math.round(power * 1.12);
-        if (actor.race === "神人" && this.state?.campaign?.characterId !== "su" && defaultIntent === "hostile-damage") power = Math.round(power * 1.10);
+        if (actor.race === "神人" && !talentOverriddenByCampaign("su") && defaultIntent === "hostile-damage") power = Math.round(power * 1.10);
         if (actor.race === "黑暗精灵" && defaultIntent === "hostile-damage" && (card.element === "暗" || card.effectType === "curse" || card.mechanics?.includes("curse"))) power = Math.round(power * 1.12);
         if (target.race === "龙族" && card.element !== "无") power = Math.round(power * .92);
         if (target.race === "精灵族" && target.turnFlags?.firstHit) { power = Math.round(power * .88); target.turnFlags.firstHit = false; }
@@ -205,7 +224,8 @@
         if (target.race === "神人" && card.element !== "无") power = Math.round(power * .90);
         power = Math.round(power * this.statusMultiplier(actor, target, card));
         let damage = power;
-        if (/星界放逐/.test(rawCardName)) damage = Math.round(damage * 1.35);
+        // "星界放逐"的 35% 增伤已作为固定卡效果字段（effect.damageMultiplier）写入卡库，
+        // 此处不再按显示名二次加成，保证卡面、估值与实战结算同源。
         if (card.mechanics?.includes("dragonSlayer") && target.race === "龙族") damage = Math.round(damage * 2);
         if (card.mechanics?.includes("demonSlayer") && target.race === "恶魔") damage = Math.round(damage * 2);
         if (card.mechanics?.includes("chain") && target.shield <= 0) damage += Math.round(power * .3);
@@ -217,6 +237,8 @@
         // 卡面“其中 X 无视护盾”：按 pierceAmountRatio / 主 ratio 的比例，随本次伤害在 resolveDamage 内一次性换算为固定穿透量
         const bypassFraction = effect.pierceAmountRatio && effect.ratio ? Math.max(0, Math.min(1, effect.pierceAmountRatio / effect.ratio)) : 0;
         const settlement = this.resolveDamage({ source: actor, target, amount: damage, element: card.element, pierce: trueDamage ? 1 : (card.effectType === "pierce" || card.mechanics?.includes("pierce") ? .45 : 0), pierceAmountRatio: bypassFraction, execute: effect.execute || card.mechanics?.includes("execute"), sourceKind: "card" });
+        // 与 index.html 的基础层保持同一 result 形状：守卫分摊伤害由 UI 读取此字段展示。
+        result.summonGuard = settlement.guard ? { id: settlement.guard.id, name: settlement.guard.name, amount: settlement.summonDamage, ownerId: target.id } : null;
         result.amount += settlement.total;
         result.visualAmounts.push({ amount: settlement.ownerDamage, side: target.id, type: "damage" });
         result.visualTargets = { number: target.id, impact: target.id, shake: settlement.total > 0 };
@@ -224,10 +246,19 @@
         if (settlement.summonDamage) result.text += ` 守卫替${target.name}承受${formatNumber(settlement.summonDamage)}伤害。`;
         result.text += ` 造成${formatNumber(settlement.total)}伤害。`;
         if (textNotes.length) result.text += "\n" + textNotes.join("\n");
-        // 吸血
+        // 吸血：以生命差值为准统计实际治疗与过量治疗，提示只报告真实恢复量
         if ((skillHasLifesteal || lifestealFromTalent) && settlement.total > 0) {
-          const heal = Math.round(settlement.total * .28);
-          if (heal > 0) { setHpDisplayOverride(actor); actor.hp = Math.min(actor.maxHp, actor.hp + heal); result.popups.push({ type:"status heal", text:`吸血 +${formatNumber(heal)}`, side: actor.id }); result.text += lifestealFromTalent ? `\n[血契] 吸血恢复${formatNumber(heal)}生命。` : `\n吸血恢复${formatNumber(heal)}生命。`; }
+          const requested = Math.round(settlement.total * .28);
+          if (requested > 0) {
+            setHpDisplayOverride(actor);
+            const hpBeforeLifesteal = actor.hp;
+            actor.hp = Math.min(actor.maxHp, actor.hp + requested);
+            const actualHeal = actor.hp - hpBeforeLifesteal;
+            const overheal = requested - actualHeal;
+            if (actor.id === "player" && this.state.combatStats) { this.state.combatStats.healing += actualHeal; this.state.combatStats.overheal = (this.state.combatStats.overheal || 0) + overheal; }
+            result.popups.push({ type:"status heal", text:`吸血 +${formatNumber(actualHeal)}`, side: actor.id });
+            result.text += lifestealFromTalent ? `\n[血契] 吸血恢复${formatNumber(actualHeal)}生命${overheal > 0 ? `（${formatNumber(overheal)}过量）` : ""}。` : `\n吸血恢复${formatNumber(actualHeal)}生命${overheal > 0 ? `（${formatNumber(overheal)}过量）` : ""}。`;
+          }
         }
         // 附加状态
         if (card.mechanics?.includes("burn")) { const st = typeof createStatusFromMechanic === "function" ? createStatusFromMechanic("burn", card, power, actor.id) : { type:"燃烧", turns:2, power: Math.round(power * .24), sourceOwnerId: actor.id }; if (st) { target.statuses.push(st); result.popups.push({ type:"status debuff", text:"燃烧 2 回合", side: target.id }); } }
@@ -387,7 +418,11 @@
     for (const status of fighter.statuses.slice()) {
       if (["燃烧", "诅咒", "中毒"].includes(status.type)) {
         const source = status.sourceOwnerId === "player" ? this.state.player : this.state.enemy;
+        const dotHpBefore = fighter.hp;
         const settlement = this.resolveDamage({ source, target: fighter, amount: status.power, element: status.type === "燃烧" ? "火" : "暗", sourceKind: "dot" });
+        // 与卡牌/召唤协击一致：持续伤害同样是真实的生命变化路径，必须通知战役层阈值检查。
+        // 战役侧的 processCampaignPostStatusTick 仍作为兜底入口，两处判定由被动消费去重。
+        notifyCampaignHealthChange(fighter, dotHpBefore, { type: "status", actor: source });
         events.push({ type: status.type, actualDamage: settlement.total, sourceOwnerId: status.sourceOwnerId });
         if (settlement.total) this.log(`${fighter.name}受到${status.type}影响，损失${formatNumber(settlement.total)}生命。`);
       }
@@ -436,7 +471,10 @@
     if (actor.id === "player" && state.combatStats) { state.combatStats.cards += 1; if (card.tier === "advanced") state.combatStats.advanced += 1; if (card.tier === "special") state.combatStats.special += 1; }
     uiRenderer.render();
     const self = this; const capturedState = state; const sessionId = this.sessionId;
-    const unlockDelay = typeof dramaTimingForCard === "function" ? dramaTimingForCard(card).totalMin : 700;
+    // 出牌输入恢复必须与特效/命中/结算使用同一条缩放后的时间轴（scaledDramaMs 由 index.html 提供）：
+    // 特效锁（effectsRenderer._playLock）按战斗速度缩放，这里如果仍用未缩放的 totalMin，
+    // 会把下一张牌的输入恢复推迟到特效已经结束很久之后，"极快"档位等于没有变快。
+    const unlockDelay = scaledDramaMs(typeof dramaTimingForCard === "function" ? dramaTimingForCard(card).totalMin : 700);
     setTimeout(() => { if (self.isActiveBattle(capturedState, sessionId)) { capturedState.actionLocked = false; uiRenderer.render(); } }, unlockDelay);
     this.checkGameOver(); return true;
   };
@@ -449,9 +487,13 @@
       // 只要双方存活并完成一次 resolveDamage 结算即消费，即使被护盾/固定减伤完全吸收（实际 HP 伤害为 0）。
       const multiplierRaw = Number(summon.nextAssistMultiplier);
       const multiplier = Number.isFinite(multiplierRaw) ? Math.max(1, multiplierRaw) : 1;
+      const targetHpBefore = target.hp;
       const settlement = gameEngine.resolveDamage({ source: fighter, target, amount: Math.max(1, Math.round(summon.power * multiplier)), element: fighter.element, sourceKind: "summon" });
       delete summon.nextAssistMultiplier;
       delete summon.reinforcedBy;
+      // 协击是真实的生命变化路径，必须与卡牌伤害一样通知战役层，
+      // 否则丽莎娅低血被动、首领阶段等阈值检查会被跳过。
+      notifyCampaignHealthChange(target, targetHpBefore, { type: "summon", actor: fighter });
       // 强化标识只看本次实际使用的 multiplier，与消费后的字段无关。
       gameEngine.log(`[召唤协击] ${summon.name}造成${formatNumber(settlement.total)}伤害${multiplier > 1 ? "（强化协击）" : ""}。`);
       effectsRenderer?.showSummonAssistAttack?.({ side: fighter.id, targetSide: target.id, summon, amount: settlement.total });
@@ -521,9 +563,25 @@
   };
 
   const legacyShowResult = uiRenderer.showResult.bind(uiRenderer);
+  // 结果页按钮区按当前结算对应的模式整体重建：
+  // 战役结算会把这一块换成"下一关/重试本关"，沙盒结算必须把同一块恢复成沙盒按钮，
+  // 否则沙盒结果页会残留上一场战役的按钮和其闭包状态，点击"下一关"会直接串回旧战役。
+  // 重建在每次 showResult 内完成，不依赖"上一次是哪种模式"的顺序假设。
+  function restoreSandboxResultActions() {
+    const row = document.querySelector("#screen-result .button-row");
+    if (!row) return;
+    row.innerHTML = `<button type="button" data-sandbox-result="retry">再来一局</button><button class="secondary" type="button" data-sandbox-result="home">返回首页</button>`;
+    // 按钮是每次结算重建的新节点，必须重新绑定，不能沿用初始化时的一次性监听。
+    row.querySelector('[data-sandbox-result="retry"]')?.addEventListener("click", () => uiRenderer.openBattlePrep());
+    row.querySelector('[data-sandbox-result="home"]')?.addEventListener("click", () => uiRenderer.nav("home"));
+  }
   uiRenderer.showResult = function() {
     const state = gameEngine.state;
-    if (!state?.campaign) return legacyShowResult();
+    if (!state?.campaign) {
+      legacyShowResult();
+      restoreSandboxResultActions();
+      return;
+    }
     if (state.campaign.resultRendered) return;
     state.campaign.resultRendered = true;
     const won = state.winner === "player";

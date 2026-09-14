@@ -25,8 +25,12 @@ for (; index < source.length; index += 1) {
   }
 }
 const fnSource = source.slice(start, index);
+// 协击伤害会通过 notifyCampaignHealthChange 通知战役层（生命阈值检查），
+// 因此连同该模块级辅助函数一起提取，保证测试执行的是实际生效的实现。
+const notifierSource = source.match(/const notifyCampaignHealthChange = [\s\S]*?\n  \};/)[0];
+const assistBundle = `${notifierSource}\n${fnSource}`;
 
-function runAssist(fighter, enemy, resolveDamage) {
+function runAssist(fighter, enemy, resolveDamage, healthChangeHook) {
   const context = {
     gameEngine: {
       state: { player: fighter.id === "player" ? fighter : enemy, enemy: fighter.id === "enemy" ? fighter : enemy },
@@ -35,10 +39,12 @@ function runAssist(fighter, enemy, resolveDamage) {
     },
     effectsRenderer: undefined,
     formatNumber: value => String(value),
+    campaignHealthChangeHook: healthChangeHook,
     __fighter: fighter,
   };
   vm.createContext(context);
-  vm.runInContext(`${fnSource}\nresolveSummonAssist(__fighter);`, context, { filename: "resolveSummonAssist.vm.js" });
+  const result = vm.runInContext(`${assistBundle}\nresolveSummonAssist(__fighter);`, context, { filename: "resolveSummonAssist.vm.js" });
+  return { context, result };
 }
 
 const logs = [];
@@ -168,4 +174,29 @@ function lastCall(calls) {
   assert.equal(lastCall(calls).amount, 15);
 }
 
-console.log("verify-summon-assist: 11/11 PASS");
+// 12. R03：协击造成的生命变化必须携带"协击前生命值"通知战役层（阈值检查的唯一入口）。
+{
+  logs.length = 0;
+  const enemy = makeEnemy();
+  const events = [];
+  const fighter = makeFighter("player", [{ name: "灵仆", power: 250, hp: 5 }]);
+  runAssist(fighter, enemy, args => { enemy.hp -= args.amount; return { total: args.amount, ownerDamage: args.amount }; }, (target, previousHp, eventContext) => {
+    events.push({ target: target.id, previousHp, hp: target.hp, type: eventContext.type });
+  });
+  assert.deepEqual(events, [{ target: "enemy", previousHp: 1000, hp: 750, type: "summon" }], "协击必须通知战役层生命变化");
+}
+
+// 13. R03：生命未变化（例如完全被护盾吸收）时不产生通知，避免无意义的阈值重算。
+{
+  logs.length = 0;
+  const enemy = makeEnemy();
+  enemy.shield = 999;
+  const events = [];
+  const fighter = makeFighter("player", [{ name: "灵仆", power: 10, hp: 5 }]);
+  runAssist(fighter, enemy, () => ({ total: 0, ownerDamage: 0 }), (target, previousHp, eventContext) => {
+    events.push({ target: target.id, previousHp, type: eventContext.type });
+  });
+  assert.deepEqual(events, [], "生命未变化时不应通知战役层");
+}
+
+console.log("verify-summon-assist: 13/13 PASS");

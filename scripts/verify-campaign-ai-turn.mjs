@@ -113,6 +113,8 @@ context.effectiveCardCost = (state, side, card) => {
   return Math.max(0, Number(card?.cost || 0));
 };
 context.dramaTimingForCard = () => ({ totalMin: 1 });
+// index.html 的完整动作时间缩放入口：标准档位下等价于原值。
+context.scaledDramaMs = ms => Math.round(Number(ms) || 0);
 context.preloadCardVisualAssets = () => {};
 context.stripCardTaxonomyPrefix = value => value;
 context.mechanicsForCard = () => [];
@@ -435,8 +437,9 @@ function resetApplyCounter() {
 console.log("战役 AI turn 特征测试通过：沙盒/战役 AI、零行动、控制、多行动、game-over、陈旧入口与共鸣均符合当前行为。");
 
 // Controlled timer queue around the real playCard -> ring -> await chain.
+// 注：等待超时不再属于"取消"分支（旧实现超时即放弃敌方回合，见下方 R01 回归），此处只覆盖真实的取消/终局/空闲分支。
 const asyncFailures = [];
-for (const scenario of ["exit", "replace", "identity", "gameOver", "turn", "timeout", "idle", "entry", "limit"]) {
+for (const scenario of ["exit", "replace", "identity", "gameOver", "turn", "idle", "entry", "limit"]) {
   const timers = []; let now = 0; let events = 0; let rejection;
   context.Date = class extends Date { static now() { return now; } };
   context.setTimeout = (callback, delay = 0) => { timers.push({ callback, at: now + delay }); return timers.length; };
@@ -469,7 +472,7 @@ for (const scenario of ["exit", "replace", "identity", "gameOver", "turn", "time
     if (scenario === "turn") state.turn = "player";
     if (scenario === "idle") state.actionLocked = false;
     const frozen = JSON.stringify(state), current = JSON.stringify(gameEngine.state), beforeEvents = events;
-    now = scenario === "timeout" ? 8001 : 50;
+    now = 50;
     const ready = timers.filter(t => t.at <= now); timers.splice(0, timers.length, ...timers.filter(t => t.at > now));
     for (const timer of ready) timer.callback();
     for (let i = 0; i < 40; i += 1) await Promise.resolve();
@@ -496,4 +499,136 @@ for (const scenario of ["exit", "replace", "identity", "gameOver", "turn", "time
   gameEngine.resolveAction = originalResolve;
 }
 assert.deepEqual(asyncFailures, [], asyncFailures.join("\n"));
-console.log("异步取消、终局、超时、初始等待及第15步隔离回归通过。");
+
+// ---- 9. R01 回归：AI 等待超时后必须恢复回合，而不是永久停在敌方回合 ----
+// 旧行为：waitForCombatIdle 超时即让整个敌方回合直接 return，动作锁随后释放也没有任何恢复路径。
+// 新行为：超时只代表"这一轮还没空闲"，只要战斗仍有效就继续等待，空闲后继续本回合。
+{
+  const timers = []; let now = 0;
+  const savedSetTimeout = context.setTimeout;
+  const savedDate = context.Date;
+  context.Date = class extends Date { static now() { return now; } };
+  context.setTimeout = (callback, delay = 0) => { timers.push({ callback, at: now + delay }); return timers.length; };
+  context.effectsRenderer = { _playLock: 0 };
+  const state = startState({ enemyRing: 0 });
+  state.enemy.hand = [makeCard({ category: "base", skillTier: "base", instanceId: "timeout-resume", cost: 1 })];
+  context.dramaTimingForCard = () => ({ totalMin: 10000 });
+  let rejection;
+  const turn = aiController.takeTurn().catch(error => { rejection = error; });
+  const settle = async () => { for (let i = 0; i < 40; i += 1) await Promise.resolve(); };
+  const runQueued = async () => { const ready = timers.splice(0, timers.length); ready.forEach(timer => timer.callback()); await settle(); };
+  await settle();
+  // 出牌已发生且动作锁处于锁定状态（等待特效/结算结束）
+  assert.equal(state.campaign.enemyRing, 1, "等待前应先完成真实出牌");
+  assert.equal(state.actionLocked, true, "出牌后动作锁应处于锁定状态");
+  // 跨过 8 秒等待期限：第一次等待超时（只推进模拟时钟并执行已排队的轮询）
+  now = 8001;
+  await runQueued();
+  // 动作锁在下一次轮询前释放：恢复路径必须在同一轮"超时 → 空闲"周期里继续本回合，
+  // 因此后续只重新执行已排队的轮询回调（模拟时钟停在超时之后），不再提前推进时间。
+  state.actionLocked = false;
+  for (let round = 0; round < 40 && state.turn === "enemy"; round += 1) {
+    await runQueued();
+  }
+  assert.equal(rejection, undefined, "超时恢复路径不应抛错");
+  // 旧实现：超时即 return，动作锁释放后没有任何恢复路径，回合永久停在敌方。
+  assert.equal(state.turn, "player", "等待超时后 AI 应继续行动并结束敌方回合");
+  assert.equal(state.campaign.enemyRing, 1, "恢复后本回合的出牌仍应正常累积星环");
+  assert.equal(state.campaign.enemyResonanceUsed, false, "敌方回合结束后应重置共鸣冷却");
+  let settled = false; turn.then(() => { settled = true; });
+  await settle();
+  assert.equal(settled, true, "恢复后的 AI 回合应正常结束");
+  context.setTimeout = savedSetTimeout;
+  context.Date = savedDate;
+}
+
+// ---- 10. R01 回归：AI 总入口进入时就已经有动作锁，超时后释放仍必须完成回合 ----
+// 对应四处等待入口中的第 1 处（aiController.takeTurn 总入口）。
+// 旧行为：总入口等待超时即 return，动作锁释放后没有任何恢复路径。
+{
+  const timers = []; let now = 0;
+  const savedSetTimeout = context.setTimeout;
+  const savedDate = context.Date;
+  context.Date = class extends Date { static now() { return now; } };
+  context.setTimeout = (callback, delay = 0) => { timers.push({ callback, at: now + delay }); return timers.length; };
+  context.effectsRenderer = { _playLock: 0 };
+  const state = startState({ enemyRing: 0 });
+  state.enemy.hand = [makeCard({ category: "base", skillTier: "base", instanceId: "entry-lock", cost: 1 })];
+  // 总入口进入时动作锁已存在（例如上一张牌的收尾还没结束）
+  state.actionLocked = true;
+  context.dramaTimingForCard = () => ({ totalMin: 10000 });
+  let rejection;
+  const turn = aiController.takeTurn().catch(error => { rejection = error; });
+  const settle = async () => { for (let i = 0; i < 40; i += 1) await Promise.resolve(); };
+  const runQueued = async () => { const ready = timers.splice(0, timers.length); ready.forEach(timer => timer.callback()); await settle(); };
+  await settle();
+  assert.equal(state.turn, "enemy", "锁未释放时应停留在敌方回合入口");
+  assert.equal(state.actionLocked, true, "入口等待期间动作锁应保持");
+  // 跨过 8 秒等待期限
+  now = 8001;
+  await runQueued();
+  // 锁在超时之后才释放：恢复路径必须检测到并继续完成本回合
+  state.actionLocked = false;
+  for (let round = 0; round < 40 && state.turn === "enemy"; round += 1) {
+    await runQueued();
+  }
+  assert.equal(rejection, undefined, "入口超时恢复不应抛错");
+  assert.equal(state.turn, "player", "总入口等待超时后仍应完成敌方回合");
+  let settled = false; turn.then(() => { settled = true; });
+  await settle();
+  assert.equal(settled, true, "入口恢复路径应正常结束");
+  context.setTimeout = savedSetTimeout;
+  context.Date = savedDate;
+}
+
+// ---- 11. R01 回归：旧等待在战斗被重开/退出后必须取消，且不得重复执行 AI 回合 ----
+// 覆盖四处入口共同的取消语义：等待期间 battle 被 invalidate（返回首页/重开），
+// 迟到回调只能取消，不得触碰新局、不得再次推进回合。
+{
+  const timers = []; let now = 0; let events = 0;
+  const savedSetTimeout = context.setTimeout;
+  const savedDate = context.Date;
+  context.Date = class extends Date { static now() { return now; } };
+  context.setTimeout = (callback, delay = 0) => { timers.push({ callback, at: now + delay }); return timers.length; };
+  context.effectsRenderer = { _playLock: 0 };
+  context.gameEngine.log = function (message) { this.state.log.unshift(message); events += 1; };
+  context.campaignRuntime.configurePresentation({ renderHud() { events += 1; }, notice() { events += 1; }, playSound() { events += 1; }, playDrawSound() { events += 1; } });
+  const state = startState({ enemyRing: 0 });
+  state.enemy.hand = [makeCard({ category: "base", skillTier: "base", instanceId: "stale-wait", cost: 1 })];
+  state.actionLocked = true;
+  context.dramaTimingForCard = () => ({ totalMin: 10000 });
+  let rejection;
+  const turn = aiController.takeTurn().catch(error => { rejection = error; });
+  const settle = async () => { for (let i = 0; i < 40; i += 1) await Promise.resolve(); };
+  await settle();
+  // 退出/重开战斗：旧局失效，同一时刻新局已经就位
+  vm.runInContext(`gameEngine.invalidateBattle = function ${extractObjectMethod(indexSource, "invalidateBattle() {")}`, context);
+  gameEngine.invalidateBattle();
+  const fresh = startState({ enemyRing: 0 });
+  fresh.turn = "player";
+  fresh.enemy.hand = [makeCard({ category: "base", skillTier: "base", instanceId: "fresh-battle", cost: 1 })];
+  const freshSnapshot = JSON.stringify(fresh);
+  const freshSessionId = gameEngine.sessionId;
+  events = 0;
+  // 让所有迟到回调（含超时轮询）全部执行
+  now = 9000;
+  for (let round = 0; round < 40; round += 1) {
+    const ready = timers.splice(0, timers.length);
+    if (!ready.length) break;
+    ready.forEach(timer => timer.callback());
+    await settle();
+  }
+  let settled = false; turn.then(() => { settled = true; });
+  for (let i = 0; i < 20; i += 1) await Promise.resolve();
+  await settle();
+  assert.equal(settled, true, "旧战斗失效后等待必须取消（不得悬挂）");
+  assert.equal(rejection, undefined, "取消路径不应抛错");
+  assert.equal(gameEngine.state === fresh && gameEngine.sessionId === freshSessionId, true, "不得替换/污染新局引用");
+  assert.equal(JSON.stringify(fresh), freshSnapshot, "新局状态不得被旧等待改动");
+  assert.equal(fresh.turn, "player", "旧 AI 回合不得在新局里重复执行");
+  assert.equal(events, 0, "取消后不得追加日志/HUD/音效");
+  context.setTimeout = savedSetTimeout;
+  context.Date = savedDate;
+}
+
+console.log("异步取消、终局、超时恢复（出牌后/总入口）、旧战斗取消与第15步隔离回归通过。");

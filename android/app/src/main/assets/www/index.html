@@ -6451,6 +6451,14 @@
       };
     }
 
+    // 战斗速度档位的唯一时间换算入口：特效舞台、命中揭示、生命显示、结算与输入恢复
+    // 必须共用同一套缩放后的时间轴（CSS 侧由 body[data-speed] 同步缩放动画时长）。
+    function scaledDramaMs(ms) {
+      const value = Number(ms) || 0;
+      return typeof battleSpeedDelay === "function" ? battleSpeedDelay(value) : value;
+    }
+    globalThis.scaledDramaMs = scaledDramaMs;
+
     function getCardActionIntent(card) {
       const type = String(card?.effectType || card?.type || "").toLowerCase();
       const hasHostileEffect = card?.effects?.some(effect => effect.type === "damage" || ["燃烧", "诅咒", "冻结", "禁锢", "虚弱", "抽牌压制"].includes(effect.status));
@@ -6915,7 +6923,7 @@
           void document.getElementById("screenFlash").offsetWidth;
           document.getElementById("screenFlash").classList.add("on");
         }
-        const impactDelay = drama.enter + drama.focus + drama.charge + drama.cast;
+        const impactDelay = scaledDramaMs(drama.enter + drama.focus + drama.charge + drama.cast);
         setTimeout(() => {
           if (!gameEngine.isActiveBattle(battleState, battleSessionId)) return;
           clearHpDisplayOverrides();
@@ -6944,7 +6952,7 @@
             text.style.setProperty("--fx-color", this.textColor(effectType, card.element));
             text.textContent = this.valuePrefix(effectType) + formatNumber(item.amount);
             field.appendChild(text);
-            setTimeout(() => text.remove(), drama.numbers + index * 80);
+            setTimeout(() => text.remove(), scaledDramaMs(drama.numbers + index * 80));
           });
           this.showMechanicPopups(result, drama);
           if (result.summonGuard?.amount > 0) this.showSummonGuardDamage(result.summonGuard);
@@ -6962,7 +6970,7 @@
           setTimeout(() => {
             targetUnit?.classList.remove("hit", "heal-impact", "shield-impact", "status-impact");
             resetBattleViewTransform();
-          }, 420);
+          }, scaledDramaMs(420));
         }, impactDelay);
         const rect = this.canvas.getBoundingClientRect();
         const animMul = settings.animation === "low" ? .35 : settings.animation === "high" ? 1.25 : 1;
@@ -8261,10 +8269,10 @@
         description: `造成 ${formatNumber(card.power)} 点伤害；目标为恶魔时伤害约翻倍。`,
         fullDescription: `造成 ${formatNumber(card.power)} 点伤害。若目标种族为恶魔，本次伤害约 2 倍。`
       };
-      if (/星界放逐/.test(name)) return {
-        description: `造成 ${formatNumber(Math.round(card.power * 1.35))} 点伤害，并禁锢目标 2 回合。`,
-        fullDescription: `造成 ${formatNumber(Math.round(card.power * 1.35))} 点伤害，并使目标获得禁锢 2 回合。`
-      };
+      // 星界放逐Ⅲ 刻意不在本表登记：固定卡库的卡面由 fixedCardDescription 从 effects 派生，
+      // 已包含 damage.ratio、effect.damageMultiplier（1.35 倍）与暗属性诅咒，与结算同源。
+      // 此处若再写一份，就会变成第二套数值来源；而固定卡在该路径上取不到 card.power，
+      // 旧版本的表达式实际会显示"造成 0 点伤害"。
       return null;
     }
 
@@ -9234,7 +9242,7 @@
         setTimeout(() => {
           if (!gameEngine.isActiveBattle(state, sessionId)) return;
           gameEngine.resolveAction({ type:"playCard", side:"enemy", cardInstanceId: card.instanceId });
-          const pause = dramaTimingForCard(card).totalMin + 280;
+          const pause = scaledDramaMs(dramaTimingForCard(card).totalMin + 280);
           setTimeout(() => { if (gameEngine.isActiveBattle(state, sessionId)) loop(); }, pause);
         }, 650 + Math.floor(rng() * 450));
       };
@@ -9787,12 +9795,12 @@
     effectsRenderer.play = function(card, result) {
       // 战斗输入生命周期锁：_playLock 只表达"特效进行中"，解锁由下方 timer 按卡牌 timing 驱动。
       // 旧版这里还有一道按固定时长比较的时间节流，在 timer 归零 _playLock 后永远不可达，已作为死逻辑删除。
-      const factor = typeof getBattleSpeedFactor === "function" ? getBattleSpeedFactor() : 1;
       this._playLock = Date.now();
       setCombatInputLocked(true);
       const banner = document.getElementById("skillBanner");
       if (banner) {
         const baseDur = card.skillTier === "special" ? 2.5 : card.skillTier === "advanced" ? 1.75 : 1.1;
+        const factor = typeof getBattleSpeedFactor === "function" ? getBattleSpeedFactor() : 1;
         banner.style.animationDuration = (baseDur * factor) + "s";
       }
       battlePerfMonitor.markFirstCard(card);
@@ -9802,7 +9810,7 @@
       const timing = dramaTimingForCard(card);
       const battleState = gameEngine.state;
       const battleSessionId = gameEngine.sessionId;
-      setTimeout(() => { if (!gameEngine.isActiveBattle(battleState, battleSessionId)) return; this._playLock = 0; setCombatInputLocked(false); uiRenderer.render(); }, Math.round((timing.totalMin + 200) * factor));
+      setTimeout(() => { if (!gameEngine.isActiveBattle(battleState, battleSessionId)) return; this._playLock = 0; setCombatInputLocked(false); uiRenderer.render(); }, scaledDramaMs(timing.totalMin + 200));
     };
 
 
