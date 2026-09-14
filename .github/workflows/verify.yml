@@ -31,6 +31,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # 版本一致性回归需要读取历史 tag 的 versionCode（verify-release-workflow），
+          # 默认浅克隆不包含 tag 历史，这里取全量引用。
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4

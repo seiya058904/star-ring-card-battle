@@ -34,11 +34,17 @@ const currentVersionName = buildGradle.match(/versionName = "([^"]+)"/)[1];
 assert.ok(currentVersionCode > 0, "当前 versionCode 应为正整数");
 assert.match(currentVersionName, /^\d+\.\d+\.\d+$/, "当前 versionName 应为 x.y.z");
 
-// 用 git 读取仍存在的历史 tag 的 versionCode（不依赖某个固定版本仍被保留）
+// 用 git 读取仍存在的历史 tag 的 versionCode。
+// 说明：若工作副本缺少 tag（浅克隆且未取全量引用），这里会退回"当前 versionCode - 1"
+// 作为历史基准，仍然校验"重建跳过递增 / 新发布拒绝未递增"的分支语义，不误报。
 const { execFileSync } = await import("node:child_process");
 const repoRoot = root;
-const listTags = () => execFileSync("git", ["-C", repoRoot, "tag", "--list", "v[0-9]*"], { encoding: "utf8" })
-  .split("\n").map(line => line.trim()).filter(Boolean);
+const listTags = () => {
+  try {
+    return execFileSync("git", ["-C", repoRoot, "tag", "--list", "v[0-9]*"], { encoding: "utf8" })
+      .split("\n").map(line => line.trim()).filter(Boolean);
+  } catch { return []; }
+};
 const versionCodeOfTag = tag => {
   try {
     const source = execFileSync("git", ["-C", repoRoot, "show", `${tag}:android/app/build.gradle`], { encoding: "utf8" });
@@ -46,15 +52,19 @@ const versionCodeOfTag = tag => {
     return match ? Number(match[1]) : null;
   } catch { return null; }
 };
-const historical = listTags()
+const historicalFromTags = listTags()
   .map(tag => ({ tag, versionCode: versionCodeOfTag(tag) }))
   .filter(item => item.versionCode !== null && item.versionCode < currentVersionCode);
-assert.ok(historical.length > 0, "应至少存在一个 versionCode 低于当前版本的历史 tag，用于验证重建分支");
-const historicalVersionCode = Math.max(...historical.map(item => item.versionCode));
-const otherTagsMaxVersionCode = Math.max(currentVersionCode, ...listTags().map(versionCodeOfTag).filter(code => code !== null));
+const hasTagHistory = historicalFromTags.length > 0;
+const historicalVersionCode = hasTagHistory
+  ? Math.max(...historicalFromTags.map(item => item.versionCode))
+  : Math.max(1, currentVersionCode - 1);
+const otherTagsMaxVersionCode = hasTagHistory
+  ? Math.max(currentVersionCode, ...listTags().map(versionCodeOfTag).filter(code => code !== null))
+  : currentVersionCode;
 // 固化"重建历史版本必然被递增检查拒绝"这一事实，保证修复不是把检查整体删掉。
 assert.ok(!(historicalVersionCode > otherTagsMaxVersionCode),
-  `旧逻辑确实会拒绝重建历史 tag（其 versionCode ${historicalVersionCode} <= 其他 tag 最大值 ${otherTagsMaxVersionCode}），因此必须按触发方式分流`);
+  `旧逻辑确实会拒绝重建历史版本（历史 versionCode ${historicalVersionCode} <= 其他 tag 最大值 ${otherTagsMaxVersionCode}），因此必须按触发方式分流`);
 
 // ---- 3. 逐行模拟工作流脚本：两种触发方式的分支结果必须不同 ----
 // 直接执行 Verify 步骤中与本次修复相关的判定片段（去掉 YAML 缩进）。
@@ -79,7 +89,7 @@ const outcomes = vm.runInContext(`({
   pushHistorical: decide("push", ${historicalVersionCode}, ${otherTagsMaxVersionCode}),
   pushCurrent: decide("push", ${currentVersionCode}, ${historicalVersionCode}),
 })`, branchContext, { filename: "release-branch.js" });
-assert.equal(outcomes.dispatch, "rebuild-skip-monotonic", `手动重建历史 tag（versionCode ${historicalVersionCode}）必须跳过递增检查`);
+assert.equal(outcomes.dispatch, "rebuild-skip-monotonic", `手动重建历史版本（versionCode ${historicalVersionCode}）必须跳过递增检查`);
 assert.equal(outcomes.pushHistorical, "publish-rejected", "新发布仍必须拒绝未递增的 versionCode（检查未被削弱）");
 assert.equal(outcomes.pushCurrent, "publish-ok", "正常递增的新发布仍应通过");
 
