@@ -65,10 +65,35 @@ node scripts/verify-runtime-ownership.mjs           # 战斗规则所有权/覆�
 node scripts/verify-all.mjs                         # 聚合全部安全只读验证
 node scripts/sync-android-web-assets.mjs            # 同步 Android 网页镜像并校验
 node scripts/verify-android-web-assets.mjs          # 只读检查镜像、素材和 WebView 设置
-.\android\gradlew.bat -p android assembleDebug      # 构建 Debug APK（需要 JDK 17 与 Android SDK）
+Set-Location android
+.\gradlew.bat assembleDebug --no-daemon # 构建 Debug APK（需要 JDK 17 与 Android SDK）
 ```
 
 仓库没有`package.json`、通用测试框架、formatter 或 type-check 命令；不要臆造 npm 命令。同步会写入 Android 镜像，只在 Android 交付需要时运行。commit、push、合并、部署、Release、数据库写入和签名操作均需明确授权。
+
+## Android CLI / APK Workflow
+
+普通 APK 开发、构建、安装和 UI 测试不需要 Android Studio；从 `android/` 使用上面的仓库 Gradle Wrapper 命令。
+
+- Java 必须为 JDK 17；不要使用 Android Studio 内置 JBR，也不要安装系统级 Gradle。
+- 不要无理由升级 AGP、Gradle、compileSdk 或 Build Tools。
+- 启动标准测试 AVD，并禁止 snapshot、snapshot 保存和 cache：
+
+  ```powershell
+  emulator -avd Codex_Maestro_Android34 -no-snapshot -no-snapshot-save -no-snapstorage -no-cache
+  adb devices
+  adb -s <device-id> shell getprop sys.boot_completed
+  ```
+
+  仅在 `sys.boot_completed` 为 `1` 后继续；除非 AVD 损坏或任务明确要求，不创建其他 AVD。
+- 构建成功后用 `adb -s <device-id> install -r <apk-path>` 安装并启动 App；从 Gradle/Manifest 读取 package/application id，不在此处猜测或写死。
+- UI 测试优先使用 Maestro MCP：`list_devices`、`inspect_screen`、`run`、`take_screenshot`，以及 `click`、`input`、`swipe`、`drag` 和 assertions。Codex Desktop 的 MCP 配置变更后需重启 Desktop。
+- 本项目是 WebView + HTML UI；优先使用语义化 Maestro selector，适合点击、输入和文本 assertion。
+- 启动失败、WebView/JS 异常或 crash 时，用 ADB/Logcat 过滤当前 App 或错误相关日志；测试完成后执行 `adb -s <device-id> emu kill`，不要保存 Quick Boot snapshot。
+
+Required: JDK 17、项目 Gradle Wrapper 8.7、Android SDK Platform 34、Build Tools 34.0.0、platform-tools/adb、cmdline-tools、Android Emulator、Android 34 Google APIs x86_64 image、`Codex_Maestro_Android34`、Maestro CLI/MCP。
+
+Not required for normal work: Android Studio（除非任务明确需要 Layout Inspector、Android Profiler 或其他 IDE-only tooling）、Android 37、SDK Sources、NDK、CMake、system-wide Gradle、additional AVDs。
 
 ## 依赖来源与地址（记忆）
 
