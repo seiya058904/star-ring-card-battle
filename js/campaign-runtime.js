@@ -303,14 +303,15 @@
     if (!card && state.campaign.intent?.cardInstanceId) {
       gameEngine.log("[意图] 敌方重新调整战术。");
       presentation.playSound("resonance-ready");
-      const plan = mode.intentFor(state.enemy.hand.map(card => ({ ...card, effectiveCost: mode.effectiveCardCost(state, "enemy", card) })), state.enemy.energy, state.enemy.campaignStyle, { actor: state.enemy, target: state.player, playerLowHp: state.player.hp / state.player.maxHp < .3, enemyLowHp: state.enemy.hp / state.enemy.maxHp < .35, handSize: state.enemy.hand.length, playerHasCurse: state.player.statuses.some(status => status.type === "诅咒") });
-      state.campaign.intent = { type: plan.type, cardInstanceId: plan.card?.instanceId || "", description: `${state.enemy.name}重新调整战术，准备${plan.type}。`, generatedRound: state.round };
+      // 重新规划必须与实际行动同源：直接用共享决策函数，不再单独拼一份估值上下文。
+      const replanned = mode.aiChoosePlay(state, "enemy");
+      state.campaign.intent = { type: replanned ? mode.intentTypeForCard(replanned) : "蓄力", cardInstanceId: replanned?.instanceId || "", description: `${state.enemy.name}重新调整战术，准备${replanned ? mode.intentTypeForCard(replanned) : "蓄力"}。`, generatedRound: state.round };
       presentation.renderHud();
-      card = plan.card;
+      card = replanned;
     }
     card ||= this.chooseCard(state.enemy, state.player);
     if (card && !state.campaign.intent) {
-      const intentType = card.skillTier === "special" ? "特殊技能" : card.skillTier === "advanced" ? "高级技能" : ["shield", "defense"].includes(card.effectType) ? "防御" : ["heal", "revive"].includes(card.effectType) ? "治疗" : ["control", "freeze"].includes(card.effectType) ? "控制" : "普通攻击";
+      const intentType = mode.intentTypeForCard(card);
       state.campaign.intent = { type: intentType, cardInstanceId: card.instanceId, description: `${state.enemy.name}借助星耀准备${intentType}。`, generatedRound: state.round };
       presentation.renderHud();
     }
@@ -421,10 +422,8 @@
     aiController.chooseCard = function (enemy, player) {
       const state = gameEngine.state;
       if (!state?.campaign) return originalChooseCard(enemy, player);
-      const playable = enemy.hand.filter(card => mode.effectiveCardCost(state, "enemy", card) <= enemy.energy);
-      if (!playable.length) return null;
-      const context = { actor: enemy, target: player, style: enemy.campaignStyle, playerLowHp: player.hp / player.maxHp < .3, enemyLowHp: enemy.hp / enemy.maxHp < .35, handSize: enemy.hand.length, playerHasCurse: player.statuses.some(status => status.type === "诅咒") };
-      return playable.slice().sort((a, b) => mode.aiCardScore(b, context) - mode.aiCardScore(a, context))[0];
+      // 与意图生成、重新规划共用同一个决策入口：同一个 Effect 只有一套价值理解。
+      return mode.aiChoosePlay(state, "enemy") || null;
     };
 
     aiController.takeTurn = async function () {

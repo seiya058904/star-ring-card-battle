@@ -19,16 +19,36 @@
   // 第五关 Boss（level 100 元祖龙神）防御经济定标：以审计实测面板为基准，
   // damage/defense/heal 三因子直接作用于战斗 profile（伤害、固定减伤、护盾、治疗全链路）。
   const STAGE5_BOSS_TUNING = { hp: .07, damage: .09, defense: .004, heal: .01 };
+  // 第四关（释迦格，龙族）此前没有任何专项归一化：龙族档案是 hp 1.55 / damage 1.32 / defense 1.18，
+  // 叠上关卡倍率 1.10 后敌方同时更坦克也更痛，血量甚至是第 5 关首领的 2.3 倍——
+  // 难度在第 4/5 关之间倒挂，实测第 4 关对六名角色 × 三档难度胜率全为 0%。
+  // 这里用与第 5 关相同的归一化口径补上：第 5 关的 .07/.09/.004/.01 是在"敌方等级/玩家等级 ≈ 7.86"
+  // 下标定的，第 4 关的敌方等级已由 levelOffset 归到同一水平（比值 ≈ 1），故按同一每单位压缩率换算。
+  const STAGE4_BOSS_TUNING = { hp: .55, damage: .71, defense: .031, heal: .079 };
+  // 需要 profile 压缩的首领关（键为 campaign-data 的 stage.id）；未列出的关卡不做压缩。
+  const STAGE_BOSS_TUNING = { "dragon-king": STAGE4_BOSS_TUNING, "ancestral-dragon": STAGE5_BOSS_TUNING };
 
-  const enemyDeck = currentStage => {
+  const enemyDeck = (currentStage, playerLevel) => {
     const source = fixedCardLibrary.characterDefinitions.find(item => item.name === currentStage.enemyName) || fixedCardLibrary.charactersById["dragon-yemosu"];
     const deck = fixedCardLibrary.createRuntimeDeck(source.id);
     const tuning = difficulty();
+    // 敌方等级归一化（只降不升，仅限声明了 levelOffset 的关卡）：遭遇强度不超过
+    // 「挑战者等级 + 该关设计偏移」。不加这一步时，敌方 level 是世界观绝对值（第 4 关 94 级），
+    // 而 levelHp 的指数曲线会把敌方生命与每张牌数值放大到玩家量级的 10^3 倍：
+    // 62 级角色进第 4 关第 1 回合被秒，93 级角色也打不动。只降不升保证第 1–3 关
+    // 对高等级角色的现有强度逐位不变。
+    // 第 5 关（ancestral-dragon）明确豁免：STAGE5_BOSS_TUNING = { hp:.07, damage:.09,
+    // defense:.004, heal:.01 } 是围绕固定 Lv100 元祖龙神专项定标的，改 Boss 基础等级
+    // 等于间接重新标定第 5 关。故第 5 关恒为原始 Lv100，四因子与 Boss 阶段全部不动。
+    const cappedLevel = Number.isFinite(currentStage.levelOffset)
+      ? Math.min(100, (Number(playerLevel) || source.level) + currentStage.levelOffset)
+      : source.level;
+    deck.level = Math.max(1, Math.min(source.level, cappedLevel));
     // 第五关首领战专项调参：审计实测 levelHp(100) 指数曲线使 Boss 生命 29.45B、
     // 每回合伤害 1~2B、护盾 0.6B~4.7B 不衰减、固定减伤 ~770M，首领二阶段真实不可达。
     // 生命压缩走 maxHpMultiplier；伤害/防御/治疗压缩在 startCampaign 中按 profile 统一缩放，
     // 保留敌方行为、星环共鸣与首领阶段机制，使战斗“难但可通过合理游玩获胜”。
-    const bossTuning = currentStage.id === "ancestral-dragon" ? STAGE5_BOSS_TUNING : null;
+    const bossTuning = STAGE_BOSS_TUNING[currentStage.id] || null;
     deck.maxHpMultiplier = tuning.hp * (bossTuning ? bossTuning.hp : 1);
     deck.cards = deck.cards.map(card => ({ ...card, effectMultiplier: tuning.power }));
     return deck;
@@ -82,19 +102,20 @@
     // 使用包装层传入的单次 progress 快照：authorizeStage、代际记录与开战基于同一状态，
     // 防止其他标签页刚执行 reset 后，旧 UI 上仍显示为已解锁的关卡趁机启动。
     const saved = snapshot || progress();
-    const player = character(); const currentStage = stage(); const state = gameEngine.start(campaignDeck(player), enemyDeck(currentStage));
+    const player = character(); const currentStage = stage(); const playerDeck = campaignDeck(player); const state = gameEngine.start(playerDeck, enemyDeck(currentStage, playerDeck.level));
     state.gameMode = "campaign"; state.campaign = { characterId: player.id, stage: selectedStage, difficulty: selectedDifficulty, playerRing: 0, enemyRing: 0, resonanceUsed: false, enemyResonanceUsed: false, costReduction: 0, enemyCostReduction: 0, intent: null, passiveTriggers: 0, passives: { turn: {}, match: {}, round: 0 }, progressGeneration: Number(saved.resetGeneration) || 0 };
     state.enemy.name = currentStage.enemyName; state.enemy.campaignStyle = currentStage.style;
-    // 第五关首领战：按 STAGE5_BOSS_TUNING 缩放战斗 profile（伤害/固定减伤/护盾/治疗全链路各只缩放一次）。
-    if (currentStage.id === "ancestral-dragon" && state.enemy?.profile) {
+    // 首领关（第4/5关）：按 STAGE_BOSS_TUNING 缩放战斗 profile（伤害/固定减伤/护盾/治疗全链路各只缩放一次）。
+    const bossTuning = STAGE_BOSS_TUNING[currentStage.id];
+    if (bossTuning && state.enemy?.profile) {
       state.enemy.profile = {
         ...state.enemy.profile,
-        damage: (state.enemy.profile.damage || 1) * STAGE5_BOSS_TUNING.damage,
-        defense: (state.enemy.profile.defense || 1) * STAGE5_BOSS_TUNING.defense,
-        heal: (state.enemy.profile.heal || 1) * STAGE5_BOSS_TUNING.heal,
+        damage: (state.enemy.profile.damage || 1) * bossTuning.damage,
+        defense: (state.enemy.profile.defense || 1) * bossTuning.defense,
+        heal: (state.enemy.profile.heal || 1) * bossTuning.heal,
       };
     }
-    const enemyEnergy = battleRules.roundEnergy(state.round, state.enemy.maxEnergy); const openingPlan = mode.intentFor(state.enemy.hand.map(card => ({ ...card, effectiveCost: mode.effectiveCardCost(state, "enemy", card) })), enemyEnergy, state.enemy.campaignStyle, { actor: state.enemy, target: state.player, playerLowHp: state.player.hp / state.player.maxHp < .3, enemyLowHp: state.enemy.hp / state.enemy.maxHp < .35, handSize: state.enemy.hand.length, playerHasCurse: state.player.statuses.some(status => status.type === "诅咒") }); state.campaign.intent = { type: openingPlan.type, cardInstanceId: openingPlan.card?.instanceId || "", description: `${state.enemy.name}正在准备${openingPlan.type}。`, generatedRound: state.round };
+    const enemyEnergy = battleRules.roundEnergy(state.round, state.enemy.maxEnergy); const openingPlan = mode.intentFor(state.enemy.hand.map(card => ({ ...card, effectiveCost: mode.effectiveCardCost(state, "enemy", card) })), enemyEnergy, state.enemy.campaignStyle, mode.aiContextFor(state, "enemy")); state.campaign.intent = { type: openingPlan.type, cardInstanceId: openingPlan.card?.instanceId || "", description: `${state.enemy.name}正在准备${openingPlan.type}。`, generatedRound: state.round };
     // 难度倍率已写入敌方卡组和生命，玩家仍使用角色真实等级。
     state.campaignStats = state.combatStats;
     uiRenderer.closeModal(); uiRenderer.nav("battle"); uiRenderer.render(); renderCampaignHud(); showMulligan();
@@ -139,4 +160,18 @@
     playDrawSound: () => audioManager.play("card-draw"),
   });
   campaignRuntime.install();
+  // 无头平衡模拟/验证的驱动接口：只暴露“选择角色/关卡/难度 → 开局 → 共鸣”这条真实路径，
+  // 不复制任何规则。模拟器用它跑真实 startCampaign，避免出现第二套战役开局逻辑。
+  global.campaignUiHarness = {
+    start: () => { startCampaign(); return gameEngine.state; },
+    activateResonance,
+    characterMap: CAMPAIGN_CHARACTER_MAP,
+    select(characterId, stage, difficulty) {
+      if (data.characters.some(item => item.id === characterId)) selectedCharacter = characterId;
+      const entry = progress().characters[selectedCharacter];
+      if (mode.authorizeStage(entry, stage)) selectedStage = stage;
+      if (data.difficulties[difficulty]) selectedDifficulty = difficulty;
+    },
+    currentSelection: () => ({ characterId: selectedCharacter, stage: selectedStage, difficulty: selectedDifficulty }),
+  };
 })(globalThis);

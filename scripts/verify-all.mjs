@@ -49,6 +49,7 @@ const suites = [
   { name: "responsive 所有权", file: "scripts/verify-responsive-ownership.mjs" },
   { name: "战斗不变式", file: "scripts/verify-battle-invariants.mjs" },
   { name: "运行时所有权", file: "scripts/verify-runtime-ownership.mjs" },
+  { name: "平衡护栏（小矩阵）", file: "scripts/verify-balance-guardrails.mjs" },
   { name: "Android 网页素材 parity", file: "scripts/verify-android-web-assets.mjs" },
 ];
 

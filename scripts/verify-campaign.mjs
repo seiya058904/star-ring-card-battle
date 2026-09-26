@@ -45,6 +45,27 @@ const htmlSource = await readRepoFile("index.html");
 assert.equal(campaignData.characters.length, 6);
 assert.equal(new Set(campaignData.characters.map(({ id }) => id)).size, 6);
 assert.equal(campaignData.stages.length, 5);
+// 等级归一化合同：levelHp 是指数曲线，敌方若用世界观绝对等级（94），
+// 会把第 4 关放大成"必经关完全无法过关"的必败墙（修复前敌/我生命比 718–2103×）。
+// 第 1–4 关敌方等级必须按「挑战者等级 + levelOffset」只降不升地收敛；
+// 第 5 关（元祖龙神）明确豁免：STAGE5_BOSS_TUNING 围绕固定 Lv100 专项定标，Boss 恒为原始 Lv100。
+{
+  const offsets = campaignData.stages.map(stage => stage.levelOffset);
+  assert.ok(offsets.slice(0, 4).every(offset => Number.isFinite(offset)), `第 1–4 关必须有 levelOffset（当前 ${JSON.stringify(offsets)}）`);
+  assert.equal(offsets[3], 0, "第 4 关偏移应为 0（与挑战者同量级遭遇）");
+  assert.equal(offsets[4], null, "第 5 关不得参与等级归一化（levelOffset 必须为 null）：Boss 恒为固定 Lv100");
+  assert.ok(offsets.slice(0, 4).every((offset, index) => index === 0 || offset > offsets[index - 1]), "第 1–4 关强度必须随序号递增（levelOffset 严格递增）");
+  // 归一化仅对声明了 levelOffset 的关卡生效；第 5 关走 source.level 原始等级分支。
+  assert.match(campaignUiSource, /Number\.isFinite\(currentStage\.levelOffset\)\s*\?\s*Math\.min\(100, \(Number\(playerLevel\) \|\| source\.level\) \+ currentStage\.levelOffset\)\s*:\s*source\.level/,
+    "敌方等级归一化必须以 levelOffset 是否有效为开关：有效才收敛，无效（第 5 关）保持原始等级");
+  assert.match(campaignUiSource, /Math\.min\(source\.level, cappedLevel\)/, "敌方等级只降不升：高等级角色的第 1–3 关强度必须逐位不变");
+  assert.match(campaignUiSource, /enemyDeck\(currentStage, playerDeck\.level\)/, "enemyDeck 必须以玩家真实等级为归一化锚点");
+  // 定版调参保护：第五关首领防御经济四因子不得被改动。
+  assert.match(campaignUiSource, /STAGE5_BOSS_TUNING = \{ hp: \.07, damage: \.09, defense: \.004, heal: \.01 \}/);
+  // 第 4 关用同一口径补齐首领压缩（换算自第 5 关每单位压缩率 × 定标比值）。
+  assert.match(campaignUiSource, /STAGE4_BOSS_TUNING = \{ hp: \.55, damage: \.71, defense: \.031, heal: \.079 \}/);
+  assert.match(campaignUiSource, /STAGE_BOSS_TUNING = \{ "dragon-king": STAGE4_BOSS_TUNING, "ancestral-dragon": STAGE5_BOSS_TUNING \}/);
+}
 assert.deepEqual(Array.from([1, 2, 3, 4], round => battleRules.roundEnergy(round, 10)), [3, 5, 7, 9]);
 assert.match(campaignUiSource, /fixedCardLibrary\.createRuntimeDeck/);
 assert.doesNotMatch(campaignUiSource, /cardGenerator\.cardFromName/);
@@ -59,7 +80,11 @@ assert.doesNotMatch(campaignDataSource, /combatLevel/);
 assert.doesNotMatch(campaignUiSource, /战役计算等级/);
 assert.match(campaignUiSource, /maxHpMultiplier/);
 assert.match(campaignUiSource, /effectMultiplier: tuning\.power/);
-assert.match(campaignRuntimeSource, /actor: state\.enemy, target: state\.player/);
+// AI 态势上下文单一来源合同：runtime 的重新规划必须走共享决策函数，
+// 不得再内联复制 { actor, target } 上下文（否则会重新出现第二套表态口径）。
+assert.match(campaignRuntimeSource, /mode\.aiChoosePlay\(state, "enemy"\)/);
+assert.doesNotMatch(campaignRuntimeSource, /actor: state\.enemy, target: state\.player/);
+assert.match(campaignModeSource, /function aiContextFor\(state, side\)/);
 assert.match(campaignModeSource, /\["诅咒", "燃烧"\]/);
 assert.match(campaignModeSource, /resolveCardEffectAmount/);
 assert.match(campaignModeSource, /card\.effects/);
