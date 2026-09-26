@@ -22,12 +22,17 @@
     playStyle, passive, signatureCards: decks[id].normal.slice(0, 3), deck: decks[id]
   }));
 
+  // levelOffset：该关敌方等级相对"挑战者等级"的设计偏移（敌方卡组 level = min(世界观等级, 玩家等级 + levelOffset)）。
+  // 敌方卡组沿用固定角色的世界观等级（53/59/69/94/100），但 levelHp 是指数曲线、玩家又没有升级途径，
+  // 绝对等级会把第 4 关放大成必败墙。偏移让遭遇强度随挑战者收敛，同时保持关卡强度递增。
+  // 第 5 关（元祖龙神）不参与归一化：STAGE5_BOSS_TUNING 是围绕固定 Lv100 Boss 专项定标的，
+  // 改 Boss 基础等级等于间接重新标定第 5 关，故 levelOffset 保持 null，敌方恒为原始 Lv100。
   const stages = [
-    { id: "shadow-trial", order: 1, name: "暗影试炼", enemyId: "human-quick", enemyName: "奎克", intent: "诅咒与持续伤害", multiplier: .88, style: "curse" },
-    { id: "ice-arrows", order: 2, name: "冰锋箭雨", enemyId: "elf-queen", enemyName: "百丽耶塔·卡佩恩", intent: "抽牌、冻结和远程压制", multiplier: .96, style: "control" },
-    { id: "fire-line", order: 3, name: "炎牛战线", enemyId: "orc-sennuo", enemyName: "森诺迩·正义", intent: "高伤害、破甲和斩杀", multiplier: 1.02, style: "aggressive" },
-    { id: "dragon-king", order: 4, name: "毁灭龙王", enemyId: "dragon-shijiage", enemyName: "释迦格", intent: "高生命、高消耗和元素抗性", multiplier: 1.10, style: "guardian" },
-    { id: "ancestral-dragon", order: 5, name: "元祖龙神", enemyId: "dragon-yemosu", enemyName: "耶莫稣", intent: "首领阶段与多策略切换", multiplier: 1.18, style: "adaptive" }
+    { id: "shadow-trial", order: 1, name: "暗影试炼", enemyId: "human-quick", enemyName: "奎克", intent: "诅咒与持续伤害", multiplier: .88, levelOffset: -8, style: "curse" },
+    { id: "ice-arrows", order: 2, name: "冰锋箭雨", enemyId: "elf-queen", enemyName: "百丽耶塔·卡佩恩", intent: "抽牌、冻结和远程压制", multiplier: .96, levelOffset: -5, style: "control" },
+    { id: "fire-line", order: 3, name: "炎牛战线", enemyId: "orc-sennuo", enemyName: "森诺迩·正义", intent: "高伤害、破甲和斩杀", multiplier: 1.02, levelOffset: -2, style: "aggressive" },
+    { id: "dragon-king", order: 4, name: "毁灭龙王", enemyId: "dragon-shijiage", enemyName: "释迦格", intent: "高生命、高消耗和元素抗性", multiplier: 1.10, levelOffset: 0, style: "guardian" },
+    { id: "ancestral-dragon", order: 5, name: "元祖龙神", enemyId: "dragon-yemosu", enemyName: "耶莫稣", intent: "首领阶段与多策略切换", multiplier: 1.18, levelOffset: null, style: "adaptive" }
   ];
 
   global.campaignData = { characters, stages, difficulties: {

@@ -511,8 +511,20 @@
     return true;
   };
 
+  // 沙盒 AI 与战役 AI 共用同一套效果价值理解（campaignMode.aiChoosePlay）。
+  // 旧实现自带一份只看 effect.type 的简化估值，两套 AI 对同一个 Effect（治疗/护盾/抽牌/
+  // 能量/DOT/冻结/禁锢/召唤/净化）的判断并不一致；这里统一到共享决策函数，
+  // 沙盒仅在共享函数不可用时才退回本地估值。
+  // 保底链最末端仍需回落到内联原始实现，故先捕获内联 aiController.chooseCard。
   const originalChooseCard = aiController.chooseCard.bind(aiController);
   aiController.chooseCard = function(enemy, player) {
+    const state = this.state || gameEngine.state;
+    if (state && typeof globalThis.campaignMode?.aiChoosePlay === "function") {
+      const picked = globalThis.campaignMode.aiChoosePlay(state, enemy.id === "enemy" ? "enemy" : "player", { style: null });
+      if (picked) return picked;
+      const anyAffordable = enemy.hand.some(card => card.cost <= enemy.energy);
+      if (!anyAffordable) return null;
+    }
     const playable = enemy.hand.filter(card => card.cost <= enemy.energy); if (!playable.length) return null;
     const score = card => (card.effects || []).reduce((total, effect) => {
       if (effect.type === "damage") return total + effectAmount(enemy, effect) * (player.hp <= effectAmount(enemy, effect) ? 2 : 1);

@@ -24,7 +24,7 @@
     const currentRound = state.round;
     const energyPenalty = state.enemy.statuses.some(status => status.type === "冻结") ? 1 : 0;
     const enemyEnergy = battleRules.roundEnergy(currentRound, state.enemy.maxEnergy, energyPenalty);
-    const plan = mode.intentFor(state.enemy.hand.map(card => ({ ...card, effectiveCost: mode.effectiveCardCost(state, "enemy", card) })), enemyEnergy, state.enemy.campaignStyle, { actor: state.enemy, target: state.player, playerLowHp: state.player.hp / state.player.maxHp < .3, enemyLowHp: state.enemy.hp / state.enemy.maxHp < .35, handSize: state.enemy.hand.length, playerHasCurse: state.player.statuses.some(status => status.type === "诅咒") });
+    const plan = mode.intentFor(state.enemy.hand.map(card => ({ ...card, effectiveCost: mode.effectiveCardCost(state, "enemy", card) })), enemyEnergy, state.enemy.campaignStyle, mode.aiContextFor(state, "enemy"));
     state.campaign.intent = { type: plan.type, cardInstanceId: plan.card?.instanceId || "", description: `${state.enemy.name}正在准备${plan.type}。`, generatedRound: state.round };
   }
 

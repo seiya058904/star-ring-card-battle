@@ -7943,7 +7943,10 @@
       return first === "全系" ? "无" : first;
     }
 
-    const DIRECT_DAMAGE_EFFECT_TYPES = new Set(["attack", "burn", "freeze", "curse", "execute", "lifesteal", "pierce"]);
+    // 固定卡组（js/fixed-card-library.js）的直伤 Effect 类型是 "damage"，
+    // 旧内联生成器用的是 "attack"/"burn"/"freeze"/… 两套命名必须同时识别，
+    // 否则 isDirectDamageCard 对固定卡恒为 false，元素克制统计与卡面「克制」提示全部失效。
+    const DIRECT_DAMAGE_EFFECT_TYPES = new Set(["damage", "attack", "burn", "freeze", "curse", "execute", "lifesteal", "pierce"]);
     const ELEMENT_REQUIRED_EFFECT_TYPES = new Set([...DIRECT_DAMAGE_EFFECT_TYPES, "summon"]);
 
     function cardRequiresElement(card) {
@@ -9221,7 +9224,7 @@
       if (enemy.skipAction) {
         const controlStatus = enemy.statuses.find(s => s.type === "禁锢");
         gameEngine.log(`[控制] ${enemy.name} 被${controlStatus?.type || "控制"}束缚，无法行动。`);
-        setTimeout(() => { if (gameEngine.isActiveBattle(state, sessionId)) gameEngine.resolveAction({ type:"endTurn", side:"enemy" }); }, 650);
+        setTimeout(() => { if (gameEngine.isActiveBattle(state, sessionId)) gameEngine.resolveAction({ type:"endTurn", side:"enemy" }); }, scaledDramaMs(650));
         return;
       }
       let steps = 0;
@@ -9233,7 +9236,7 @@
           if (!card && !state.gameOver) {
             gameEngine.log(`${enemy.name}没有可打牌，跳过回合（能量 ${enemy.energy}，手牌 ${enemy.hand.length} 张）。`);
           }
-          setTimeout(() => { if (gameEngine.isActiveBattle(state, sessionId)) gameEngine.resolveAction({ type:"endTurn", side:"enemy" }); }, 650);
+          setTimeout(() => { if (gameEngine.isActiveBattle(state, sessionId)) gameEngine.resolveAction({ type:"endTurn", side:"enemy" }); }, scaledDramaMs(650));
           return;
         }
         preloadCardVisualAssets(card, "ai-before-card");
@@ -9244,9 +9247,9 @@
           gameEngine.resolveAction({ type:"playCard", side:"enemy", cardInstanceId: card.instanceId });
           const pause = scaledDramaMs(dramaTimingForCard(card).totalMin + 280);
           setTimeout(() => { if (gameEngine.isActiveBattle(state, sessionId)) loop(); }, pause);
-        }, 650 + Math.floor(rng() * 450));
+        }, scaledDramaMs(650 + Math.floor(rng() * 450)));
       };
-      setTimeout(() => { if (gameEngine.isActiveBattle(state, sessionId)) loop(); }, 850);
+      setTimeout(() => { if (gameEngine.isActiveBattle(state, sessionId)) loop(); }, scaledDramaMs(850));
     };
 
     const AI_DIALOGUE_BANK = {
@@ -14265,6 +14268,21 @@
     }
     .campaign-hud { flex-wrap: wrap; row-gap: 3px; padding: 6px 8px; }
     .campaign-intent { flex: 1 1 100%; }
+  }
+  /* 手牌溢出修复（真机验收发现）：dock 的分配高度（≤1600px 为 306px、≤1366px 为 288px）
+     小于手牌行自身高度（322px / 298px），手牌行自 dock 顶部向下排布，底部 11~18px 落到视口外，
+     被 .battle-layout-v3 的 overflow:hidden 裁掉，表现为卡牌描述文字被切断、且无法滚动查看。
+     这里让手牌行始终等于 dock 的可用高度、卡牌按自身尺寸底对齐，代价仅为卡牌上缘略微上移。
+     仅作用于桌面单行网格；≤980px 是移动端两行堆叠布局（dock 内部另有 227px/372px 行定义），不在此覆盖。 */
+  @media (min-width: 981px) {
+    body.battle-mode .hand-dock-v3 {
+      grid-template-rows: minmax(0, 1fr) !important;
+    }
+    body.battle-mode .hand-dock-v3 #playerHand {
+      height: 100% !important;
+      min-height: 0 !important;
+      max-height: none !important;
+    }
   }
   body.home-mode .home-title-screen.image-load-failed {
     background: linear-gradient(135deg, #1a1108, #0d0804);
