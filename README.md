@@ -208,7 +208,7 @@ http://127.0.0.1:8000/
 
 ---
 
-## Android Debug Build / Android 调试构建
+## Android APK Build / Android APK 构建
 
 The Android version is a WebView wrapper around the local web game.
 
@@ -233,14 +233,14 @@ Notes:
 * The APK file should not be committed.
 * Build outputs should not be committed.
 * `local.properties`, signing keys, `.apk`, `.aab`, `build/`, and `.gradle/` should remain ignored.
-* The debug APK is for local testing only, not formal release.
+* Android releases are distributed as fixed-signature Debug APK builds. This is the project's official Android distribution format; a separate Release build/signing pipeline is intentionally not required.
 
 注意：
 
 * 不要提交 APK 文件。
 * 不要提交构建产物。
 * `local.properties`、签名文件、`.apk`、`.aab`、`build/`、`.gradle/` 等应保持忽略。
-* debug APK 仅用于本地测试，不是正式发布包。
+* 本项目的 Android 正式发行版本采用固定签名的 Debug APK，不另外维护独立的 Release 构建或正式签名流程。
 
 ---
 
@@ -355,7 +355,7 @@ Future improvements may include:
 * More complete battle balance
 * Modularized JavaScript structure
 * Improved Android release packaging
-* Formal app icon and signed release build
+* Formal app icon
 
 未来可以继续改进：
 
@@ -364,7 +364,7 @@ Future improvements may include:
 * 更完整的战斗平衡
 * JavaScript 模块化
 * Android 正式发布封装
-* 正式应用图标与签名 release 包
+* 正式应用图标
 
 ---
 
