@@ -36,8 +36,17 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      # android-actions/setup-android@v3 自 2026-09 下旬起必败：其内部安装的遗留 "tools"
+      # 包已被 Google 从 sdkmanager 远端仓库移除（v1.2.6 发布时仍存在，见 run 36212099640）。
+      # GitHub ubuntu-latest runner 已预装 Android SDK 与 cmdline-tools，此处改为直接
+      # 幂等安装本项目所需组件（compileSdk 34 / buildTools 34.0.0 / apksigner 所在）。
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+          "$SDKMANAGER" --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
       - name: Run canonical verification firewall
         shell: bash
