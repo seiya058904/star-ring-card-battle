@@ -7386,7 +7386,7 @@
             this.openSettings();
             this.showToast("已恢复默认设置");
           });
-          document.getElementById("settingsCampaignResetBtn").addEventListener("click", () => this.openConfirm({ title: "重置战役进度？", message: "六名角色的战役进度和最近记录都会清除。", confirmText: "确认重置", onConfirm: () => { try { localStorage.removeItem("star-ring-campaign-progress-v1"); this.showToast("战役进度已重置"); } catch { this.showToast("存储不可用，重置失败", "error"); } } }));
+          document.getElementById("settingsCampaignResetBtn").addEventListener("click", () => this.openConfirm({ title: "重置战役进度？", message: "六名角色的战役进度和最近记录都会清除。", confirmText: "确认重置", onConfirm: async () => { try { await globalThis.campaignMode.resetProgress(localStorage, globalThis.campaignData.characters); this.showToast("战役进度已重置"); } catch { this.showToast("存储不可用或存档无效，重置失败，请重试", "error"); } } }));
         }});
       },
 

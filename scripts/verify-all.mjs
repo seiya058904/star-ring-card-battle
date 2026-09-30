@@ -10,6 +10,7 @@ const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, "..");
 
 const suites = [
+  { name: "战役两个重置入口", file: "scripts/verify-campaign-settings-reset.mjs" },
   { name: "固定角色与卡牌库", file: "scripts/verify-fixed-card-library.mjs" },
   { name: "战役规则与进度", file: "scripts/verify-campaign.mjs" },
   { name: "特殊卡真实行为", file: "scripts/verify-special-card-behavior.mjs" },

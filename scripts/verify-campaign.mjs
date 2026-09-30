@@ -93,7 +93,7 @@ assert.doesNotMatch(campaignUiSource, /(?<![\w.])effectiveCardCost\(/);
 assert.match(campaignUiSource, /mode\.effectiveCardCost\(state, "enemy", card\)/);
 assert.match(campaignUiSource, /mode\.effectiveCardCost\(state, "player", card\)/);
 assert.match(campaignUiSource, /const progress = \(\) => \{ try \{/);
-assert.match(campaignUiSource, /const saveProgress = value => \{ try \{/);
+assert.match(campaignUiSource, /await mode\.resetProgress\(localStorage, data\.characters\)/);
 assert.match(coreSource, /try \{ latest = global\.campaignMode\.loadProgress\(localStorage\.getItem/);
 assert.match(coreSource, /try \{ localStorage\.setItem\(global\.campaignMode\.STORAGE_KEY/);
 // 跨标签页并发合同：结算必须重读最新进度、校验重置代际并递增 revision。

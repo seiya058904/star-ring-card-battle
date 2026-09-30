@@ -1,0 +1,27 @@
+name: Campaign reset browser regression
+on:
+  pull_request:
+    paths: ['index.html', 'js/**', 'scripts/**', '.github/workflows/reset-browser.yml']
+permissions:
+  contents: read
+jobs:
+  browser-reset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install playwright==1.55.0
+      - run: python -m playwright install --with-deps chromium
+      - run: |
+          python -m http.server 4188 > /tmp/server.log 2>&1 &
+          python scripts/verify-campaign-reset-browser.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reset-browser-evidence
+          path: browser-evidence
