@@ -12,7 +12,6 @@
   const CAMPAIGN_CHARACTER_MAP = { lisaya: "human-lisaya", luolinfo: "human-luolinfo", eluxia: "elf-eluxia", moluo: "orc-moluo", heka: "demon-heka", su: "godkin-su" };
   const difficulty = () => data.difficulties[selectedDifficulty] || data.difficulties.normal;
   const progress = () => { try { return mode.loadProgress(localStorage.getItem(progressKey), data.characters); } catch { return mode.defaultProgress(data.characters); } };
-  const saveProgress = value => { try { localStorage.setItem(progressKey, JSON.stringify(value)); return true; } catch { return false; } };
   const character = () => data.characters.find(item => item.id === selectedCharacter) || data.characters[0];
   const stage = () => data.stages[selectedStage - 1];
   const campaignDeck = item => fixedCardLibrary.createRuntimeDeck(CAMPAIGN_CHARACTER_MAP[item.id]);
@@ -64,22 +63,15 @@
     document.querySelectorAll("[data-campaign-stage]").forEach(button => button.onclick = () => { selectedStage = Number(button.dataset.campaignStage); renderCampaignHome(); });
     document.getElementById("campaignCloseBtn").onclick = () => uiRenderer.closeModal();
     document.getElementById("campaignStartBtn").onclick = startCampaign;
-    document.getElementById("campaignResetBtn").onclick = () => uiRenderer.openConfirm({ title: "重置战役进度？", message: "六名角色的首章进度和最近战斗记录都会清除。", confirmText: "确认重置", onConfirm: () => {
-      // 与战斗结算共用 campaignMode.commitProgress 的唯一 progress 锁：
-      // 锁内重读最新进度，再递增 resetGeneration 写回，避免锁外的 reset 与锁内的结算互相踩踏。
-      mode.commitProgress(() => {
-        const latest = progress();
-        const fresh = mode.defaultProgress(data.characters);
-        fresh.revision = (Number(latest.revision) || 0) + 1;
-        fresh.resetGeneration = (Number(latest.resetGeneration) || 0) + 1;
-        if (!saveProgress(fresh)) {
-          renderCampaignHome();
-          uiRenderer.showToast("重置失败：无法保存战役进度，请重试。");
-          return;
-        }
+    document.getElementById("campaignResetBtn").onclick = () => uiRenderer.openConfirm({ title: "重置战役进度？", message: "六名角色的首章进度和最近战斗记录都会清除。", confirmText: "确认重置", onConfirm: async () => {
+      try {
+        await mode.resetProgress(localStorage, data.characters);
         selectedStage = 1;
         renderCampaignHome();
-      });
+        uiRenderer.showToast("战役进度已重置");
+      } catch {
+        uiRenderer.showToast("存储不可用或存档无效，重置失败，请重试", "error");
+      }
     }, onCancel: () => renderCampaignHome() });
     const recent = progress().recentBattles.slice(0, 5);
     if (recent.length) {

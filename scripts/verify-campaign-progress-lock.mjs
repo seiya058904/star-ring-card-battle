@@ -34,7 +34,9 @@ const uiSource = await read("js/campaign-ui.js");
 
 // 1. 契约：两条写路径都必须经 campaignMode.commitProgress，且锁实现只存在于 campaign-mode。
 assert.match(coreSource, /global\.campaignMode\.commitProgress\(commitCampaignResult\)/);
-assert.match(uiSource, /mode\.commitProgress\(/);
+assert.match(uiSource, /mode\.resetProgress\(/);
+assert.match(await read("js/campaign-mode.js"), /function resetProgress[\s\S]*?return commitProgress\(/);
+assert.match(await read("index.html"), /campaignMode\.resetProgress\(/);
 assert.doesNotMatch(coreSource, /navigator\.locks/, "结算层不得自建锁路径");
 assert.doesNotMatch(uiSource, /navigator\.locks/, "重置层不得自建锁路径");
 

@@ -247,5 +247,22 @@
     }
     return write();
   }
-  global.campaignMode = { MAX_RING, STORAGE_KEY, flattenDeck, defaultProgress, loadProgress, recordStageWin, recordStageLoss, mulligan, addRingEnergy, resonanceCost, resonanceShield, intentFor, scoreBattle, healingEfficiency, normalizeProgress, authorizeStage, clampStage, passiveAllowed, consumePassive, enemyResonanceChoice, shouldEnterBossPhase, recentBattles, resultActions, effectiveCardCost, expireResonance, isFormalIntent, passiveTriggerState, aiCardValue, aiCardScore, planAiPlay, aiChoosePlay, aiContextFor, intentTypeForCard, createCombatStats, recordCombatEvent, drawCount, commitProgress };
+  // Reset shares the result transaction and never treats a failed read as empty.
+  function resetProgress(storage, characters) {
+    return commitProgress(() => {
+      const raw = storage.getItem(STORAGE_KEY);
+      const source = raw === null ? defaultProgress(characters) : JSON.parse(raw);
+      if (!source || source.version !== 1 || !source.characters || typeof source.characters !== "object") throw new Error("战役存档无效，请先保留原数据");
+      for (const key of ["revision", "resetGeneration"]) {
+        if (source[key] !== undefined && (!Number.isSafeInteger(Number(source[key])) || Number(source[key]) < 0 || Number(source[key]) >= Number.MAX_SAFE_INTEGER)) throw new Error("战役版本无效");
+      }
+      const latest = normalizeProgress(source, characters);
+      const fresh = defaultProgress(characters);
+      fresh.revision = latest.revision + 1;
+      fresh.resetGeneration = latest.resetGeneration + 1;
+      storage.setItem(STORAGE_KEY, JSON.stringify(fresh));
+      return fresh;
+    });
+  }
+  global.campaignMode = { MAX_RING, STORAGE_KEY, flattenDeck, defaultProgress, loadProgress, recordStageWin, recordStageLoss, mulligan, addRingEnergy, resonanceCost, resonanceShield, intentFor, scoreBattle, healingEfficiency, normalizeProgress, authorizeStage, clampStage, passiveAllowed, consumePassive, enemyResonanceChoice, shouldEnterBossPhase, recentBattles, resultActions, effectiveCardCost, expireResonance, isFormalIntent, passiveTriggerState, aiCardValue, aiCardScore, planAiPlay, aiChoosePlay, aiContextFor, intentTypeForCard, createCombatStats, recordCombatEvent, drawCount, commitProgress, resetProgress };
 })(globalThis);

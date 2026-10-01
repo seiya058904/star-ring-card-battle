@@ -188,6 +188,7 @@ function createElementStub(id = "") {
 }
 
 function createDocumentStub() {
+  const listeners = new Map();
   const registry = new Map();
   const body = createElementStub("body");
   body.classList = { add() {}, remove() {}, toggle() {}, contains() { return false; } };
@@ -203,8 +204,9 @@ function createDocumentStub() {
     querySelectorAll() { return []; },
     createElement() { return createElementStub(); },
     createDocumentFragment() { return createElementStub(); },
-    addEventListener() {},
+    addEventListener(name, handler) { if (!listeners.has(name)) listeners.set(name, []); listeners.get(name).push(handler); },
     removeEventListener() {},
+    listeners,
     readyState: "complete",
   };
 }
