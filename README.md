@@ -26,6 +26,8 @@ You can play the latest web version here:
 
 ---
 
+Current Android download: [v1.2.8](https://github.com/seiya058904/star-ring-card-battle/releases/tag/v1.2.8), versionCode 13. This maintenance release includes the shared campaign reset generation fix from PR #14, with the existing signing identity and game rules preserved.
+
 ## Project Status / 项目状态
 
 This project is currently a playable prototype.
