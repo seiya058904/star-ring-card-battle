@@ -50,6 +50,10 @@ async def start(page, animation="high", character="human-lisaya"):
     await page.locator("#chooseSandbox").click()
     await page.locator(f'[data-fixed-character="{character}"]').click()
     await page.wait_for_timeout(400)
+    await page.wait_for_function("""()=>{
+      const images=[...document.querySelectorAll('.unit-sprite')];
+      return images.length===2 && images.every(img=>img.complete&&img.naturalWidth>0);
+    }""")
 
 
 async def replay(page):
@@ -151,10 +155,11 @@ async def characters(browser):
     result = []
     for character in ids:
         await start(page, character=character)
-        entry = await page.evaluate("""()=>{const s=gameEngine.state,img=document.querySelector('#playerUnit .unit-sprite');return {
+        entry = await page.evaluate("""()=>{const s=gameEngine.state,img=document.querySelector('#playerUnit .unit-sprite'),enemy=document.querySelector('#enemyUnit .unit-sprite');return {
           name:s.player.name,hero:BattlePresentation.heroFor(s.player)?.id,imageReady:img.complete&&img.naturalWidth>0,
+          enemyImageReady:enemy.complete&&enemy.naturalWidth>0,
           deck:s.player.hand.length+s.player.drawPile.length+s.player.discardPile.length};}""")
-        assert entry["hero"] and entry["imageReady"] and entry["deck"] == 30, entry
+        assert entry["hero"] and entry["imageReady"] and entry["enemyImageReady"] and entry["deck"] == 30, entry
         card = await page.evaluate("campaignMode.aiChoosePlay(gameEngine.state,'player')?.instanceId")
         assert card, entry
         await page.locator(f'#playerHand .card[data-instance-id="{card}"]').click()
