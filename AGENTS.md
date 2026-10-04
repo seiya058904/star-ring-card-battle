@@ -11,14 +11,14 @@
 
 ## 运行与验证
 
-命令从仓库根目录执行；Node 验证零依赖，真实浏览器检查需要已安装 Chromium 的 Python Playwright。
+命令从仓库根目录执行；Node 验证零依赖，真实浏览器检查需要已安装 Chromium 的 Python Playwright。先将 `$evidence` 设置为已创建的仓库外证据目录的绝对路径。
 
 ```powershell
 python -m http.server 8000
 # 另一个终端运行：
 node scripts/verify-all.mjs
 node scripts/verify-android-web-assets.mjs
-python scripts/verify-battle-input-layout-browser.py --url http://127.0.0.1:8000/ --out <仓库外证据目录>
+python scripts/verify-battle-input-layout-browser.py --url http://127.0.0.1:8000/ --out "$evidence"
 ```
 
 - `verify-all.mjs` 聚合战斗、战役、渲染/CSS 所有权、存档、平衡护栏与 Android parity；针对小改动可选择其中相关 `scripts/verify-*.mjs`。对修改的 JS 另运行 `node --check <文件>`。
