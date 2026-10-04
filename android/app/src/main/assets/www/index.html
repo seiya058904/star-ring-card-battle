@@ -5154,7 +5154,7 @@
             <div class="arena-skyline"></div>
             <div class="arena-sigil" aria-hidden="true"></div>
             <div class="skill-banner" id="skillBanner"></div>
-            <div class="played-card-stage" id="playedCardStage"></div>
+            <div class="played-card-stage" id="playedCardStage" aria-hidden="true"></div>
             <div class="arena-center">
               <div class="battle-hud battle-hud-player"><div class="fighter player" id="playerArea"></div></div>
               <div class="battle-hud battle-hud-enemy"><div class="fighter enemy" id="enemyArea"></div></div>
@@ -6882,10 +6882,44 @@
         const field = document.getElementById("battlefield");
         const banner = document.getElementById("skillBanner");
         const stage = document.getElementById("playedCardStage");
+        const bannerText = drama.tier === "ultimate" ? "终极技能" : drama.tier === "advanced" ? "高级技能" : card.name;
+        const subtitleText = drama.tier === "ultimate" ? card.name : drama.tier === "advanced" ? `${card.element}元素释放` : "";
         banner.textContent = "";
         banner.className = "skill-banner";
+        stage.className = "played-card-stage";
+        const castColor = this.color(card.element);
+        stage.style.setProperty("--elm-p1", castColor);
+        stage.style.setProperty("--elm-p2", castColor);
+        stage.style.setProperty("--elm-glow", castColor + "66");
+        const sourceCardEl = card?.instanceId ? document.querySelector(`#playerHand .card[data-instance-id="${card.instanceId}"]`) : null;
+        stage.innerHTML = `
+          <div class="ultimate-backdrop"></div>
+          <div class="ultimate-rays"></div>
+          <div class="cast-vortex"></div>
+          <div class="cast-ring"></div>
+          <div class="cast-banner">${bannerText}</div>
+          <div class="played-card-wrap"></div>
+          <div class="cast-burst"></div>
+          <div class="cast-subtitle">${subtitleText}</div>
+        `;
+        const wrap = stage.querySelector(".played-card-wrap");
+        if (sourceCardEl) {
+          const clone = sourceCardEl.cloneNode(true);
+          clone.classList.remove("playing", "selected", "unplayable");
+          clone.removeAttribute("tabindex");
+          wrap.appendChild(clone);
+        } else {
+          wrap.innerHTML = renderCard(card, false);
+        }
+        wrap.querySelector(".card")?.removeAttribute("tabindex");
+        void banner.offsetWidth;
+        void stage.offsetWidth;
+        banner.className = "skill-banner";
         stage.className = `played-card-stage show ${drama.tier}`;
-        globalThis.BattlePresentation?.begin(card, result, drama, stage);
+        // Scale the authored card/effect animations with the existing combat timeline.
+        const castRate = COMBAT_DRAMA_TIMING[drama.tier].totalMin / scaledDramaMs(drama.totalMin);
+        for (const animation of stage.getAnimations?.({ subtree: true }) || []) animation.playbackRate = castRate;
+        globalThis.BattlePresentation?.begin(card, result, drama);
         document.body.classList.add(`${drama.tier}-drama`);
         setTimeout(() => {
           if (!gameEngine.isActiveBattle(battleState, battleSessionId)) return;
@@ -6899,6 +6933,12 @@
           globalThis.BattlePresentation?.finish();
         }, scaledDramaMs(drama.totalMin));
         const settings = uiRenderer?.settings || DEFAULT_GAME_SETTINGS;
+        if (card.skillTier === "advanced" || card.skillTier === "special") {
+          document.getElementById("screenFlash").classList.remove("on");
+          document.getElementById("screenFlash").classList.toggle("special", card.skillTier === "special");
+          void document.getElementById("screenFlash").offsetWidth;
+          document.getElementById("screenFlash").classList.add("on");
+        }
         const impactDelay = scaledDramaMs(drama.enter + drama.focus + drama.charge + drama.cast);
         setTimeout(() => {
           if (!gameEngine.isActiveBattle(battleState, battleSessionId)) return;
@@ -6950,14 +6990,25 @@
             resetBattleViewTransform();
           }, scaledDramaMs(420));
         }, impactDelay);
-        // Compatibility: main's particle generator advanced the shared seeded
-        // RNG seven times per particle. Preserve that exact sequence for saved
-        // seeds/replays; the new director itself never consumes combat RNG.
+        const rect = this.canvas.getBoundingClientRect();
         const animMul = settings.animation === "low" ? .35 : settings.animation === "high" ? 1.25 : 1;
         const baseCount = drama.tier === "ultimate" ? 180 : drama.tier === "advanced" ? 120 : drama.tier === "strong" ? 86 : drama.tier === "enhanced" ? 58 : 38;
         const count = Math.round(baseCount * animMul);
-        for (let i = 0; i < count * 7; i++) rng();
-
+        const color = this.color(card.element);
+        for (let i = 0; i < count; i++) {
+          const angle = (result.targetId === "player" ? Math.PI : 0) + (rng() - .5) * 1.15;
+          const speed = 2 + rng() * (card.skillTier === "special" ? 9 : 6);
+          this.particles.push({
+            x: rect.width * .5,
+            y: rect.height * (.48 + (rng() - .5) * .18),
+            vx: Math.cos(angle) * speed + (rng() - .5) * 1.2,
+            vy: Math.sin(angle) * speed - rng() * 2.8,
+            life: 54 + rng() * (drama.tier === "ultimate" ? 70 : drama.tier === "advanced" ? 52 : 32),
+            color,
+            size: 2 + rng() * (drama.tier === "ultimate" ? 7 : drama.tier === "advanced" ? 5 : 4),
+            shape: this.shape(card.element)
+          });
+        }
       },
       showMechanicPopups(result, drama) {
         const field = document.getElementById("battlefield");

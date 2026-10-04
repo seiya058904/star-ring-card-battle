@@ -4226,26 +4226,6 @@ body.battle-mode .duel-unit[data-affliction="ice"] .unit-sprite { filter: drop-s
 body.battle-mode .duel-unit[data-affliction="curse"] .unit-sprite, body.battle-mode .duel-unit[data-affliction="bind"] .unit-sprite { filter: drop-shadow(0 12px 9px #0008) drop-shadow(0 0 3px #9571b8) !important; }
 body.battle-mode .duel-unit[data-affliction="fire"] .unit-sprite { filter: drop-shadow(0 12px 9px #0008) drop-shadow(0 0 2px #ec9761) !important; }
 body.battle-mode .duel-unit.defeated { opacity: .28; filter: grayscale(1); transition: opacity .5s, filter .5s; }
-body.battle-mode .played-card-stage, body.battle-mode .played-card-stage.show {
-  inset: 0 !important; width: 100% !important; height: 100% !important; transform: none !important;
-  pointer-events: none !important; animation: none !important; z-index: 34 !important;
-  display: block !important; background: none !important; opacity: 1 !important;
-}
-.cast-title-strip {
-  position: absolute; left: 50%; top: 43%; transform: translateX(-50%); max-width: calc(100% - 24px);
-  min-width: 190px; padding: 10px 28px; display: grid; grid-template-columns: 25px auto; gap: 4px 10px;
-  border-top: 1px solid var(--elm-p1); border-bottom: 1px solid #cebb8d40;
-  color: #f2e6ce; background: linear-gradient(90deg, #0c172300, #0c1723ee 16%, #0c1723ee 84%, #0c172300);
-  animation: cast-title var(--cast-duration) both;
-}
-.cast-title-strip img { width: 24px; height: 24px; grid-row: 1 / 3; align-self: center; }
-.cast-title-strip strong { font-size: 19px; font-family: Georgia, "STSong", "SimSun", serif; text-align: center; }
-.cast-title-strip span { color: #cfc3a8; font-size: 10px; text-align: center; }
-.cast-cameo { position: absolute; width: 34%; height: 52%; left: 0; top: 30%; overflow: hidden; opacity: .85; pointer-events: none; animation: cast-cameo var(--cast-duration) both; mask-image: linear-gradient(90deg, #000 60%, transparent); }
-.cast-cameo img { height: 135%; width: 100%; object-fit: contain; object-position: top; filter: drop-shadow(0 10px 18px #0008); }
-.played-card-stage[data-side="enemy"] .cast-cameo { left: auto; right: 0; mask-image: linear-gradient(270deg, #000 60%, transparent); }
-@keyframes cast-title { 0% { opacity: 0; translate: 0 8px; } 12%, 63% { opacity: 1; translate: 0 0; } 86%, 100% { opacity: 0; translate: 0 -6px; } }
-@keyframes cast-cameo { 0% { opacity: 0; translate: -30px 0; } 15%, 50% { opacity: .9; translate: 0 0; } 75%, 100% { opacity: 0; translate: 18px 0; } }
 .element-impact { position: absolute; z-index: 19; width: 120px; height: 120px; translate: -50% -50%; pointer-events: none; color: var(--effect-color); }
 .element-impact i { position: absolute; left: 50%; top: 50%; width: 3px; height: 56px; transform-origin: 50% 0; background: currentColor; animation: impact-ray var(--impact-duration) cubic-bezier(.16,1,.3,1) both; }
 .element-impact i:nth-child(2) { rotate: 60deg; }
@@ -4314,10 +4294,11 @@ body #screen-result.active { padding: 24px 14px; align-items: flex-start; }
 #screen-result .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (prefers-reduced-motion: reduce) {
+body.battle-mode .played-card-stage.show { opacity: 1 !important; transform: translate(-50%, -50%) !important; }
 body.battle-mode *, .campaign-modal *, #screen-result * { animation: none !important; transition: none !important; }
-.cast-cameo, .element-impact, .arena-sigil { display: none !important; }
+.element-impact, .arena-sigil { display: none !important; }
 }
-body[data-anim="low"] .cast-cameo, body[data-anim="low"] .element-impact { display: none !important; }
+body[data-anim="low"] .element-impact { display: none !important; }
 
 body.battle-mode #playerHand .card[data-tier="advanced"] { border-color: #d8b66f !important; }
 body.battle-mode #playerHand .card[data-tier="special"] { border-color: #b49adb !important; }

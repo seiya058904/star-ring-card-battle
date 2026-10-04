@@ -56,9 +56,8 @@ async def start(page, animation="high", character="human-lisaya"):
     }""")
 
 
-async def replay(page):
+async def replay(page, keyboard=True):
     deadline = time.monotonic() + 75
-    keyboard = True
     while time.monotonic() < deadline:
         d = await page.evaluate("""()=>{const s=gameEngine.state;return {
           over:s.gameOver,ready:canAcceptPlayerCardInput(),round:s.round,skip:s.player.skipAction,
@@ -79,6 +78,15 @@ async def replay(page):
                 keyboard = False
             else:
                 await card.click()
+            cast = await page.evaluate("""()=>{
+              const stage=document.getElementById('playedCardStage');
+              const cards=stage.querySelectorAll('.card');
+              return {cards:cards.length,instance:cards[0]?.dataset.instanceId,
+                rings:stage.querySelectorAll('.cast-ring').length,
+                replacementTitles:stage.querySelectorAll('.cast-title-strip').length};
+            }""")
+            assert cast["cards"] == 1 and cast["instance"] == d["card"], f"Played card missing from the central stage: {cast}, expected {d['card']}"
+            assert cast["rings"] == 1 and cast["replacementTitles"] == 0, "Original card cast effects were replaced"
         else:
             await page.locator("#endTurnBtn").click()
         await page.wait_for_timeout(550)
@@ -187,11 +195,9 @@ async def main():
             for baseline in ([True, False] if args.baseline_ref else [False]):
                 ctx, page, errors = await context_for(browser, baseline)
                 await start(page, animation)
-                # main did not support hand keyboard input, so baseline uses the
-                # exact existing click handler to compare the same legal action.
-                if baseline:
-                    await page.evaluate("document.getElementById('playerHand').addEventListener('keydown',e=>{if(e.key==='Enter')e.target.closest('.card')?.click();})")
-                snapshot = await replay(page)
+                # main's hand was not keyboard-focusable. Exercise its real click
+                # handler and the current keyboard handler for the same legal card.
+                snapshot = await replay(page, keyboard=not baseline)
                 assert not errors, errors
                 snapshots.append(snapshot)
                 await ctx.close()

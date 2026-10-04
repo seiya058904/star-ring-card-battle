@@ -12,7 +12,6 @@
     ["su", "苏", "#c3b5e8"],
   ];
   const colors = { 火: "#ffa268", 冰: "#b8e8f5", 风: "#a3e6c4", 土: "#ddbb84", 雷: "#cab6ff", 光: "#f6e8af", 暗: "#bd99d2", 无: "#e3d2ac" };
-  const intentNames = { "friendly-heal": "恢复", "friendly-shield": "守护", "friendly-buff": "蓄势", "friendly-summon": "召唤", "hostile-status": "控制", "hostile-damage": "攻击" };
   let cast = null;
   let battle = null;
   let resultKey = null;
@@ -106,7 +105,7 @@
     summons = liveSummons;
   }
 
-  function begin(card, result, drama, stage) {
+  function begin(card, result, drama) {
     const state = global.gameEngine.state;
     // Resolve the source from the live turn; friendly effects correctly return
     // targetId === actor.id, so inferring the caster from the target is unsafe.
@@ -117,22 +116,6 @@
     cast = { side, recipient, element: card.element, intent: result.intent, tier: drama.tier,
       started: now, impactAt: now + delay(drama.enter + drama.focus + drama.charge + drama.cast),
       end: now + delay(drama.totalMin), state, session: global.gameEngine.sessionId, impacted: false };
-    stage.replaceChildren();
-    stage.style.setProperty("--elm-p1", color);
-    stage.style.setProperty("--cast-duration", `${delay(drama.totalMin)}ms`);
-    stage.dataset.element = card.element;
-    stage.dataset.side = side;
-    const strip = document.createElement("div"); strip.className = "cast-title-strip";
-    const icon = document.createElement("img"); icon.src = global.ASSETS.elements[card.element] || global.ASSETS.elements.无; icon.alt = "";
-    const name = document.createElement("strong"); name.textContent = card.name;
-    const meta = document.createElement("span"); meta.textContent = `${state[side].name} · ${intentNames[result.intent] || "技能"}`;
-    strip.append(icon, name, meta); stage.append(strip);
-    if (["advanced", "ultimate"].includes(drama.tier)) {
-      const hero = heroFor(state[side]);
-      const cameo = document.createElement("div"); cameo.className = "cast-cameo";
-      const image = document.createElement("img"); image.src = hero?.src || document.querySelector(`#${side}Unit .unit-sprite`)?.src || ""; image.alt = "";
-      cameo.append(image); stage.append(cameo);
-    }
     const actor = document.getElementById(`${side}Unit`);
     actor?.classList.add("actor-casting");
     const dir = side === "player" ? 1 : -1;

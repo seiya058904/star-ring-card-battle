@@ -700,7 +700,7 @@ playCampaignDrawSound（实际抽到牌时播放音效）
 
 1. `uiRenderer.render` 每次战斗渲染重建手牌、fighter、duel unit、summons、log。
 2. `renderCard` 在每次手牌渲染时对每张卡执行 art/frame/effective-cost 计算。
-3. `effectsRenderer.frame` 调用表现导演绘制元素轨迹；新动作不再生成旧的大量随机粒子。历史粒子循环目前保留，但新出牌不会填充它。
+3. `effectsRenderer.frame` 绘制原粒子并调用表现导演绘制元素轨迹。按用户反馈，中央卡牌和原粒子生成已恢复；角色动作不再替换中央出牌展示。
 4. `renderFighter` 每次渲染重建 HUD 状态图标与 enemy hand。
 5. `renderLog` 每次渲染重建最多 38 条日志 DOM。
 
@@ -1116,7 +1116,7 @@ The stylesheet is **desktop-first with max-width corrections**, fragmented acros
 5. **无统一事件模型**：战斗日志、浮动伤害、音效、统计分别从 `result` 对象/状态直接推断，缺少单一事件流。
 6. **存储缺少迁移框架**：只有 `campaignMode.normalizeProgress` 容错，没有正式 schema/import/export/quota 处理。
 7. **Android viewport 仍是固定 1920 桌面模拟**：响应式重构前需要专门里程碑。
-8. **历史视觉 RNG 耦合**：旧粒子每粒调用战斗 `rng()` 七次，且数量受动画档位影响。本轮为保持同种子、同档位的既有结果，在 `effectsRenderer.play` 保留等量推进；新表现导演不调用 RNG。不同动画档位之间的历史随机序列差异仍存在，解除该耦合需要单独授权的规则/重放迁移。
+8. **历史视觉 RNG 耦合**：原粒子每粒调用战斗 `rng()` 七次，且数量受动画档位影响。本轮恢复 `effectsRenderer.play` 的原粒子生成，保持同种子、同档位的既有结果；新表现导演不调用 RNG。不同动画档位之间的历史随机序列差异仍存在，解除该耦合需要单独授权的规则/重放迁移。
 
 ## 11. 建议的迁移边界（Monkey Patch → Explicit Composition）
 
