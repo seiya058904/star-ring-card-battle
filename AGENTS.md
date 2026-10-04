@@ -1,136 +1,47 @@
-# Repository Guidelines
+# 星环卡牌战场仓库指南
 
-## Project Overview
+## 权威入口与边界
 
-`星环卡牌战场`是无后端的离线卡牌战斗原型。根目录`index.html`是 Web 权威入口，使用原生 HTML、CSS 和 JavaScript；`js/`在页面主脚本之后加载，提供固定卡组、战役、战斗规则和音频覆写。`android/`是 Kotlin/Gradle 的 WebView 壳，将同步后的网页资源打入 APK。运行时本地数据保存在浏览器 `localStorage`。
+- 根目录 `index.html` 是无后端 Web 游戏入口，原生 HTML/CSS/JavaScript，存档在 `localStorage`。没有 `package.json`、npm 构建、formatter 或 type-check 命令；不要臆造命令或全文件格式化。
+- `js/` 在主内联脚本后加载，通过 `globalThis` 访问战斗/渲染/存储对象；实际顺序以 `index.html` 末尾 `<script src>` 为准。`fixed-game-rules.js` 覆写规则，`campaign-runtime.js`、`campaign-ui.js` 接入战役；改费用、回合、伤害、状态、异步结算时须检查完整覆写链。
+- `assets/` 是图片、音频及素材 manifest 的权威来源，`docs/` 保留架构与美术审计。原始素材、参考图和预览图可能是唯一创作历史，不能仅因不在运行时显示而删除。
+- `android/` 是 Kotlin/Gradle WebView 壳；`android/app/src/main/assets/www/` 是生成的离线镜像，禁止手改或当作重复垃圾删除。先改根网页、`js/`、`assets/`、根图标，再按需运行同步脚本。
+- 保留相对 `assets/...` 路径、固定角色/30 张卡组、数值与职业/种族设定、存储键、种子随机和 Web/Android 一致性。不要顺手重构、调参或修复未授权 Bug。
+- Stage 5 的 `STAGE5_BOSS_TUNING = { hp:.07, damage:.09, defense:.004, heal:.01 }` 按敌方 profile 缩放；无新证据不调整。卡面穿透比例随本次伤害在 `resolveDamage` 内换算，不能重复结算。
 
-## Project Structure & Module Organization
+## 运行与验证
 
-- `index.html`：主 UI、渲染、基础战斗对象和 `globalThis` 暴露；不要全文件格式化或大规模拆分。
-- `js/fixed-game-rules.js`：最终战斗规则覆写层；`campaign-ui.js`继续包装战役行为。修改战斗逻辑必须追踪这条加载链。
-- `js/fixed-card-library.js`、`campaign-*.js`、`battle-rules.js`、`audio-manager.js`：固定卡组、战役、通用规则和音频模块。
-- `assets/`：本地图片、音频元数据和素材 manifest；`docs/`：审计和素材说明。
-- `scripts/`：零依赖 Node 验证及 Android 资源同步脚本。
-- `android/app/src/main/kotlin/.../MainActivity.kt`：WebView 宿主、资源加载、沉浸式模式和返回行为；`android/app/src/main/assets/www/`：生成的网页镜像，禁止手改。
-
-## Architecture Notes
-
-`index.html`公开`cardGenerator`、`deckBuilder`、`gameEngine`、`aiController`、`uiRenderer`、`effectsRenderer`、`storageManager`等对象。外部脚本经`globalThis`访问它们，加载顺序以页面末尾的`<script src>`为准；后加载的`fixed-game-rules.js`和`campaign-ui.js`会覆写核心方法。涉及费用、回合、伤害、状态、召唤物或异步结算时，检查所有包装层和同类调用路径。
-
-网页资源必须保持相对`assets/...`路径，以同时兼容本地静态服务器、GitHub Pages 和`WebViewAssetLoader`。根网页、`assets/`、`js/`及根图标发生 Android 相关变更时，先改权威根文件，再使用同步脚本生成镜像。
-
-## 稳定规则（勿轻易改动）
-
-- Stage 5 首领战平衡已定版为 `campaign-ui.js` 的 `STAGE5_BOSS_TUNING = { hp:.07, damage:.09, defense:.004, heal:.01 }`（按敌方 profile 缩放）。**无新证据不要重新调参，也不要把小数值当 bug 修。**
-- `pierceAmountRatio` 按卡面比例随本次伤害在 `resolveDamage` 内一次性换算为固定穿透量；这是已确认的结算语义。
-
-## Build, Test & Development Commands
-
-只记录已有命令；运行前按任务授权：
+命令从仓库根目录执行；Node 验证零依赖，真实浏览器检查需要已安装 Chromium 的 Python Playwright。
 
 ```powershell
-python -m http.server 8000                         # 本地 Web 静态服务器
-node scripts/verify-fixed-card-library.mjs          # 固定角色和卡牌库
-node scripts/verify-campaign.mjs                    # 战役规则与进度
-node scripts/verify-special-card-behavior.mjs       # 特殊卡真实行为
-node scripts/verify-audio-library.mjs               # 音频元数据与回退
-node scripts/verify-battle-effects.mjs              # 战斗效果与覆写链
-node scripts/verify-battle-start-smoke.mjs          # 战斗启动 smoke
-node scripts/verify-campaign-display-smoke.mjs      # 战役显示 smoke
-node scripts/verify-campaign-apply-card-chain.mjs    # 战役 applyCard 集成边界特征
-node scripts/verify-campaign-play-card-chain.mjs     # 战役 playCard 集成边界特征
-node scripts/verify-campaign-turn-transition.mjs    # 战役回合过渡特征
-node scripts/verify-campaign-ai-turn.mjs            # 战役 AI 回合特征
-node scripts/verify-campaign-runtime-boundaries.mjs # 战役 tickStatuses/draw 边界特征
-node scripts/verify-campaign-rules-module.mjs      # campaign-rules 模块契约
-node scripts/verify-campaign-runtime-module.mjs     # campaign-runtime 模块契约
-node scripts/verify-renderer-ownership.mjs         # 渲染器所有权普查
-node scripts/verify-render-card.mjs                # renderCard 特征
-node scripts/verify-render-fighter.mjs            # renderFighter 特征
-node scripts/verify-render-card-preview.mjs      # renderCardPreview 特征
-node scripts/verify-render-duel-unit.mjs         # renderDuelUnit 特征
-node scripts/verify-ui-render-pipeline.mjs         # uiRenderer.render 管线
-node scripts/verify-effects-play-lock.mjs           # effectsRenderer.play lock 特征
-node scripts/audit-css-ownership.mjs             # CSS 所有权审计（诊断）
-node scripts/verify-css-ownership.mjs            # CSS 所有权校验
-node scripts/verify-battle-layout-css.mjs       # battle-layout CSS 所有权
-node scripts/verify-card-css.mjs               # card CSS 所有权
-node scripts/verify-fighter-css.mjs           # fighter CSS 所有权
-node scripts/verify-preview-css.mjs          # Preview CSS 所有权
-node scripts/verify-campaign-hud-css.mjs       # Campaign HUD CSS 所有权
-node scripts/audit-responsive-ownership.mjs         # 响应式所有权审计（诊断）
-node scripts/verify-responsive-ownership.mjs        # 响应式所有权校验
-node scripts/verify-battle-invariants.mjs           # 战斗不变式回归
-node scripts/verify-runtime-ownership.mjs           # 战斗规则所有权/覆写链检查
-node scripts/verify-all.mjs                         # 聚合全部安全只读验证
-node scripts/sync-android-web-assets.mjs            # 同步 Android 网页镜像并校验
-node scripts/verify-android-web-assets.mjs          # 只读检查镜像、素材和 WebView 设置
-Set-Location android
-.\gradlew.bat assembleDebug --no-daemon # 构建 Debug APK（需要 JDK 17 与 Android SDK）
+python -m http.server 8000
+# 另一个终端运行：
+node scripts/verify-all.mjs
+node scripts/verify-android-web-assets.mjs
+python scripts/verify-battle-input-layout-browser.py --url http://127.0.0.1:8000/ --out <仓库外证据目录>
 ```
 
-仓库没有`package.json`、通用测试框架、formatter 或 type-check 命令；不要臆造 npm 命令。同步会写入 Android 镜像，只在 Android 交付需要时运行。commit、push、合并、部署、Release、数据库写入和签名操作均需明确授权。
+- `verify-all.mjs` 聚合战斗、战役、渲染/CSS 所有权、存档、平衡护栏与 Android parity；针对小改动可选择其中相关 `scripts/verify-*.mjs`。对修改的 JS 另运行 `node --check <文件>`。
+- UI/战斗/异步改动须做真实浏览器交互与控制台检查；上述浏览器回归覆盖模态输入、陈旧共鸣回调、七张手牌命中与窄/短屏布局。战役重置浏览器命令与证据约定见 `.github/workflows/reset-browser.yml`。
+- Web 无编译过程；Android 资源改动在同步后验证 parity，涉及壳层或 APK 交付再构建/安装并验证真实 WebView。文档整理无需重复昂贵 APK/模拟器测试。
+- 完成前运行 `git diff --check`，检查 diff/status 和关键入口/资源引用；准确报告未运行或失败的验证，不修改测试预期来掩盖问题。
 
-## Android CLI / APK Workflow
+## Android 与发布
 
-普通 APK 开发、构建、安装和 UI 测试不需要 Android Studio；从 `android/` 使用上面的仓库 Gradle Wrapper 命令。
+```powershell
+node scripts/sync-android-web-assets.mjs
+node scripts/verify-android-web-assets.mjs
+.\android\gradlew.bat -p android assembleDebug --no-daemon
+```
 
-- Java 必须为 JDK 17；不要使用 Android Studio 内置 JBR，也不要安装系统级 Gradle。
-- 不要无理由升级 AGP、Gradle、compileSdk 或 Build Tools。
-- 启动标准测试 AVD，并禁止 snapshot、snapshot 保存和 cache：
+- 同步脚本会写镜像；只在权威资源变更需要同步时运行。镜像 `index.html` 含 Android 专用 viewport，不要求其与根 HTML 逐字相同；由 parity 脚本判断。
+- 使用 JDK 17、仓库 Gradle Wrapper；SDK/插件版本以 `android/app/build.gradle`、`android/build.gradle`、`android/settings.gradle`、`android/gradle/wrapper/gradle-wrapper.properties` 为准。现有构建使用 SDK 34，依赖变更需明确授权。
+- APK 输出为 `android/app/build/outputs/apk/debug/app-debug.apk`。官方 Android 分发采用固定签名的 Debug APK；不能擅自更换签名、另建 Release 签名体系或提交 APK/密钥。安装测试时从配置读取 application id，验证启动、离线资源和返回行为；真实环境凭据不得读取或暴露。
+- `.github/workflows/verify.yml` 运行语法与聚合验证；`reset-browser.yml` 对相关 PR 执行浏览器重置回归；`release.yml` 仅在版本 tag 或明确手动请求时构建 APK、校验版本及签名并发布。重建既有 Release 必须 checkout 对应 tag，不能用当前 main 覆盖历史交付。
+- GitHub Pages 从 `main` 根目录发布。版本名/代码与 Release 关系以 `android/app/build.gradle` 和 README 为准；不在这里记录一次性发布状态。
 
-  ```powershell
-  emulator -avd Codex_Maestro_Android34 -no-snapshot -no-snapshot-save -no-snapstorage -no-cache
-  adb devices
-  adb -s <device-id> shell getprop sys.boot_completed
-  ```
+## 维护与工作区卫生
 
-  仅在 `sys.boot_completed` 为 `1` 后继续；除非 AVD 损坏或任务明确要求，不创建其他 AVD。
-- 构建成功后用 `adb -s <device-id> install -r <apk-path>` 安装并启动 App；从 Gradle/Manifest 读取 package/application id，不在此处猜测或写死。
-- UI 测试优先使用 Maestro MCP：`list_devices`、`inspect_screen`、`run`、`take_screenshot`，以及 `click`、`input`、`swipe`、`drag` 和 assertions。Codex Desktop 的 MCP 配置变更后需重启 Desktop。
-- 本项目是 WebView + HTML UI；优先使用语义化 Maestro selector，适合点击、输入和文本 assertion。
-- 启动失败、WebView/JS 异常或 crash 时，用 ADB/Logcat 过滤当前 App 或错误相关日志；测试完成后执行 `adb -s <device-id> emu kill`，不要保存 Quick Boot snapshot。
-
-Required: JDK 17、项目 Gradle Wrapper 8.7、Android SDK Platform 34、Build Tools 34.0.0、platform-tools/adb、cmdline-tools、Android Emulator、Android 34 Google APIs x86_64 image、`Codex_Maestro_Android34`、Maestro CLI/MCP。
-
-Not required for normal work: Android Studio（除非任务明确需要 Layout Inspector、Android Profiler 或其他 IDE-only tooling）、Android 37、SDK Sources、NDK、CMake、system-wide Gradle、additional AVDs。
-
-## 依赖来源与地址（记忆）
-
-- Android Gradle Wrapper：版本与下载地址见`android/gradle/wrapper/gradle-wrapper.properties`，当前为 Gradle 8.7：<https://services.gradle.org/distributions/gradle-8.7-bin.zip>。优先使用仓库内`android/gradlew.bat`，不要手动猜测或升级 Gradle。
-- Android Gradle Plugin：`android/build.gradle` 当前为 8.5.2；插件解析源为 Google Maven、Maven Central、Gradle Plugin Portal，配置见`android/settings.gradle`。
-- Kotlin Gradle Plugin：`android/build.gradle` 当前为 1.9.24；解析源同上。
-- AndroidX WebKit：`android/app/build.gradle` 当前依赖`androidx.webkit:webkit:1.11.0`，来源为 Google Maven：<https://dl.google.com/dl/android/maven2/androidx/webkit/webkit/1.11.0/>。
-- Android SDK：应用使用 `compileSdk = 34`、`targetSdk = 34`、`minSdk = 23`；本地安装入口见 Android 官方命令行工具：<https://developer.android.com/studio#command-tools>。
-- JDK：Android 构建需要 JDK 17；GitHub Release 使用 Temurin 17（`.github/workflows/release.yml` 的`actions/setup-java@v4`），本地可从 Adoptium 获取：<https://adoptium.net/temurin/releases/?version=17>。
-- Windows NSIS（可选安装包依赖）：本机目录为 `D:\xia zai\NSIS`，编译器为 `D:\xia zai\NSIS\Bin\makensis.exe`；官方获取入口：<https://nsis.sourceforge.io/Download>。仓库当前没有 NSIS 脚本或 workflow 接入，只有明确需要 Windows 安装包时才使用。
-- 依赖版本变更前，先同步检查`android/build.gradle`、`android/settings.gradle`、`android/app/build.gradle`、Wrapper 配置和 Release workflow；不要把 APK、keystore、`local.properties` 或构建缓存提交进仓库。
-
-## Coding Style & Naming Conventions
-
-遵循相邻代码：JavaScript 用`const`、camelCase、两空格缩进；Kotlin 用四空格。UI 文案以中文为主。保持 seeded randomness、存储键、固定 30 张卡组规则、卡牌数值与 Android/Web 兼容性；未明确要求不得改变平衡、角色设定或职业/种族规则。不要自动格式化`index.html`。
-
-## Testing & Verification
-
-按改动运行最小相关`verify-*.mjs`，并检查`git status --short`、`git diff --stat`和`git diff --check`。战斗、状态、动画和 UI 改动还需要在浏览器检查实际状态、日志与控制台；Android 相关根网页改动必须在同步后运行`verify-android-web-assets.mjs`。不要用改无关行为的方式掩盖失败，未运行或无法运行的检查必须说明。
-
-## Commit & Pull Request Guidelines
-
-近期提交使用简短、单目的、带前缀的祈使式主题，如`fix:`、`chore:`、`docs:`或`balance:`。不要混合 Android 包装与无关玩法修改。修复说明应包含复现与验证；可见 UI 改动在被要求时附截图。不要提交`local.properties`、签名文件、APK/AAB、构建输出、缓存、日志或临时文件。
-
-## Security & Configuration
-
-不得读取、暴露或提交真实环境变量、token、密码、私钥、keystore、数据库连接串或 CI secrets；也不要把它们写入文档、回复或提交信息。`local.properties`、APK/AAB、构建输出、缓存、日志和临时文件也不得提交。认证、权限、存储完整性、签名、生产配置、计费或发布操作前，说明风险并取得明确授权。
-
-## Agent-Specific Instructions
-
-修改前阅读相关文件并给出简短计划。保持改动小、可审查、可回退，不覆盖用户未提交修改，不顺手重构或安装依赖。不要手改`android/app/src/main/assets/www/`；通过`sync-android-web-assets.mjs`更新它。不要自动修复、全仓格式化、编造目录/接口/命令，或未经授权执行 commit、push、deploy、publish、Release、数据库操作。
-
-## Pre-Commit Checklist
-
-- 检查`git status --short`。
-- 检查`git diff --stat`。
-- 确认只包含当前任务相关文件。
-- 确认没有 secrets、APK、构建输出、缓存、日志或临时文件。
-- 运行必要的验证脚本，并明确列出未运行项。
-- 确认 commit、push、部署或 Release 已获得明确授权。
+- 先检查工作区与相关文件，不覆盖、stash/reset 用户已有修改。遵循相邻 JS/Kotlin 风格，不自动格式化、不引入未授权依赖或无关重构。
+- 日志、截图、Python/browser 缓存和验证输出放仓库外或忽略的 `output/`；保留不明来源的个人笔记、配置和唯一历史材料。不得提交 `local.properties`、签名文件、APK/AAB、构建目录或秘密。
+- 删除只针对确认可再生成且无独立价值的精确路径；不做广泛删除、历史改写或强制覆盖。提交保持单一维护目的，检查最终范围；push/部署/Release/签名等外部操作须有明确授权。
