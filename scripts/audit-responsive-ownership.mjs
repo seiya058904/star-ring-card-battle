@@ -1,5 +1,5 @@
-import { readUiSource } from "./read-ui-source.mjs";
 #!/usr/bin/env node
+import { readUiSource } from "./read-ui-source.mjs";
 // Responsive / media-query ownership audit — diagnostic only, not a CI gate.
 import { readFile } from "node:fs/promises";
 import path from "node:path";

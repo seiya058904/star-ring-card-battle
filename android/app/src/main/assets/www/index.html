@@ -6909,7 +6909,10 @@
           clone.removeAttribute("tabindex");
           wrap.appendChild(clone);
         } else {
-          wrap.innerHTML = renderCard(card, false);
+          const caster = battleState[result.actorId];
+          const description = caster && card.effects && globalThis.fixedCardDescription
+            ? globalThis.fixedCardDescription(card, caster) : card.description;
+          wrap.innerHTML = renderCard({ ...card, description, fullDescription: description }, false, null, result.actorId);
         }
         wrap.querySelector(".card")?.removeAttribute("tabindex");
         void banner.offsetWidth;
@@ -10059,8 +10062,8 @@
       return card.category === "skill" ? "normal-low" : "basic";
     }
 
-    function renderCard(card, unplayable, currentTarget = null) {
-      const effectiveCost = effectiveCardCost(gameEngine.state, "player", card);
+    function renderCard(card, unplayable, currentTarget = null, actorSide = "player") {
+      const effectiveCost = effectiveCardCost(gameEngine.state, actorSide, card);
       const [c1, c2] = cardColors(card);
       const typeName = card.category === "base" ? "基础卡" : card.skillTier === "advanced" ? "高级技能" : card.skillTier === "special" ? "特殊技能" : "普通技能";
       const rankText = card.skillRank || (card.rankMode === "fixed" ? "固定规格" : card.rankMode === "ultimate" ? "终极" : "");

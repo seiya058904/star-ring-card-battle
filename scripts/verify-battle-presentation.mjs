@@ -45,7 +45,7 @@ assert.equal(provenance.extraction.atlasSha256, createHash("sha256").update(awai
 assert.equal(Object.keys(provenance.extraction.sprites).length, 6, "六张角色都必须有独立裁切记录");
 assert.doesNotMatch(director, /turnAnnouncement|battleSceneLabel/, "回合和场景信息沿用原版入口");
 assert.match(html, /wrap\.appendChild\(clone\)/, "真实打出的手牌必须在中央展示");
-assert.match(html, /wrap\.innerHTML = renderCard\(card, false\)/, "敌方打出的卡牌必须使用同一中央舞台");
+assert.match(html, /wrap\.innerHTML = renderCard\(\{ \.\.\.card, description, fullDescription: description \}, false, null, result\.actorId\)/, "敌方打出的卡牌必须使用同一中央舞台与当前施法者的展示数值和费用");
 assert.match(html, /class="cast-vortex"[\s\S]*class="cast-ring"[\s\S]*class="played-card-wrap"[\s\S]*class="cast-burst"/, "保留原卡牌旋涡、光环与爆发演出");
 assert.doesNotMatch(director, /cast-title-strip|cast-cameo/, "角色动作不可替换中央卡牌");
 
