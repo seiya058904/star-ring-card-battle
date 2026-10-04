@@ -518,4 +518,23 @@ for (const name of SPECIAL_NAMES) {
   assert.ok(!/吸血恢复[1-9]/.test(full.text), "满血时日志不得显示虚假恢复量");
 }
 
-console.log("特殊卡真实行为测试通过：15 张特殊卡均生成、语义一致且经 applyCard 实际验证（含星界放逐显式倍率、兽人天赋作用域与吸血统计回归）。");
+// 首领中央卡牌不能沿用缩放前的护盾文案；只格式化展示副本，不改变卡牌或战斗状态。
+{
+  const base = runtimeCards.find(c => c.category === "base" && c.effects.length === 1 && c.effects[0].type === "shield" && !c.effects[0].percentageOfMax);
+  assert.ok(base, "夹具必须包含固定数值护盾卡");
+  for (const defense of [.023, .004]) {
+    const { player, enemy } = makeFighters({}, { level: 93 });
+    enemy.profile = { ...enemy.profile, defense };
+    const card = { ...base, effectMultiplier: 1.25 };
+    const before = JSON.stringify({ card, enemy });
+    const description = context.fixedCardDescription(card, enemy);
+    assert.equal(JSON.stringify({ card, enemy }), before, "格式化中央卡牌不得写入战斗或卡牌数据");
+    const result = gameEngine.applyCard(enemy, player, card);
+    const amount = result.visualAmounts.find(a => a.type === "shield").amount;
+    assert.ok(description.includes(`获得 ${context.formatNumber(amount)} 护盾`), `首领缩放后的护盾文案必须匹配真实结算：${description} / ${amount}`);
+    const preview = context.fixedCardDescription(card, { level: enemy.level, race: enemy.race, profession: enemy.profession });
+    assert.notEqual(description, preview, "实际施法者文案必须与未缩放的图鉴文案区分");
+  }
+}
+
+console.log("特殊卡真实行为测试通过：15 张特殊卡均生成、语义一致且经 applyCard 实际验证（含星界放逐显式倍率、兽人天赋作用域、吸血统计与首领卡面数值回归）。");

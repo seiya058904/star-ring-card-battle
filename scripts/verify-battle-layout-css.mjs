@@ -1,10 +1,11 @@
+import { readUiSource } from "./read-ui-source.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const html = await readFile(path.join(root, "index.html"), "utf8");
+const html = await readUiSource(root);
 
 const styleBlocks = [...html.matchAll(/<style([^>]*)>([\s\S]*?)<\/style>/gi)].map(m => m[2]);
 const finalBlock = styleBlocks[1] || "";

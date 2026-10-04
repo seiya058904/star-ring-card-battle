@@ -50,7 +50,7 @@ const context = {
   cardArtBackgroundStyle: card => `background:art-${card.element || "none"}`,
   cardHasAdvantageAgainst: () => false,
   cardColors: () => ["#111", "#222"],
-  effectiveCardCost: (state, side, card) => card.effectiveCost ?? card.cost,
+  effectiveCardCost: (state, side, card) => card.effectiveCost ?? Math.max(0, card.cost - (state.campaign?.[side === "enemy" ? "enemyCostReduction" : "costReduction"] || 0)),
   gameEngine: { state: { campaign: null, player: { energy: 5 }, enemy: {} } },
 };
 vm.createContext(context);
@@ -129,4 +129,13 @@ function makeCard(overrides = {}) {
   assert.doesNotMatch(out, /"onmouseover="x/, "描述引号应被转义");
 }
 
-console.log("renderCard 特征测试通过：结构、状态、费用、艺术、转义与实例标识均符合当前最终实现。");
+// 8) 中央敌方卡面必须取敌方的共鸣减费，不能套用玩家减费。
+{
+  context.gameEngine.state.campaign = { costReduction: 2, enemyCostReduction: 1 };
+  const card = makeCard({ cost: 5 });
+  assert.match(renderCard(card, false), /data-cost="3"/);
+  assert.match(renderCard(card, false, null, "enemy"), /data-cost="4"/);
+  assert.equal(card.cost, 5, "展示减费不能改写卡牌费用");
+}
+
+console.log("renderCard 特征测试通过：结构、状态、双方独立费用、艺术、转义与实例标识均符合当前最终实现。");

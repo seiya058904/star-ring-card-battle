@@ -9,10 +9,14 @@
 
 
 A dark-gold pixel fantasy card battle prototype built around a single-file web core.
-It features local assets, fixed character decks, character selection, turn-based combat, card previews, skill effects, status mechanics, summon mechanics, element-themed particles, and an Android WebView wrapper for offline APK testing.
+It features local assets, fixed character decks, a six-character campaign, staged turn-based combat, card previews, authored element motion, status and summon mechanics, and an offline Android WebView wrapper.
 
 一个暗金像素奇幻风格的卡牌战斗原型，核心玩法基于单文件 Web 版本构建。
-项目包含本地素材、固定角色卡组、角色选择、回合制战斗、卡牌预览、技能效果、状态机制、召唤机制、元素主题粒子特效，以及用于离线 APK 测试的 Android WebView 封装版本。
+项目包含本地素材、固定角色卡组、六角色战役、回合制战斗、卡牌预览、元素动作演出、状态与召唤机制，以及离线 Android WebView 封装版本。
+
+当前表现层使用六名角色的独立透明立绘、金属卡框、角色蓄势/命中动作、分元素轨迹与战役结算演出。回合牌、双方 HUD、AI 对白和操作区已按用户反馈恢复原版信息布局；七张手牌保持独立命中区域，支持低动画与系统减少动态效果。规则、30 张卡组和存档格式沿用原版。
+
+表现层入口、素材来源及验证方法见 [Battle Presentation](docs/BATTLE_PRESENTATION.md)；视觉约定见 [DESIGN.md](DESIGN.md)。
 
 ---
 

@@ -1,0 +1,211 @@
+{
+  "source": "characters.png",
+  "generator": "OpenAI built-in imagegen",
+  "date": "2026-10-04",
+  "grid": [
+    3,
+    2
+  ],
+  "order": [
+    "lisaya",
+    "luolinfo",
+    "eluxia",
+    "moluo",
+    "heka",
+    "su"
+  ],
+  "derivation": "Full-atlas alpha components, original nearby sparks, 2px original antialias fringe, 8px transparent padding, lossless WebP. No repaint, resampling or retained-pixel recoloring.",
+  "runtime": [
+    "lisaya.webp",
+    "luolinfo.webp",
+    "eluxia.webp",
+    "moluo.webp",
+    "heka.webp",
+    "su.webp"
+  ],
+  "extraction": {
+    "script": "scripts/extract-hero-cutouts.py",
+    "alphaCutoff": 32,
+    "antialiasFringe": 2,
+    "transparentPadding": 8,
+    "atlasSha256": "c5715cbc322a77b5caeb4ed666a9c168a9ed0a841e8adb48f3ba0cd8a1cf30a9",
+    "sprites": {
+      "lisaya": {
+        "sourceBox": [
+          13,
+          42,
+          405,
+          619
+        ],
+        "size": [
+          408,
+          593
+        ],
+        "contentBox": [
+          8,
+          8,
+          400,
+          585
+        ],
+        "retainedPixels": 138195,
+        "mainAlphaBox": [
+          15,
+          44,
+          403,
+          617
+        ],
+        "authoredSparkComponents": [
+          1,
+          2
+        ]
+      },
+      "luolinfo": {
+        "sourceBox": [
+          429,
+          116,
+          819,
+          613
+        ],
+        "size": [
+          406,
+          513
+        ],
+        "contentBox": [
+          8,
+          8,
+          398,
+          505
+        ],
+        "retainedPixels": 113296,
+        "mainAlphaBox": [
+          431,
+          118,
+          817,
+          611
+        ],
+        "authoredSparkComponents": []
+      },
+      "eluxia": {
+        "sourceBox": [
+          858,
+          100,
+          1241,
+          619
+        ],
+        "size": [
+          399,
+          535
+        ],
+        "contentBox": [
+          8,
+          8,
+          391,
+          527
+        ],
+        "retainedPixels": 123276,
+        "mainAlphaBox": [
+          860,
+          102,
+          1239,
+          617
+        ],
+        "authoredSparkComponents": [
+          1
+        ]
+      },
+      "moluo": {
+        "sourceBox": [
+          9,
+          699,
+          451,
+          1198
+        ],
+        "size": [
+          458,
+          515
+        ],
+        "contentBox": [
+          8,
+          8,
+          450,
+          507
+        ],
+        "retainedPixels": 153927,
+        "mainAlphaBox": [
+          11,
+          701,
+          449,
+          1196
+        ],
+        "authoredSparkComponents": []
+      },
+      "heka": {
+        "sourceBox": [
+          444,
+          649,
+          856,
+          1200
+        ],
+        "size": [
+          428,
+          567
+        ],
+        "contentBox": [
+          8,
+          8,
+          420,
+          559
+        ],
+        "retainedPixels": 136313,
+        "mainAlphaBox": [
+          446,
+          651,
+          854,
+          1198
+        ],
+        "authoredSparkComponents": [
+          1,
+          21,
+          57,
+          21,
+          7,
+          4,
+          116,
+          4,
+          43,
+          4,
+          54,
+          19
+        ]
+      },
+      "su": {
+        "sourceBox": [
+          857,
+          685,
+          1252,
+          1204
+        ],
+        "size": [
+          411,
+          535
+        ],
+        "contentBox": [
+          8,
+          8,
+          403,
+          527
+        ],
+        "retainedPixels": 128544,
+        "mainAlphaBox": [
+          859,
+          687,
+          1250,
+          1202
+        ],
+        "authoredSparkComponents": [
+          1
+        ]
+      }
+    }
+  }
+}

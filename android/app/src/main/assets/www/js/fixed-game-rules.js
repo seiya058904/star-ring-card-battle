@@ -27,6 +27,8 @@
   global.fixedCardDescription = function fixedCardDescription(card, ctx) {
     const descValue = effect => {
       if (!ctx || !ctx.level) return "?";
+      // A live caster already carries campaign/boss scaling; deck previews use the authored profile below.
+      if (ctx.profile) return effectAmount(ctx, effect, card);
       const normRace = typeof normalizeRace === "function" ? normalizeRace(ctx.race || "人族") : "人族";
       const normProf = typeof normalizeProfession === "function" ? normalizeProfession(ctx.profession || "战士") : "战士";
       const prof = typeof combinedProfile === "function" ? combinedProfile(normRace, normProf) : { damage: 1, heal: 1, defense: 1 };
@@ -570,7 +572,7 @@
     const playerDeck = library.createRuntimeDeck(this.selectedDeck?.characterId || library.characterDefinitions[0].id);
     const enemyDeck = global.deckBuilder.pickEnemyFor(playerDeck);
     gameEngine.start(playerDeck, enemyDeck);
-    document.getElementById("battlefield").style.setProperty("--battle-bg", `url("${battleBackgroundFor(playerDeck, enemyDeck)}")`);
+    document.getElementById("battlefield").style.setProperty("--battle-bg", `url("${global.BattlePresentation?.assetUrl(battleBackgroundFor(playerDeck, enemyDeck)) || battleBackgroundFor(playerDeck, enemyDeck)}")`);
     this.nav("battle"); effectsRenderer.resize(); this.render();
   };
 
