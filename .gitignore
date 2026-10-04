@@ -25,3 +25,15 @@ android/build-debug.ps1
 *.aab
 *.keystore
 *.jks
+
+# Reproducible Python and browser verification output
+__pycache__/
+*.py[cod]
+*.log
+/.playwright-cli/
+/playwright-report/
+/blob-report/
+/browser-evidence/
+/coverage/
+/output/
+/.codebase-memory/
