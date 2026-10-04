@@ -310,6 +310,17 @@ To keep the project stable:
 
 ## Useful Commands / 常用命令
 
+Battle input/layout regression (existing Python Playwright required; start the
+static server first and choose an evidence directory outside the repository):
+
+```powershell
+node scripts/verify-all.mjs
+python scripts/verify-battle-input-layout-browser.py --url http://127.0.0.1:8000/ --out <external-evidence-directory>
+```
+
+The browser check exercises modal keyboard focus and stale resonance rejection,
+normal seven-card draw hit-testing, and narrow/short viewport stat readability.
+
 Check repository status:
 
 ```bash

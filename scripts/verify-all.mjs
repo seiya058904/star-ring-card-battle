@@ -21,6 +21,7 @@ const suites = [
   { name: "战役 applyCard 集成边界", file: "scripts/verify-campaign-apply-card-chain.mjs" },
   { name: "战役 playCard 集成边界", file: "scripts/verify-campaign-play-card-chain.mjs" },
   { name: "战役 turn transition", file: "scripts/verify-campaign-turn-transition.mjs" },
+  { name: "共鸣实时输入校验", file: "scripts/verify-campaign-resonance-input.mjs" },
   { name: "召唤协击强化", file: "scripts/verify-summon-assist.mjs" },
   { name: "召唤协击生命阈值通知", file: "scripts/verify-summon-assist-campaign-hooks.mjs" },
   { name: "战役生命阈值钩子", file: "scripts/verify-campaign-threshold-hooks.mjs" },

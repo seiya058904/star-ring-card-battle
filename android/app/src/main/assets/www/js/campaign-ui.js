@@ -116,8 +116,43 @@
     const state = gameEngine.state; uiRenderer.openModal("开局换牌", `<p class="small-note">最多选择两张牌；确认后本场不能再次换牌。</p><div class="campaign-grid" id="mulliganCards">${state.player.hand.map(card => `<button type="button" class="campaign-card" data-mulligan="${card.instanceId}"><b>${escapeHtml(card.name)}</b><small>${escapeHtml(card.element)} · 费用 ${escapeHtml(card.cost)}</small></button>`).join("")}</div><div class="modal-actions"><button id="mulliganConfirm" type="button">确认换牌（0/2）</button></div>`, { modalClass: "campaign-modal", afterRender: () => { const selected = new Set(); document.querySelectorAll("[data-mulligan]").forEach(button => button.onclick = () => { if (!selected.has(button.dataset.mulligan) && selected.size >= 2) return; selected.has(button.dataset.mulligan) ? selected.delete(button.dataset.mulligan) : selected.add(button.dataset.mulligan); button.classList.toggle("selected", selected.has(button.dataset.mulligan)); document.getElementById("mulliganConfirm").textContent = `确认换牌（${selected.size}/2）`; }); document.getElementById("mulliganConfirm").onclick = () => { const indexes = state.player.hand.map((card, index) => selected.has(card.instanceId) ? index : -1).filter(index => index >= 0); const returned = indexes.map(index => state.player.hand[index]); state.player.hand = state.player.hand.filter((_, index) => !indexes.includes(index)); gameEngine.draw(state.player, indexes.length); state.player.drawPile = shuffle(state.player.drawPile.concat(returned)); uiRenderer.closeModal(); state.campaign.mulliganDone = true; uiRenderer.render(); renderCampaignHud(); }; } });
   }
   function renderCampaignHud() { const state = gameEngine.state; if (!state?.campaign) { document.getElementById("campaignHud")?.remove(); return; } let hud = document.getElementById("campaignHud"); if (!hud) { hud = document.createElement("div"); hud.id = "campaignHud"; hud.className = "campaign-hud"; document.getElementById("battlefield")?.appendChild(hud); } const ring = value => Array.from({ length: 6 }, (_, i) => `<i class="${i < value ? "on" : ""}"></i>`).join(""); const intent = mode.isFormalIntent(state.campaign.intent) ? state.campaign.intent : null; const intentLabel = intent ? `${intent.type} · ${intent.description}` : "敌方正在重新评估"; hud.innerHTML = `<span>我</span><span class="campaign-ring">${ring(state.campaign.playerRing)}</span><span>敌</span><span class="campaign-ring">${ring(state.campaign.enemyRing)}</span><button type="button" id="resonanceBtn" ${state.turn !== "player" || state.player.skipAction || state.campaign.playerRing < 6 || state.campaign.resonanceUsed ? "disabled" : ""}>共鸣</button><span class="campaign-intent">敌方意图：${escapeHtml(intentLabel)}</span>`; document.getElementById("resonanceBtn")?.addEventListener("click", openResonance); }
-  function openResonance() { uiRenderer.openModal("星环共鸣", `<p class="small-note">选择一种效果，使用后星环清零；每回合只能使用一次。</p><div class="campaign-grid"><button class="campaign-stage" data-resonance="star"><h3>星耀</h3><small>下一张牌费用减少2，最低为0。</small></button><button class="campaign-stage" data-resonance="echo"><h3>回响</h3><small>抽2张牌并获得1点能量。</small></button><button class="campaign-stage" data-resonance="guard"><h3>守环</h3><small>获得最大生命12%的护盾。</small></button></div>`, { modalClass: "campaign-modal", afterRender: () => document.querySelectorAll("[data-resonance]").forEach(button => button.onclick = () => activateResonance(button.dataset.resonance)) }); }
-  function activateResonance(type) { const state = gameEngine.state; if (!state?.campaign || state.player.skipAction || state.campaign.playerRing < 6 || state.campaign.resonanceUsed) return; state.campaign.playerRing = 0; state.campaign.resonanceUsed = true; mode.recordCombatEvent(state.campaignStats, { type: "resonance", side: "player" }); if (type === "star") state.campaign.costReduction = 2; if (type === "echo") { gameEngine.draw(state.player, 2); state.player.energy = Math.min(state.player.maxEnergy, state.player.energy + 1); } if (type === "guard") { const shield = mode.resonanceShield(state.player.maxHp); state.player.shield += shield; mode.recordCombatEvent(state.campaignStats, { type: "shield", amount: shield }); } gameEngine.log(`[星环共鸣] 玩家激活${type === "star" ? "星耀" : type === "echo" ? "回响" : "守环"}。`); uiRenderer.closeModal(); audioManager.play("resonance-activate"); uiRenderer.render(); renderCampaignHud(); }
+  function openResonance() {
+    const state = gameEngine.state;
+    if (!state?.campaign || !canAcceptPlayerCardInput() || state.player.skipAction || state.campaign.playerRing < 6 || state.campaign.resonanceUsed) return;
+    const session = gameEngine.sessionId;
+    uiRenderer.openModal("星环共鸣", `<p class="small-note">选择一种效果，使用后星环清零；每回合只能使用一次。</p><div class="campaign-grid"><button class="campaign-stage" data-resonance="star"><h3>星耀</h3><small>下一张牌费用减少2，最低为0。</small></button><button class="campaign-stage" data-resonance="echo"><h3>回响</h3><small>抽2张牌并获得1点能量。</small></button><button class="campaign-stage" data-resonance="guard"><h3>守环</h3><small>获得最大生命12%的护盾。</small></button></div>`, {
+      modalClass: "campaign-modal",
+      afterRender: () => {
+        const revision = uiRenderer._modalRevision;
+        document.querySelectorAll("[data-resonance]").forEach(button => {
+          button.onclick = () => activateResonance(button.dataset.resonance, state, session, revision);
+        });
+      },
+    });
+  }
+  function activateResonance(type, expectedState = gameEngine.state, expectedSession = gameEngine.sessionId, modalRevision = null) {
+    const state = gameEngine.state;
+    if (!state?.campaign || !gameEngine.isActiveBattle(expectedState, expectedSession) || !canAcceptPlayerCardInput()
+      || state.player.skipAction || state.campaign.playerRing < 6 || state.campaign.resonanceUsed
+      || !["star", "echo", "guard"].includes(type)) return false;
+    if (modalRevision !== null && (!uiRenderer.isModalOpen() || uiRenderer._modalRevision !== modalRevision)) return false;
+    state.campaign.playerRing = 0;
+    state.campaign.resonanceUsed = true;
+    mode.recordCombatEvent(state.campaignStats, { type: "resonance", side: "player" });
+    if (type === "star") state.campaign.costReduction = 2;
+    if (type === "echo") {
+      gameEngine.draw(state.player, 2);
+      state.player.energy = Math.min(state.player.maxEnergy, state.player.energy + 1);
+    }
+    if (type === "guard") {
+      const shield = mode.resonanceShield(state.player.maxHp);
+      state.player.shield += shield;
+      mode.recordCombatEvent(state.campaignStats, { type: "shield", amount: shield });
+    }
+    gameEngine.log(`[星环共鸣] 玩家激活${type === "star" ? "星耀" : type === "echo" ? "回响" : "守环"}。`);
+    uiRenderer.closeModal(); audioManager.play("resonance-activate"); uiRenderer.render(); renderCampaignHud();
+    return true;
+  }
   function refreshEffectiveCardCosts() { const state = gameEngine.state; if (!state?.campaign) return; document.querySelectorAll("#playerHand .card").forEach(element => { const card = state.player.hand.find(item => item.instanceId === element.dataset.instanceId); if (!card) return; const cost = mode.effectiveCardCost(state, "player", card); element.classList.toggle("unplayable", state.turn !== "player" || cost > state.player.energy); element.dataset.effectiveCost = String(cost); const costElement = element.querySelector(".card-cost"); if (costElement) { costElement.textContent = String(cost); costElement.setAttribute("aria-label", `${cost} 能量`); if (cost !== card.cost) costElement.style.backgroundImage = "none"; } }); const canPlay = state.turn === "player" && state.player.hand.some(card => mode.effectiveCardCost(state, "player", card) <= state.player.energy); document.getElementById("endTurnBtn")?.classList.toggle("pulse", state.turn === "player" && !canPlay); }
   const renderBaseCardPreview = global.renderBaseCardPreview; renderCardPreview = function (card) { const state = gameEngine.state; if (!card) return renderBaseCardPreview(card); const effectiveCost = state?.campaign ? mode.effectiveCardCost(state, "player", card) : undefined; return renderBaseCardPreview(card, { effectiveCost }); };
   const renderBattleSurface = uiRenderer.renderBattleSurface.bind(uiRenderer); uiRenderer.render = function () { renderBattleSurface(); refreshEffectiveCardCosts(); renderCampaignHud(); };
