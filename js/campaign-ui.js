@@ -115,25 +115,7 @@
   function showMulligan() {
     const state = gameEngine.state; uiRenderer.openModal("开局换牌", `<p class="small-note">最多选择两张牌；确认后本场不能再次换牌。</p><div class="campaign-grid" id="mulliganCards">${state.player.hand.map(card => `<button type="button" class="campaign-card" data-mulligan="${card.instanceId}"><b>${escapeHtml(card.name)}</b><small>${escapeHtml(card.element)} · 费用 ${escapeHtml(card.cost)}</small></button>`).join("")}</div><div class="modal-actions"><button id="mulliganConfirm" type="button">确认换牌（0/2）</button></div>`, { modalClass: "campaign-modal", afterRender: () => { const selected = new Set(); document.querySelectorAll("[data-mulligan]").forEach(button => button.onclick = () => { if (!selected.has(button.dataset.mulligan) && selected.size >= 2) return; selected.has(button.dataset.mulligan) ? selected.delete(button.dataset.mulligan) : selected.add(button.dataset.mulligan); button.classList.toggle("selected", selected.has(button.dataset.mulligan)); document.getElementById("mulliganConfirm").textContent = `确认换牌（${selected.size}/2）`; }); document.getElementById("mulliganConfirm").onclick = () => { const indexes = state.player.hand.map((card, index) => selected.has(card.instanceId) ? index : -1).filter(index => index >= 0); const returned = indexes.map(index => state.player.hand[index]); state.player.hand = state.player.hand.filter((_, index) => !indexes.includes(index)); gameEngine.draw(state.player, indexes.length); state.player.drawPile = shuffle(state.player.drawPile.concat(returned)); uiRenderer.closeModal(); state.campaign.mulliganDone = true; uiRenderer.render(); renderCampaignHud(); }; } });
   }
-  function renderCampaignHud() {
-    const state = gameEngine.state;
-    if (!state?.campaign) { document.getElementById("campaignHud")?.remove(); return; }
-    let hud = document.getElementById("campaignHud");
-    if (!hud) {
-      hud = document.createElement("div"); hud.id = "campaignHud"; hud.className = "campaign-hud";
-      document.getElementById("battlefield")?.appendChild(hud);
-    }
-    const ring = value => Array.from({ length: 6 }, (_, i) => `<i class="${i < value ? "on" : ""}"></i>`).join("");
-    const intent = mode.isFormalIntent(state.campaign.intent) ? state.campaign.intent : null;
-    hud.innerHTML = `
-      <div class="resonance-controls">
-        <span>我方</span><span class="campaign-ring" role="img" aria-label="我方星环 ${state.campaign.playerRing}/6">${ring(state.campaign.playerRing)}</span>
-        <span>敌方</span><span class="campaign-ring" role="img" aria-label="敌方星环 ${state.campaign.enemyRing}/6">${ring(state.campaign.enemyRing)}</span>
-        <button type="button" id="resonanceBtn" ${state.turn !== "player" || state.player.skipAction || state.campaign.playerRing < 6 || state.campaign.resonanceUsed ? "disabled" : ""}>共鸣</button>
-      </div>
-      <span class="campaign-intent"><span>敌方意图</span><b>${escapeHtml(intent?.type || "重新评估")}</b><small>${escapeHtml(intent?.description || "敌方正在重新评估")}</small></span>`;
-    document.getElementById("resonanceBtn")?.addEventListener("click", openResonance);
-  }
+  function renderCampaignHud() { const state = gameEngine.state; if (!state?.campaign) { document.getElementById("campaignHud")?.remove(); return; } let hud = document.getElementById("campaignHud"); if (!hud) { hud = document.createElement("div"); hud.id = "campaignHud"; hud.className = "campaign-hud"; document.getElementById("battlefield")?.appendChild(hud); } const ring = value => Array.from({ length: 6 }, (_, i) => `<i class="${i < value ? "on" : ""}"></i>`).join(""); const intent = mode.isFormalIntent(state.campaign.intent) ? state.campaign.intent : null; const intentLabel = intent ? `${intent.type} · ${intent.description}` : "敌方正在重新评估"; hud.innerHTML = `<span>我</span><span class="campaign-ring">${ring(state.campaign.playerRing)}</span><span>敌</span><span class="campaign-ring">${ring(state.campaign.enemyRing)}</span><button type="button" id="resonanceBtn" ${state.turn !== "player" || state.player.skipAction || state.campaign.playerRing < 6 || state.campaign.resonanceUsed ? "disabled" : ""}>共鸣</button><span class="campaign-intent">敌方意图：${escapeHtml(intentLabel)}</span>`; document.getElementById("resonanceBtn")?.addEventListener("click", openResonance); }
   function openResonance() {
     const state = gameEngine.state;
     if (!state?.campaign || !canAcceptPlayerCardInput() || state.player.skipAction || state.campaign.playerRing < 6 || state.campaign.resonanceUsed) return;

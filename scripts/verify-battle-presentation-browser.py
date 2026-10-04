@@ -155,11 +155,18 @@ async def characters(browser):
     result = []
     for character in ids:
         await start(page, character=character)
-        entry = await page.evaluate("""()=>{const s=gameEngine.state,img=document.querySelector('#playerUnit .unit-sprite'),enemy=document.querySelector('#enemyUnit .unit-sprite');return {
+        entry = await page.evaluate("""()=>{const s=gameEngine.state,img=document.querySelector('#playerUnit .unit-sprite'),enemy=document.querySelector('#enemyUnit .unit-sprite');
+          const cv=document.createElement('canvas');cv.width=img.naturalWidth;cv.height=img.naturalHeight;
+          const c=cv.getContext('2d');c.drawImage(img,0,0);const pixels=c.getImageData(0,0,cv.width,cv.height).data;
+          let edgePixels=0;for(let y=0;y<cv.height;y++)for(let x=0;x<cv.width;x++)
+            if((x<8||y<8||x>=cv.width-8||y>=cv.height-8)&&pixels[(y*cv.width+x)*4+3])edgePixels++;
+          return {
           name:s.player.name,hero:BattlePresentation.heroFor(s.player)?.id,imageReady:img.complete&&img.naturalWidth>0,
           enemyImageReady:enemy.complete&&enemy.naturalWidth>0,
+          transparentPadding:edgePixels===0,
           deck:s.player.hand.length+s.player.drawPile.length+s.player.discardPile.length};}""")
         assert entry["hero"] and entry["imageReady"] and entry["enemyImageReady"] and entry["deck"] == 30, entry
+        assert entry["transparentPadding"], entry
         card = await page.evaluate("campaignMode.aiChoosePlay(gameEngine.state,'player')?.instanceId")
         assert card, entry
         await page.locator(f'#playerHand .card[data-instance-id="{card}"]').click()

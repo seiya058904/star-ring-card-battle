@@ -7,7 +7,7 @@
 | 入口 | 职责 |
 | --- | --- |
 | `index.html` | 原引擎、规则接入、命中揭示、输入锁、权威渲染器；调用视图导演 |
-| `js/battle-presentation.js` | 六角色素材、舞台动作、元素 Canvas 轨迹、局部冲击、回合提示、结算装饰；只拥有视图状态 |
+| `js/battle-presentation.js` | 六角色素材、舞台动作、元素 Canvas 轨迹、局部冲击、结算装饰；只拥有视图状态 |
 | `assets/ui/battle-presentation.css` | 从原 final style 原位迁出；末段拥有新构图与动作；速度覆盖仍在其后 |
 | `js/audio-manager.js` | 继承音效入口，增加低音量元素音色，保留静音、音量和回退 |
 | `js/campaign-ui.js` | 真实意图/星环 HUD、战役节点；共鸣与进度流程沿用原实现 |
@@ -17,7 +17,11 @@
 
 ## 素材与动作
 
-`assets/units/heroes-v2/characters.png` 为一次生成的透明 3×2 六角色图集；`PROMPT.txt` 与 `manifest.json` 保留来源。运行时使用各格 alpha 边界裁切后的无损 WebP。原单位、背景、卡图和图集未删除。
+`assets/units/heroes-v2/characters.png` 为一次生成的透明 3×2 六角色图集；`PROMPT.txt` 与 `manifest.json` 保留来源。首次按等宽格切图把赫卡莫斯/苏混入邻格残片，截断了摩罗哥和赫卡莫斯的跨格部件；六张的近透明杂点也扩大了裁切范围。现使用 `scripts/extract-hero-cutouts.py` 从完整图集按 Alpha 主连通域提取，保留真实火星及 2px 原抗锯齿，统一 8px 透明留边。原人物像素没有重绘、重采样或改色，原图集未修改；导出后的 RGBA 与提取结果逐像素一致。
+
+按用户反馈，战斗信息层级恢复 main `72fd9f0`：原顶部回合牌、双方 HUD、AI 对白气泡、日志与操作区布局。新增中央回合横幅和场景标签已移除，战役 HUD 标记恢复原版。卡面、角色动作与结算素材继续由表现层管理。
+
+六张审计结果：丽莎娅、罗林福、艾露希娅清理近透明杂点与过量留白；摩罗哥恢复跨格的右臂/披风；赫卡莫斯去除邻格残片并恢复右侧披风；苏去除左侧邻格红色披风。提取以完整主体归属为准，不再按等宽格裁切。原版预览面板的样式保持不变，仅保留滚动/边界保护，769–980px 的单行轨道限制在操作区内。
 
 不再克隆大卡遮住战场或生成大量随机粒子。蓄势与出手发生在角色，轨迹沿双方实际 DOM 坐标，命中在目标局部。治疗、护盾、异常状态与召唤分别有动作；数值与完整状态文案仍由原结果对象/渲染器产生。
 
@@ -34,6 +38,7 @@
 ```powershell
 node scripts/verify-all.mjs
 node --check js/battle-presentation.js
+python scripts/extract-hero-cutouts.py --check
 python scripts/verify-battle-input-layout-browser.py --url http://127.0.0.1:8000/ --out "$evidence\input"
 python scripts/verify-battle-presentation-browser.py --url http://127.0.0.1:8000/ --baseline-ref 72fd9f0f4e6ba06b6b5ef3b9070dfc39a8a59a95 --out "$evidence\presentation"
 node scripts/sync-android-web-assets.mjs
@@ -52,22 +57,23 @@ node scripts/verify-android-web-assets.mjs
 | JS 语法 | 内联脚本 smoke 编译、修改的 4 个 JS 与新增 Node 辅助脚本通过 |
 | 浏览器输入与布局 | 模态/陈旧回调/共鸣/七张手牌通过；9 种宽高覆盖 320×568 至 1440×1000，最后补验预览不越界且可滚动 |
 | 真实种子重放 | high / standard / low 三档分别与基线 main 的两轮状态和 RNG 一致 |
-| 六角色 | 独立图片加载、各 30 张卡组、合法控件出牌均通过；每次开战同时检查双方立绘已加载，交付截图使用最终服务重新抓取 |
-| 普通难度战役 | 苏从第 1 至第 5 关连续胜利；回合数 2 / 1 / 1 / 15 / 62，共 182 张真实出牌，已写入测试上下文的通关进度；无控制台错误 |
-| 失败与重试 | 用上述真实通关进度重新进入困难第 5 关，只结束回合，第 15 回合失败；失败印记、桌面/手机结果页与重试进入换牌均通过 |
+| 六角色 | 独立图片、各 30 张卡组、合法控件出牌均通过；双方立绘已加载，每张的 8px 留边 Alpha 为 0；浅色棋盘/深色背景与六张真实战场截图逐一复核；Python 校验保留像素 RGBA 与原图提取结果完全一致 |
+| 信息回退 | 1440×1000、390×844、1280×720 的回合牌、双方 HUD、日志、操作区与旧 main 的几何/字体/颜色一致；真实 AI 对白的字体、颜色、背景与边框一致；仅预览的纵向边界作为防裁切例外 |
+| 普通难度战役（首次升级版本） | 苏从第 1 至第 5 关连续胜利；回合数 2 / 1 / 1 / 15 / 62，共 182 张真实出牌，无控制台错误。本次纯表现回退未重跑五关全流程，战役/卡牌/数值模块字节未变 |
+| 失败与重试（首次升级版本） | 用上述真实通关进度重新进入困难第 5 关，只结束回合，第 15 回合失败；失败印记、桌面/手机结果页与重试进入换牌均通过 |
 | Android 镜像 | 58 个静态引用、190 个素材文件、10 个 JS 文件一致 |
 | APK | JDK 17 / 现有 Wrapper / 离线 `assembleDebug` 成功；未更新依赖或版本号 |
-| 实际 WebView | emulator-5554 同签名覆盖安装；Wi-Fi 和移动网络关闭时从 appassets 加载，真实触控出牌/敌方回合/系统返回通过；56 个请求均为本地 appassets，无 JS/资源错误；原 localStorage 与网络设置已恢复 |
+| 实际 WebView | emulator-5554 同签名覆盖安装；Wi-Fi 和移动网络关闭时从 appassets 加载，六张新裁切尺寸与透明留边、真实触控出牌/敌方回合/系统返回通过；60 个请求均为本地 appassets，无 JS/资源错误；原 localStorage 与网络设置已恢复 |
 
 本地 APK 为 `android/app/build/outputs/apk/debug/app-debug.apk`，SHA-256：
 
 ```text
-F7641014E40F786B48EE80AC80AA815F1FE53C6BEB5C3B0ACD53F7EEB40D1B4D
+BBE1134B7EC22813AAE8F1D4B79A40C0A807B2FA139E9FF0CB2616CD26D569D4
 ```
 
 签名证书 SHA-256 与模拟器原安装包一致：`a3e2fd954bfed2b6ac7a6a8d4112f4d719f80203809f9e29ff563ca6a4ac08b4`。APK 是本地验收产物；没有推送、部署或发布 Release。
 
-静态设计检测报告 54 处提示：53 处来自继承样式（旧辉光、渐变字、低对比与历史动画定义），1 处是新增生命条宽度过渡，已移除以避免不必要的布局动画。历史定义继续服务既有首页/图鉴，未以检测器清零为由扩大重写范围。
+首次升级时静态设计检测报告 54 处提示：53 处来自继承样式（旧辉光、渐变字、低对比与历史动画定义），1 处是新增生命条宽度过渡，已移除。本次按用户要求恢复原版信息样式，未为清零检测器提示扩大重写范围。
 
 ## 保留的维护边界
 

@@ -8,7 +8,7 @@
 
 根目录 `index.html` 是 Web 与 Android 共用权威入口。页面末尾按以下顺序加载 `js/` 外部脚本：
 
-内联主脚本前另加载 `js/battle-presentation.js`：只导出 `BattlePresentation`，拥有角色素材、舞台动作、元素轨迹、回合提示与结算装饰。它不覆写引擎方法、不写战斗状态或存档。`effectsRenderer` 仍拥有命中揭示和输入时序；最终规则覆写顺序保持如下。
+内联主脚本前另加载 `js/battle-presentation.js`：只导出 `BattlePresentation`，拥有角色素材、舞台动作、元素轨迹与结算装饰。回合牌、HUD 与 AI 对白沿用升级前 main 的入口和布局；新增的回合横幅已移除。它不覆写引擎方法、不写战斗状态或存档。`effectsRenderer` 仍拥有命中揭示和输入时序；最终规则覆写顺序保持如下。
 
 1. `js/battle-rules.js` — 通用常量、能量公式。
 2. `js/fixed-card-library.js` — 固定角色/固定卡组定义与运行时卡牌构造。

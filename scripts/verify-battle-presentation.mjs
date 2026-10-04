@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
+import { createHash } from "node:crypto";
 
 const read = file => readFile(new URL(`../${file}`, import.meta.url), "utf8");
 const [html, director, css, manifest] = await Promise.all([
@@ -39,6 +40,10 @@ assert.equal(view.assetUrl(sources[0]), `https://appassets.androidplatform.net/a
 const provenance = JSON.parse(manifest);
 assert.equal(provenance.source, "characters.png", "保留生成原图");
 assert.deepEqual(provenance.runtime, sources.map(source => source.split("/").pop()), "来源清单必须对应六个运行时素材");
+assert.equal(provenance.extraction.transparentPadding, 8, "角色轮廓不得紧贴裁切边界");
+assert.equal(provenance.extraction.atlasSha256, createHash("sha256").update(await readFile(new URL("../assets/units/heroes-v2/characters.png", import.meta.url))).digest("hex"), "原始角色图集必须与裁切记录一致");
+assert.equal(Object.keys(provenance.extraction.sprites).length, 6, "六张角色都必须有独立裁切记录");
+assert.doesNotMatch(director, /turnAnnouncement|battleSceneLabel/, "回合和场景信息沿用原版入口");
 
 // A low-animation ultimate used to reveal HP after its own visual lock ended.
 // Check every real tier's temporal invariant, rather than just matching CSS.

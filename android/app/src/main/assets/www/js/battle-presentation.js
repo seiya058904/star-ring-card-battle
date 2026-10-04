@@ -15,7 +15,6 @@
   const intentNames = { "friendly-heal": "恢复", "friendly-shield": "守护", "friendly-buff": "蓄势", "friendly-summon": "召唤", "hostile-status": "控制", "hostile-damage": "攻击" };
   let cast = null;
   let battle = null;
-  let turnKey = "";
   let resultKey = null;
   const timers = new Set();
   const animations = new Set();
@@ -53,26 +52,15 @@
     if (!f || !r) return { x: 0, y: 0 };
     return { x: r.left + r.width * .5 - f.left, y: r.top + r.height * .5 - f.top };
   }
-  function announcement(text, secondary, state) {
-    const el = document.getElementById("turnAnnouncement");
-    if (!el) return;
-    el.replaceChildren();
-    const title = document.createElement("strong"); title.textContent = text;
-    const detail = document.createElement("span"); detail.textContent = secondary;
-    el.append(title, detail);
-    el.className = "turn-announcement show";
-    later(() => el.classList.remove("show"), Math.max(650, delay(1300)), state);
-  }
   function stop() {
     for (const timer of timers) clearTimeout(timer);
     timers.clear();
     for (const animation of animations) animation.cancel();
     animations.clear();
-    cast = null; battle = null; turnKey = ""; summons = new Set();
+    cast = null; battle = null; summons = new Set();
     document.body.classList.remove("normal-drama", "enhanced-drama", "strong-drama", "advanced-drama", "ultimate-drama");
     document.querySelectorAll(".actor-casting").forEach(el => el.classList.remove("actor-casting"));
     document.querySelectorAll(".element-impact").forEach(el => el.remove());
-    document.getElementById("turnAnnouncement")?.classList.remove("show");
     const stage = document.getElementById("playedCardStage");
     if (stage) { stage.replaceChildren(); stage.classList.remove("show"); }
   }
@@ -102,16 +90,6 @@
         unit.classList.toggle("defeated", Number(fighter.hp) <= 0);
         unit.classList.toggle("actor-casting", cast?.side === side);
       }
-    }
-    const label = document.getElementById("battleSceneLabel");
-    const stage = state.campaign && global.campaignData?.stages[state.campaign.stage - 1];
-    if (label) label.textContent = stage ? `${state.campaign.stage} / 5 · ${stage.name}` : "古代遗迹";
-    const key = `${state.round}:${state.turn}`;
-    if (turnKey !== key && !state.gameOver) {
-      const opening = !turnKey;
-      turnKey = key;
-      announcement(opening ? "战斗开始" : state.turn === "player" ? "你的回合" : "敌方回合",
-        opening ? stage?.name || "古代遗迹" : `第 ${state.round} 回合`, state);
     }
     const hand = document.getElementById("playerHand");
     if (hand) {

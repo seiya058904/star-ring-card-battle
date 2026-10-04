@@ -27,10 +27,9 @@ const jsStyleWrites = (html.match(/\.style\./g) || []).length;
 
 assert.ok(importantCount < 5000, `!important 数量应低于 5000（当前 ${importantCount}）`);
 assert.ok(importantCount > 0, `!important 数量应大于 0（当前 ${importantCount}）`);
-// Keep one width/height budget owner. The taller HUD/stage composition needs
-// scrolling below 820px, including ordinary 720px laptop screens.
-assert.ok(mediaCount >= 23 && mediaCount <= 30, `媒体查询预算 23-30（当前 ${mediaCount}；含演出与 reduced-motion）`);
-assert.equal((allCss.match(/@media \(max-width: 980px\), \(max-height: 820px\)/g) || []).length, 1,
+// Original information layout keeps its width/height query; art has two more.
+assert.ok(mediaCount >= 23 && mediaCount <= 30, `@media 区域预算 23-30（当前 ${mediaCount}；含演出与 reduced-motion）`);
+assert.equal((allCss.match(/@media \(max-width: 980px\), \(max-height: 700px\)/g) || []).length, 1,
   "战场宽高预算规则必须恰有一个；可读性与命中由真实 browser 回归验证");
 assert.ok(keyframesCount >= 50, `@keyframes 数量应不少于 50（当前 ${keyframesCount}）`);
 assert.ok(inlineStyleAttrs > 20, `内联 style 属性应存在（当前 ${inlineStyleAttrs}）`);
