@@ -570,7 +570,7 @@
     const playerDeck = library.createRuntimeDeck(this.selectedDeck?.characterId || library.characterDefinitions[0].id);
     const enemyDeck = global.deckBuilder.pickEnemyFor(playerDeck);
     gameEngine.start(playerDeck, enemyDeck);
-    document.getElementById("battlefield").style.setProperty("--battle-bg", `url("${battleBackgroundFor(playerDeck, enemyDeck)}")`);
+    document.getElementById("battlefield").style.setProperty("--battle-bg", `url("${global.BattlePresentation?.assetUrl(battleBackgroundFor(playerDeck, enemyDeck)) || battleBackgroundFor(playerDeck, enemyDeck)}")`);
     this.nav("battle"); effectsRenderer.resize(); this.render();
   };
 

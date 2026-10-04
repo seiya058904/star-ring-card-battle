@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readUiSource } from "./read-ui-source.mjs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,7 +8,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = file => readFile(path.join(root, file), "utf8");
 
 const [html, campaignUi, campaignRuntime] = await Promise.all([
-  read("index.html"),
+  readUiSource(root),
   read("js/campaign-ui.js"),
   read("js/campaign-runtime.js"),
 ]);

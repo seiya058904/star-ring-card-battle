@@ -1,17 +1,18 @@
+import { readUiSource } from "./read-ui-source.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const html = await readFile(path.join(root, "index.html"), "utf8");
+const html = await readUiSource(root);
 
 const styleBlocks = [...html.matchAll(/<style([^>]*)>([\s\S]*?)<\/style>/gi)].map(m => m[2]);
 const finalBlock = styleBlocks[1] || "";
 
 // 1) 权威 battle-layout 基础声明存在。
 assert.match(finalBlock, /body\.battle-mode \.battle-layout-v3 \{/, "battle-visual-polish-final 应包含权威 battle-layout 基础声明");
-assert.match(finalBlock, /grid-template-rows:\s*56px minmax\(0, 1fr\) 326px !important/, "最终权威基础应使用 56px/326px 布局");
+assert.match(finalBlock, /grid-template-rows:\s*56px minmax\(0, 1fr\) 308px !important/, "最终权威基础应使用 56px/308px 布局");
 assert.match(finalBlock, /display:\s*grid !important/, "最终权威基础应声明 display:grid");
 assert.match(finalBlock, /overflow:\s*hidden !important/, "最终权威基础应声明 overflow:hidden");
 

@@ -8,6 +8,8 @@
 
 根目录 `index.html` 是 Web 与 Android 共用权威入口。页面末尾按以下顺序加载 `js/` 外部脚本：
 
+内联主脚本前另加载 `js/battle-presentation.js`：只导出 `BattlePresentation`，拥有角色素材、舞台动作、元素轨迹、回合提示与结算装饰。它不覆写引擎方法、不写战斗状态或存档。`effectsRenderer` 仍拥有命中揭示和输入时序；最终规则覆写顺序保持如下。
+
 1. `js/battle-rules.js` — 通用常量、能量公式。
 2. `js/fixed-card-library.js` — 固定角色/固定卡组定义与运行时卡牌构造。
 3. `js/campaign-data.js` — 战役角色、关卡、难度数据。
@@ -698,15 +700,15 @@ playCampaignDrawSound（实际抽到牌时播放音效）
 
 1. `uiRenderer.render` 每次战斗渲染重建手牌、fighter、duel unit、summons、log。
 2. `renderCard` 在每次手牌渲染时对每张卡执行 art/frame/effective-cost 计算。
-3. `effectsRenderer.frame` 每帧遍历粒子并在 Canvas 绘制。
+3. `effectsRenderer.frame` 调用表现导演绘制元素轨迹；新动作不再生成旧的大量随机粒子。历史粒子循环目前保留，但新出牌不会填充它。
 4. `renderFighter` 每次渲染重建 HUD 状态图标与 enemy hand。
 5. `renderLog` 每次渲染重建最多 38 条日志 DOM。
 
 ### 9A.9 CSS layering
 
-- `index.html` 有 3 个 `<style>` 块。
-- 第 1 块是历史基础样式；第 2 块是 `battle-visual-polish-final` 活动战斗覆盖；第 3 块是 `battleSpeedOverride` 速度覆盖。
-- `!important` 数量约 3657，`@media` 数量约 20。
+- `index.html` 有 2 个 `<style>` 块与 1 个外部表现样式链接。
+- 历史基础样式 → `assets/ui/battle-presentation.css`（链接 id 仍为 `battle-visual-polish-final`）→ `battleSpeedOverride` 的顺序保持。外部样式末段拥有当前舞台、卡牌、HUD 与移动端构图。
+- `scripts/read-ui-source.mjs` 按真实 DOM 顺序展开链接供静态所有权验证读取，不维护第二份 CSS。
 - 主要风险是历史基础样式与 final override 大量并存，未来 CSS 清理需要浏览器验证。
 
 ## 9B. CSS Architecture Audit
@@ -716,10 +718,12 @@ playCampaignDrawSound（实际抽到牌时播放音效）
 | Source | Order | Scope | Approx lines | !important | Media |
 | --- | --- | --- | --- | --- | --- |
 | `<style>` block 0（无 id） | 1 | 历史基础样式、通用 UI | 5000 | 1625 | 8 |
-| `<style id="battle-visual-polish-final">` | 2 | 活动战斗最终覆盖、卡片/单位/HUD/响应式 | 4060 | 2032 | 12 |
+| `<link id="battle-visual-polish-final">` → `assets/ui/battle-presentation.css` | 2 | 继承素材定义、当前舞台/卡片/单位/HUD/响应式 | 约 4550 | 保留历史覆盖 | 含 reduced-motion |
 | `<style id="battleSpeedOverride">` | 3 | 战斗速度覆盖 | 11 | 0 | 0 |
 
 另有：
+
+- 下列历史矩阵的 block 1 现指外部表现样式；它记录旧覆写层，最新规则位于该文件的 `Presentation direction` 段。当前行为与边界见 `docs/BATTLE_PRESENTATION.md`。
 
 - 41 处内联 `style=""`。
 - 约 38 处 JS `.style.*` 写入。
@@ -1112,6 +1116,7 @@ The stylesheet is **desktop-first with max-width corrections**, fragmented acros
 5. **无统一事件模型**：战斗日志、浮动伤害、音效、统计分别从 `result` 对象/状态直接推断，缺少单一事件流。
 6. **存储缺少迁移框架**：只有 `campaignMode.normalizeProgress` 容错，没有正式 schema/import/export/quota 处理。
 7. **Android viewport 仍是固定 1920 桌面模拟**：响应式重构前需要专门里程碑。
+8. **历史视觉 RNG 耦合**：旧粒子每粒调用战斗 `rng()` 七次，且数量受动画档位影响。本轮为保持同种子、同档位的既有结果，在 `effectsRenderer.play` 保留等量推进；新表现导演不调用 RNG。不同动画档位之间的历史随机序列差异仍存在，解除该耦合需要单独授权的规则/重放迁移。
 
 ## 11. 建议的迁移边界（Monkey Patch → Explicit Composition）
 

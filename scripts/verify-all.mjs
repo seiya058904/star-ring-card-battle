@@ -16,6 +16,7 @@ const suites = [
   { name: "特殊卡真实行为", file: "scripts/verify-special-card-behavior.mjs" },
   { name: "音频库", file: "scripts/verify-audio-library.mjs" },
   { name: "战斗效果与覆写链", file: "scripts/verify-battle-effects.mjs" },
+  { name: "战斗表现与素材边界", file: "scripts/verify-battle-presentation.mjs" },
   { name: "战斗启动 smoke", file: "scripts/verify-battle-start-smoke.mjs" },
   { name: "战役显示 smoke", file: "scripts/verify-campaign-display-smoke.mjs" },
   { name: "战役 applyCard 集成边界", file: "scripts/verify-campaign-apply-card-chain.mjs" },

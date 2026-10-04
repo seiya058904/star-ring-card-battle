@@ -98,6 +98,12 @@ async def geometry(page):
         await page.screenshot(path=str(out/f"arena-{width}x{height}.png"))
         assert data["field"]["height"] >= 350, data
         assert not data["horizontalOverflow"], data
+        if await page.locator("#cardPreviewPanel").is_visible():
+            preview = await page.locator("#cardPreviewPanel").evaluate("""e=>{const r=e.getBoundingClientRect(),dock=e.closest('.hand-dock-v3').getBoundingClientRect();return {
+              right:r.right,viewport:innerWidth,height:r.height,dockHeight:dock.height,overflow:getComputedStyle(e).overflowY};}""")
+            assert preview["right"] <= preview["viewport"] and preview["height"] <= preview["dockHeight"], preview
+            assert preview["overflow"] == "auto", "Full preview details must remain reachable"
+            data["preview"] = preview
         # Core health/shield panels must remain wholly readable, not merely in DOM.
         for selector in ["#playerArea", "#enemyArea"]:
             await page.locator(selector).scroll_into_view_if_needed()

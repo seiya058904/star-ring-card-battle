@@ -1,3 +1,4 @@
+import { readUiSource } from "./read-ui-source.mjs";
 #!/usr/bin/env node
 // Responsive / media-query ownership audit — diagnostic only, not a CI gate.
 import { readFile } from "node:fs/promises";
@@ -5,7 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const html = await readFile(path.join(root, "index.html"), "utf8");
+const html = await readUiSource(root);
 const styleBlocks = [...html.matchAll(/<style([^>]*)>([\s\S]*?)<\/style>/gi)].map((m, i) => ({
   index: i,
   attrs: m[1].trim(),

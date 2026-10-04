@@ -1,0 +1,26 @@
+{
+  "source": "characters.png",
+  "generator": "OpenAI built-in imagegen",
+  "date": "2026-10-04",
+  "grid": [
+    3,
+    2
+  ],
+  "order": [
+    "lisaya",
+    "luolinfo",
+    "eluxia",
+    "moluo",
+    "heka",
+    "su"
+  ],
+  "derivation": "Equal atlas cells, alpha bounding box crop, lossless WebP. No repaint or alpha replacement.",
+  "runtime": [
+    "lisaya.webp",
+    "luolinfo.webp",
+    "eluxia.webp",
+    "moluo.webp",
+    "heka.webp",
+    "su.webp"
+  ]
+}

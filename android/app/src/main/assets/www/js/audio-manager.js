@@ -69,6 +69,18 @@
     defeat: { cooldown: 500, layers: [tone(330, 294, 0.32, 0.085, "triangle"), tone(294, 247, 0.38, 0.08, "triangle", 170), tone(247, 165, 0.65, 0.09, "sine", 350), noise(0.4, 0.04, 900, 160, 230, "lowpass")] }
   };
 
+  // Quiet elemental accents sit under the existing impact sound. They inherit
+  // the same master volume, mute switch, cooldown and Web Audio fallback.
+  Object.assign(eventProfiles, {
+    "element-fire": { cooldown: 180, layers: [noise(.22, .04, 1800, 350, 0, "lowpass"), tone(105, 60, .2, .025, "triangle")] },
+    "element-ice": { cooldown: 180, layers: [tone(1680, 1120, .2, .035, "sine"), noise(.12, .025, 7000, 3500, 25, "highpass")] },
+    "element-wind": { cooldown: 180, layers: [noise(.24, .045, 900, 3400, 0, "bandpass")] },
+    "element-earth": { cooldown: 180, layers: [tone(72, 34, .3, .055, "sine"), noise(.15, .025, 500, 140, 0, "lowpass")] },
+    "element-thunder": { cooldown: 180, layers: [noise(.09, .045, 6400, 1200, 0, "bandpass"), tone(170, 62, .16, .03, "sawtooth")] },
+    "element-light": { cooldown: 180, layers: [tone(784, 1176, .22, .035, "sine"), tone(1176, 1568, .24, .02, "sine", 35)] },
+    "element-dark": { cooldown: 180, layers: [tone(145, 78, .28, .04, "triangle"), noise(.18, .018, 600, 240, 20, "bandpass")] },
+  });
+
   const lastPlayed = new Map();
   const activeSources = new Set();
   const fallbackCache = new Map();
@@ -247,6 +259,12 @@
     },
     playCard(card) {
       return this.play(cardCastSoundEvent(card));
+    },
+    playElement(card, result) {
+      if (!result?.visualAmounts?.some(item => item.type === "damage" && item.amount > 0)
+        && result?.intent !== "hostile-status") return false;
+      const event = { 火: "fire", 冰: "ice", 风: "wind", 土: "earth", 雷: "thunder", 光: "light", 暗: "dark" }[card?.element];
+      return event ? this.play(`element-${event}`) : false;
     },
     stop() {
       for (const source of activeSources) {
