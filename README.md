@@ -1,392 +1,73 @@
-# Star Ring Card Battle / 星环卡牌战场
+<div align="center">
 
-<img width="1254" height="1254" alt="Star ring Card Battle" src="https://github.com/user-attachments/assets/01b1a661-f70b-4c07-9a1d-a1e921ba88ab" />
+# ✦ Star Ring Card Battle · 星环卡牌战场
 
+**A dark-gold fantasy card battle, built around authored characters and tactical turns.**
 
-<img width="1492" height="1054" alt="ChatGPT Image 2026年6月27日 20_47_57" src="https://github.com/user-attachments/assets/9ed0b2ab-7be1-44c2-aaa6-3f510d418fb8" />
+固定角色、元素表现、战役推进与回合制对战——一个以单页 Web 核心为基础、可在浏览器试玩的实验性卡牌游戏。
 
+[**▶ Play online / 在线试玩**](https://seiya058904.github.io/star-ring-card-battle/) · [**Android v1.2.8**](https://github.com/seiya058904/star-ring-card-battle/releases/tag/v1.2.8) · [Visual design](DESIGN.md) · [Battle presentation](docs/BATTLE_PRESENTATION.md)
 
+<img width="720" alt="Star Ring Card Battle fantasy project artwork" src="https://github.com/user-attachments/assets/01b1a661-f70b-4c07-9a1d-a1e921ba88ab" />
 
+</div>
 
-A dark-gold pixel fantasy card battle prototype built around a single-file web core.
-It features local assets, fixed character decks, a six-character campaign, staged turn-based combat, card previews, authored element motion, status and summon mechanics, and an offline Android WebView wrapper.
+## ⚔️ What you'll play / 玩法
 
-一个暗金像素奇幻风格的卡牌战斗原型，核心玩法基于单文件 Web 版本构建。
-项目包含本地素材、固定角色卡组、六角色战役、回合制战斗、卡牌预览、元素动作演出、状态与召唤机制，以及离线 Android WebView 封装版本。
+- **Fixed-character battles / 固定角色对战**：选择已有角色及其卡牌，不依赖玩家编辑卡库。
+- **Campaign / 战役**：六名角色的战役路线，配合场景、回合规则与阶段性结算。
+- **Combat systems / 战斗机制**：状态效果、召唤、元素交互与战斗日志，规则围绕固定卡组展开。
+- **Visual presentation / 视觉表现**：透明角色立绘、暗金属卡框、技能轨迹、命中反馈、元素视觉及结算演出。
+- **Readable controls / 操作布局**：七张手牌保留独立命中区域；支持移动适配与减少动态效果。
 
-当前表现层使用六名角色的独立透明立绘、金属卡框、角色蓄势/命中动作、分元素轨迹与战役结算演出。回合牌、双方 HUD、AI 对白和操作区已按用户反馈恢复原版信息布局；七张手牌保持独立命中区域，支持低动画与系统减少动态效果。规则、30 张卡组和存档格式沿用原版。
+<details>
+<summary><strong>🎨 View additional project artwork / 查看更多项目视觉图</strong></summary>
 
-表现层入口、素材来源及验证方法见 [Battle Presentation](docs/BATTLE_PRESENTATION.md)；视觉约定见 [DESIGN.md](DESIGN.md)。
+<img width="720" alt="Star Ring Card Battle alternate concept artwork" src="https://github.com/user-attachments/assets/9ed0b2ab-7be1-44c2-aaa6-3f510d418fb8" />
 
----
+</details>
 
-## Online Demo / 在线试玩
+## 🚀 Play & run / 试玩与运行
 
-You can play the latest web version here:
-👉 https://seiya058904.github.io/star-ring-card-battle/
-
-你可以通过以下地址直接体验当前版本：
-👉 https://seiya058904.github.io/star-ring-card-battle/
-
----
-
-Current Android download: [v1.2.8](https://github.com/seiya058904/star-ring-card-battle/releases/tag/v1.2.8), versionCode 13. This maintenance release includes the shared campaign reset generation fix from PR #14, with the existing signing identity and game rules preserved.
-
-## Project Status / 项目状态
-
-This project is currently a playable prototype.
-
-Current focus:
-
-* Maintain a stable single-file web version.
-* Keep gameplay and UI changes small and reversible.
-* Preserve the fixed-character / fixed-deck design.
-* Improve visual clarity, battle feedback, card layout, and Android offline packaging.
-* Avoid large rewrites until the core experience is stable.
-
-当前项目处于可运行原型阶段。
-
-当前重点：
-
-* 维护稳定的单文件 Web 版本。
-* 采用小步、可回滚的方式修改玩法和界面。
-* 保留固定角色与固定卡组的核心设计。
-* 持续优化视觉表现、战斗反馈、卡牌布局和 Android 离线封装。
-* 在核心体验稳定前，避免大规模重构。
-
----
-
-## Features / 功能特性
-
-### 固定角色战斗与战役模式 / Fixed-character battles and campaign mode
-
-Both **开始战斗** (sandbox) and **战役模式** now run on the same fixed-character system: six fixed characters with locked 30-card decks, five first-chapter campaign stages, three difficulties, one-time opening mulligan, six-slot Star Ring resonance, enemy intent, local per-character progression, campaign scoring, and offline CC0 sound effects. Custom card generation is retired; decks cannot be generated or modified. It remains a continuously developed playable prototype rather than a finished release.
-
-**开始战斗**（沙盒）与**战役模式**现在共用同一套固定角色系统：六名固定角色、各 30 张锁定卡组、五个首章关卡、三种难度、开局换牌、六格星环共鸣、敌方意图、按角色保存的本地进度、战斗评分和离线 CC0 音效。自定义卡牌生成已退役，卡组不可生成或修改。项目仍是持续开发中的可玩原型。
-
-Audio sources are recorded in `assets/audio/AUDIO_SOURCES.md`. Web and Android parity checks:
-
-```bash
-node scripts/sync-android-web-assets.mjs
-node scripts/verify-android-web-assets.mjs
-```
-
-### English
-
-* Single-file web game core based on `index.html`
-* Dark-gold pixel fantasy interface
-* Local image assets with no external runtime dependency
-* Character selection and battle preparation flow
-* Fixed character decks and predefined card pools
-* Turn-based card battle system
-* Player and enemy turns
-* Hand cards, energy costs, HP, shield, status effects, battle log, and card details
-* Element-themed cards and visual effects
-* Skill icons and card artwork display
-* Card encyclopedia and character encyclopedia
-* Status mechanics such as freeze, curse, shield, healing, and buffs
-* Summon-related combat support
-* Damage, healing, shield, and combat feedback animations
-* Element-themed particle effects
-* Android WebView wrapper for offline APK testing
-
-### 中文
-
-* 基于 `index.html` 的单文件 Web 游戏核心
-* 暗金像素奇幻风格界面
-* 使用本地图片素材，无外部运行时依赖
-* 角色选择与战斗准备流程
-* 固定角色卡组与预设卡池
-* 回合制卡牌战斗系统
-* 玩家回合与敌方回合
-* 手牌、能量消耗、生命值、护盾、状态效果、战斗日志和卡牌详情
-* 元素主题卡牌与视觉效果
-* 技能图标与卡牌插图显示
-* 卡牌图鉴与角色图鉴
-* 冻结、诅咒、护盾、治疗、增益等状态机制
-* 召唤物相关战斗辅助
-* 伤害、治疗、护盾与战斗反馈动画
-* 元素主题粒子特效
-* Android WebView 离线 APK 测试封装
-
----
-
-## Element Visuals / 元素视觉
-
-The game uses different visual styles and particles for different elements:
-
-| Element     | Visual Theme                 |
-| ----------- | ---------------------------- |
-| Fire / 火    | Orange-red flame effects     |
-| Ice / 冰     | Light-blue frost effects     |
-| Wind / 风    | Teal-green airflow effects   |
-| Earth / 土   | Amber and stone-like effects |
-| Thunder / 雷 | Purple-blue electric effects |
-| Light / 光   | Golden holy effects          |
-| Dark / 暗    | Violet shadow effects        |
-| Arcane / 奥术 | Mystic energy effects        |
-
-游戏为不同元素设计了对应的视觉风格与粒子表现：
-
-| 元素 | 视觉主题      |
-| -- | --------- |
-| 火  | 橙红色火焰效果   |
-| 冰  | 浅蓝色寒冰效果   |
-| 风  | 青绿色气流效果   |
-| 土  | 琥珀色与岩石感效果 |
-| 雷  | 紫蓝色电光效果   |
-| 光  | 金色圣光效果    |
-| 暗  | 紫罗兰暗影效果   |
-| 奥术 | 神秘能量效果    |
-
----
-
-## Tech Stack / 技术栈
-
-### Web Version / Web 版本
-
-* HTML
-* CSS
-* Vanilla JavaScript
-* Local PNG / JPG assets
-* No web build process required
-* No external runtime dependency for basic usage
-
-### Android Wrapper / Android 封装
-
-* Android WebView
-* WebViewAssetLoader
-* Kotlin
-* Gradle / Android Gradle Plugin
-* Local `index.html + assets/` packaged inside the APK
-* No network dependency for normal offline gameplay
-
----
-
-## Repository Structure / 仓库结构
-
-```text
-star-ring-card-battle/
-├── index.html
-├── assets/
-│   ├── backgrounds/
-│   ├── cards/
-│   ├── skills/
-│   ├── ui/
-│   └── ...
-├── android/
-│   └── app/
-│       └── src/
-│           └── main/
-│               └── assets/
-│                   └── www/
-│                       ├── index.html
-│                       └── assets/
-├── scripts/
-│   ├── sync-android-web-assets.mjs
-│   └── verify-android-web-assets.mjs
-└── README.md
-```
-
-`index.html` is still the main web game file and contains the primary HTML, CSS, and JavaScript logic.
-The Android project packages a copied web build under `android/app/src/main/assets/www/`.
-
-`index.html` 仍然是 Web 游戏主体文件，包含主要的 HTML、CSS 和 JavaScript 逻辑。
-Android 工程会将复制后的 Web 文件打包到 `android/app/src/main/assets/www/` 中。
-
----
-
-## How to Run the Web Version / 如何运行 Web 版本
-
-You can open `index.html` directly in a browser, but using a local static server is recommended.
-
-可以直接用浏览器打开 `index.html`，但更推荐使用本地静态服务器。
-
-```bash
-python -m http.server 8000
-```
-
-Then visit:
-
-```text
-http://127.0.0.1:8000/
-```
-
----
-
-## Android APK Build / Android APK 构建
-
-The Android version is a WebView wrapper around the local web game.
-
-Android 版本是对本地 Web 游戏的 WebView 封装。
-
-Recommended steps:
-
-```bash
-node scripts/sync-android-web-assets.mjs
-node scripts/verify-android-web-assets.mjs
-.\android\gradlew.bat -p android assembleDebug
-```
-
-Debug APK output:
-
-```text
-android/app/build/outputs/apk/debug/app-debug.apk
-```
-
-Notes:
-
-* The APK file should not be committed.
-* Build outputs should not be committed.
-* `local.properties`, signing keys, `.apk`, `.aab`, `build/`, and `.gradle/` should remain ignored.
-* Android releases are distributed as fixed-signature Debug APK builds. This is the project's official Android distribution format; a separate Release build/signing pipeline is intentionally not required.
-
-注意：
-
-* 不要提交 APK 文件。
-* 不要提交构建产物。
-* `local.properties`、签名文件、`.apk`、`.aab`、`build/`、`.gradle/` 等应保持忽略。
-* 本项目的 Android 正式发行版本采用固定签名的 Debug APK，不另外维护独立的 Release 构建或正式签名流程。
-
----
-
-## Online Preview / 在线预览
-
-The project is deployed via GitHub Pages and can be accessed directly through the following link:
-
-```text
-https://seiya058904.github.io/star-ring-card-battle/
-```
-
-项目已通过 GitHub Pages 部署，可通过以下地址直接访问：
-
-```text
-https://seiya058904.github.io/star-ring-card-battle/
-```
-
-Make sure asset paths remain relative, such as:
-
-```text
-assets/...
-```
-
-请确保素材路径保持相对路径，例如：
-
-```text
-assets/...
-```
-
-This keeps the project compatible with local servers, GitHub Pages, and the Android WebView package.
-
-这样可以保证项目同时兼容本地服务器、GitHub Pages 和 Android WebView 封装。
-
----
-
-## Development Guidelines / 开发规范
-
-To keep the project stable:
-
-1. Check `git status` before making changes.
-2. Keep each change small and focused.
-3. Separate UI changes from gameplay logic changes when possible.
-4. Avoid large rewrites unless absolutely necessary.
-5. Do not change card rules, deck rules, talents, summons, or elemental counters unless the task explicitly requires it.
-6. Do not mix Android wrapper changes with gameplay changes.
-7. Test visual changes in the browser whenever possible.
-8. Test Android changes with the packaged WebView whenever possible.
-9. Verify assets after syncing the Android web copy.
-10. Keep commits clear and reversible.
-
-为了保持项目稳定：
-
-1. 修改前先检查 `git status`。
-2. 每次修改保持小范围、目标明确。
-3. 尽量将 UI 修改和玩法逻辑修改分开。
-4. 除非必要，不进行大规模重写。
-5. 除非任务明确要求，不要修改卡牌规则、卡组规则、天赋、召唤或元素克制。
-6. 不要把 Android 封装改动和玩法改动混在一起。
-7. 视觉修改后尽量在浏览器中检查。
-8. Android 修改后尽量在 WebView APK 中验证。
-9. 同步 Android Web 资源后运行素材校验。
-10. 保持提交清晰、可回滚。
-
----
-
-## Useful Commands / 常用命令
-
-Battle input/layout regression (existing Python Playwright required; start the
-static server first and choose an evidence directory outside the repository):
+**浏览器：** 直接使用 [GitHub Pages 试玩入口](https://seiya058904.github.io/star-ring-card-battle/)。本地从项目根目录运行静态服务器：
 
 ```powershell
-node scripts/verify-all.mjs
-python scripts/verify-battle-input-layout-browser.py --url http://127.0.0.1:8000/ --out <external-evidence-directory>
-```
-
-The browser check exercises modal keyboard focus and stale resonance rejection,
-normal seven-card draw hit-testing, and narrow/short viewport stat readability.
-
-Check repository status:
-
-```bash
-git status --short
-```
-
-Run local web server:
-
-```bash
 python -m http.server 8000
 ```
 
-Sync Android web assets:
+在浏览器打开 `http://127.0.0.1:8000/`。Web 版由原生 HTML/CSS/JavaScript 和本地素材构成，不需要 npm 打包。
 
-```bash
+**Android：** 仓库提供离线 WebView 封装，正式下载及版本信息见 [v1.2.8 Release](https://github.com/seiya058904/star-ring-card-battle/releases/tag/v1.2.8)。Web 和 Android 使用相同的核心游戏资产，但各自拥有运行环境。
+
+## 🏗️ Inside the project / 技术结构
+
+| Path | Responsibility |
+| --- | --- |
+| [`index.html`](index.html) | Web 游戏入口与主逻辑装配 |
+| [`js/`](js/) | 规则覆写、战役运行、界面及状态逻辑 |
+| [`assets/`](assets/) | 角色、卡牌、音效及视觉素材 |
+| [`android/`](android/) | Android Kotlin/Gradle WebView 外壳 |
+| [`docs/BATTLE_PRESENTATION.md`](docs/BATTLE_PRESENTATION.md) | 视觉表现与验收依据 |
+| [`AUDIO-LICENSES.md`](AUDIO-LICENSES.md) | 音频素材来源与许可记录 |
+
+Android 的 `app/src/main/assets/www/` 是从 Web 源同步的离线镜像，不应直接手改。
+
+## 🧪 Verification / 验证
+
+```powershell
+# Web 侧回归
+node scripts/verify-all.mjs
+
+# 更新 Android 离线副本后验证资源一致性
 node scripts/sync-android-web-assets.mjs
-```
-
-Verify Android web assets:
-
-```bash
 node scripts/verify-android-web-assets.mjs
-```
 
-Build Android debug APK:
-
-```bash
+# Android Debug 构建（需要本地 Android SDK）
 .\android\gradlew.bat -p android assembleDebug
 ```
 
----
+影响键盘焦点、选卡命中区域或移动端排版的修改，还应在实际浏览器中按 [AGENTS.md](AGENTS.md) 的指引验证。测试与产品范围以当前源代码为准，不能从项目海报推断额外玩法。
 
-## Current Notes / 当前备注
+## 📌 Status & rights / 状态与许可
 
-This project is still an experimental prototype.
-The current priority is stability, visual clarity, and maintainable incremental development.
-
-本项目仍然是实验性质的原型。
-当前优先目标是稳定性、视觉清晰度，以及可维护的小步迭代。
-
-Future improvements may include:
-
-* Better mobile-specific layout
-* More characters and cards
-* More complete battle balance
-* Modularized JavaScript structure
-* Improved Android release packaging
-* Formal app icon
-
-未来可以继续改进：
-
-* 更完整的移动端专用布局
-* 更多角色与卡牌
-* 更完整的战斗平衡
-* JavaScript 模块化
-* Android 正式发布封装
-* 正式应用图标
-
----
-
-## License / 许可
-
-No license has been specified yet.
-
-当前暂未指定许可证。
+本项目仍属实验性原型；对外试玩不等于完整商业发行。仓库当前**未声明项目整体开源许可证**。第三方图片、音频及其他素材应分别遵守来源与许可要求，不能从 GitHub 可见性推断可任意再利用。
