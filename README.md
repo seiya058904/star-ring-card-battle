@@ -1,18 +1,17 @@
-<div align="center">
-
 # ✦ Star Ring Card Battle · 星环卡牌战场
 
 **A dark-gold fantasy card battle, built around authored characters and tactical turns.**
 
 固定角色、元素表现、战役推进与回合制对战——一个以单页 Web 核心为基础、可在浏览器试玩的实验性卡牌游戏。
 
-[**▶ Play online / 在线试玩**](https://seiya058904.github.io/star-ring-card-battle/) · [**Android v1.2.8**](https://github.com/seiya058904/star-ring-card-battle/releases/tag/v1.2.8) · [Visual design](DESIGN.md) · [Battle presentation](docs/BATTLE_PRESENTATION.md)
+**[▶ Play in browser](https://seiya058904.github.io/star-ring-card-battle/)** · [Android release](https://github.com/seiya058904/star-ring-card-battle/releases/tag/v1.2.8) · [Battle systems](#the-battle) · [Visual design](DESIGN.md)
 
 <img width="720" alt="Star Ring Card Battle fantasy project artwork" src="https://github.com/user-attachments/assets/01b1a661-f70b-4c07-9a1d-a1e921ba88ab" />
 
-</div>
 
-## ⚔️ What you'll play / 玩法
+## The battle
+
+The deck is authored, not procedurally invented. Choose a character, manage a hand of cards and follow the outcome across turns. A separate six-character campaign gives the matches longer context.
 
 - **Fixed-character battles / 固定角色对战**：选择已有角色及其卡牌，不依赖玩家编辑卡库。
 - **Campaign / 战役**：六名角色的战役路线，配合场景、回合规则与阶段性结算。
@@ -21,13 +20,13 @@
 - **Readable controls / 操作布局**：七张手牌保留独立命中区域；支持移动适配与减少动态效果。
 
 <details>
-<summary><strong>🎨 View additional project artwork / 查看更多项目视觉图</strong></summary>
+<summary><strong>Second original project image / 第二张原始配图</strong></summary>
 
 <img width="720" alt="Star Ring Card Battle alternate concept artwork" src="https://github.com/user-attachments/assets/9ed0b2ab-7be1-44c2-aaa6-3f510d418fb8" />
 
 </details>
 
-## 🚀 Play & run / 试玩与运行
+## Play / run
 
 **浏览器：** 直接使用 [GitHub Pages 试玩入口](https://seiya058904.github.io/star-ring-card-battle/)。本地从项目根目录运行静态服务器：
 
@@ -39,7 +38,7 @@ python -m http.server 8000
 
 **Android：** 仓库提供离线 WebView 封装，正式下载及版本信息见 [v1.2.8 Release](https://github.com/seiya058904/star-ring-card-battle/releases/tag/v1.2.8)。Web 和 Android 使用相同的核心游戏资产，但各自拥有运行环境。
 
-## 🏗️ Inside the project / 技术结构
+## Architecture
 
 | Path | Responsibility |
 | --- | --- |
@@ -52,7 +51,7 @@ python -m http.server 8000
 
 Android 的 `app/src/main/assets/www/` 是从 Web 源同步的离线镜像，不应直接手改。
 
-## 🧪 Verification / 验证
+## Checks and Android parity
 
 ```powershell
 # Web 侧回归
@@ -68,6 +67,6 @@ node scripts/verify-android-web-assets.mjs
 
 影响键盘焦点、选卡命中区域或移动端排版的修改，还应在实际浏览器中按 [AGENTS.md](AGENTS.md) 的指引验证。测试与产品范围以当前源代码为准，不能从项目海报推断额外玩法。
 
-## 📌 Status & rights / 状态与许可
+## Status and rights
 
 本项目仍属实验性原型；对外试玩不等于完整商业发行。仓库当前**未声明项目整体开源许可证**。第三方图片、音频及其他素材应分别遵守来源与许可要求，不能从 GitHub 可见性推断可任意再利用。
