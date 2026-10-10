@@ -30,8 +30,10 @@ Web published at: `https://seiya058904.github.io/star-ring-card-battle/`
   - `battle-rules.js` — energy formula, hand limit, round energy scaling
   - `fixed-card-library.js` — 6 fixed character definitions with 30-card decks each
   - `campaign-data.js` — campaign stages, enemies, difficulty modifiers
-  - `campaign-mode.js` — campaign progression, scoring, intent system, star ring resonance
-  - `campaign-ui.js` — campaign HUD, stage selection, passive overlays, wraps `gameEngine`/`uiRenderer` methods
+  - `campaign-mode.js` — campaign progression, scoring, intent system, star ring resonance, strict write-time progress reader (`readProgressForWrite`)
+  - `campaign-rules.js` — campaign passive/rule helpers consumed by `campaign-runtime.js` and `campaign-ui.js`
+  - `campaign-runtime.js` — installs the campaign `gameEngine`/`aiController` wrappers and the campaign health-change hook (owns the campaign override layer)
+  - `campaign-ui.js` — campaign HUD, stage selection, menus and result-screen actions; configures presentation and calls `campaignRuntime.install()`
   - `audio-manager.js` — Web Audio synthesized sound bank + file-based fallback; no runtime dependency on external audio files
   - `fixed-game-rules.js` — **critical override layer**: rewrites `gameEngine.applyCard`, `playCard`, `endTurn`, `beginTurn`, `tickStatuses`, `statusMultiplier`, `resolveDamage`, `draw`, `applyStatus`, and `aiController.chooseCard`. All race talents, card mechanics, summon logic, and status interactions live here. Any gameplay change MUST be checked against this file.
 - **`scripts/`** — Node.js verification and sync scripts:
@@ -129,12 +131,14 @@ The main `<script>` block exposes key objects to `globalThis` at line ~10334 via
 
 ### External Script Override Chain
 `js/fixed-game-rules.js` loads AFTER the main block and overrides core `gameEngine` methods. The load order is:
-1. Main `<script>` block defines originals + monkey-patches
-2. `js/battle-rules.js` → `js/fixed-card-library.js` → `js/campaign-data.js` → `js/campaign-mode.js` → `js/audio-manager.js` → `js/fixed-game-rules.js` → `js/campaign-ui.js`
-3. `fixed-game-rules.js` rewrites `applyCard`, `playCard`, `endTurn`, `beginTurn`, `tickStatuses`, `statusMultiplier`, `resolveDamage`, `draw`, `applyStatus`
-4. `campaign-ui.js` further wraps some methods for campaign-specific passives
+1. `js/battle-presentation.js` loads BEFORE the main `<script>` block (presentation helpers only, no rule override)
+2. Main `<script>` block defines originals + monkey-patches
+3. `js/battle-rules.js` → `js/fixed-card-library.js` → `js/campaign-data.js` → `js/campaign-mode.js` → `js/campaign-rules.js` → `js/audio-manager.js` → `js/fixed-game-rules.js` → `js/campaign-runtime.js` → `js/campaign-ui.js`
+4. `fixed-game-rules.js` rewrites `applyCard`, `playCard`, `endTurn`, `beginTurn`, `tickStatuses`, `statusMultiplier`, `resolveDamage`, `draw`, `applyStatus`
+5. `campaign-runtime.js` — **not** `campaign-ui.js` — owns the campaign wrappers: its `install()` wraps `applyCard`, `playCard`, `endTurn`, `beginTurn`, `tickStatuses`, `draw`, `aiController.chooseCard` and `aiController.takeTurn`, and registers the campaign health-change hook
+6. `campaign-ui.js` only configures presentation, binds the campaign menus/HUD and result-screen actions, and calls `campaignRuntime.install()`; it does not wrap `gameEngine` methods
 
-**Any change to game logic must account for this override chain.** The `fixed-game-rules.js` version is what actually runs in production.
+**Any change to game logic must account for this override chain.** The `fixed-game-rules.js` version is what actually runs in production, and the campaign layer stacked on top of it is owned by `campaign-runtime.js`.
 
 ## CSS Architecture
 

@@ -94,11 +94,12 @@ assert.match(campaignUiSource, /mode\.effectiveCardCost\(state, "enemy", card\)/
 assert.match(campaignUiSource, /mode\.effectiveCardCost\(state, "player", card\)/);
 assert.match(campaignUiSource, /const progress = \(\) => \{ try \{/);
 assert.match(campaignUiSource, /await mode\.resetProgress\(localStorage, data\.characters\)/);
-assert.match(coreSource, /try \{ latest = global\.campaignMode\.loadProgress\(localStorage\.getItem/);
-assert.match(coreSource, /try \{ localStorage\.setItem\(global\.campaignMode\.STORAGE_KEY/);
+assert.match(coreSource, /const latest = global\.campaignMode\.readProgressForWrite\(localStorage, global\.campaignData\.characters\)/);
+assert.match(coreSource, /Promise\.resolve\(global\.campaignMode\.commitProgress\(commitCampaignResult\)\)\.catch\(reportProgressSaveFailure\)/);
 // 跨标签页并发合同：结算必须重读最新进度、校验重置代际并递增 revision。
+// revision 递增经 advanceRevision，饱和在 MAX_SAFE_INTEGER - 1，不会写出下一次校验拒绝的值。
 assert.match(coreSource, /latest\.resetGeneration/);
-assert.match(coreSource, /next\.revision = \(Number\(latest\.revision\) \|\| 0\) \+ 1/);
+assert.match(coreSource, /next\.revision = global\.campaignMode\.advanceRevision\(latest\.revision\)/);
 assert.match(htmlSource, /chooseCard\(enemy, player\)\s*\{\s*const state = gameEngine\.state/);
 assert.match(htmlSource, /function effectiveCardCost\(state, side, card\)/);
 assert.match(htmlSource, /renderCard\(card, effectiveCardCost\(gameEngine\.state, "player", card\)/);

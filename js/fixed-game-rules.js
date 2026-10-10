@@ -9,8 +9,8 @@
   const statusUnit = status => status.unit || "fixed";
   const activeStatus = status => (status.persistent || status.turns > 0) && (status.charges === undefined || status.charges > 0);
   const rounded = value => Math.max(0, Math.round(Number(value) || 0));
-  // 生命变化事件的唯一出口：战役层（campaign-runtime.js）注册战役被动/首领阶段检查，
-  // 卡牌结算、持续伤害与召唤协击全部经由它通知，避免每条伤害路径各自维护不完整的检查列表。
+  // 持续伤害与召唤协击的生命通知出口：战役层注册被动/首领阶段检查。
+  // 卡牌维持整张结算语义，由 campaign-runtime 的 applyCard 边界在附带效果结束后检查阈值。
   globalThis.registerCampaignHealthChangeHook = function registerCampaignHealthChangeHook(hook) {
     globalThis.campaignHealthChangeHook = typeof hook === "function" ? hook : null;
   };
@@ -140,9 +140,20 @@
     return next;
   };
 
+  // 均衡意志保留卡牌整张结算后的触发时点；DOT/协击仅在实际生命变化后共用它。
+  // 战役丽莎娅由胜利圣仪接管，不能同时获得普通种族的 8% 恢复。
+  gameEngine.triggerBalancedWill = function(fighter, result = null) {
+    if (!fighter || !(fighter.hp / fighter.maxHp < .35) || fighter.talentUsed || !["人族", "神人"].includes(fighter.race) || (this.state?.campaign?.characterId === "lisaya" && fighter.id === "player")) return false;
+    const gain = Math.round(fighter.maxHp * .08);
+    setHpDisplayOverride(fighter); fighter.hp = Math.min(fighter.maxHp, fighter.hp + gain); fighter.shield += gain; fighter.talentUsed = true;
+    result?.popups?.push({ type:"talent", text:`[均衡意志] 恢复 +${formatNumber(gain)}`, side: fighter.id });
+    this.log(`${fighter.name}触发天赋【均衡意志】：恢复${formatNumber(gain)}生命并获得${formatNumber(gain)}护盾。`);
+    return true;
+  };
+
   gameEngine.resolveDamage = function({ source, target, amount, element = "无", pierce = 0, pierceAmount = 0, pierceAmountRatio = 0, execute = false, sourceKind = "card" }) {
     const state = this.state;
-    if (!state || !target || target.hp <= 0) return { total: 0, ownerDamage: 0, summonDamage: 0, blocked: 0, dodged: false };
+    if (!state || !target || target.hp <= 0) return { total: 0, ownerDamage: 0, summonDamage: 0, blocked: 0, dodged: false, guard: null };
     let damage = rounded(amount);
     // 实数值减伤（等级缩放后的绝对值），来自 减伤/灵巧防御 状态
     const reductions = target.statuses.filter(s => (s.type === "减伤" || s.type === "灵巧防御") && statusUnit(s) === "fixed" && activeStatus(s));
@@ -181,7 +192,7 @@
       if (target.id === "player") { stats.damageTaken = (stats.damageTaken || 0) + total; if (revived) stats.revived = true; }
       if (target.id === "player") stats.shieldAbsorbed = (stats.shieldAbsorbed || 0) + blocked;
     }
-    return { total, ownerDamage, summonDamage, blocked, dodged: false, revived };
+    return { total, ownerDamage, summonDamage, blocked, dodged: false, revived, guard: shared.guard || null };
   };
 
   gameEngine.applyCard = function(actor, target, card) {
@@ -382,13 +393,8 @@
     const hasDamage = result.visualAmounts.some(item => item.type === "damage" && item.amount > 0);
     result.targetId = hasDamage ? target.id : actor.id;
     result.visualTargets = { number: hasDamage ? target.id : actor.id, impact: hasDamage ? target.id : actor.id, shake: hasDamage };
-    // ═══ 均衡意志天赋（人族/神人低HP恢复）═══
-    if (target.hp / target.maxHp < .35 && !target.talentUsed && ["人族","神人"].includes(target.race) && !(this.state?.campaign?.characterId === "lisaya" && target.id === "player")) {
-      const gain = Math.round(target.maxHp * .08);
-      setHpDisplayOverride(target); target.hp = Math.min(target.maxHp, target.hp + gain); target.shield += gain; target.talentUsed = true;
-      result.popups.push({ type:"talent", text:`[均衡意志] 恢复 +${formatNumber(gain)}`, side: target.id });
-      this.log(`${target.name}触发天赋【均衡意志】：恢复${formatNumber(gain)}生命并获得${formatNumber(gain)}护盾。`);
-    }
+    // ═══ 均衡意志天赋（仍在整张卡牌结算结束后触发）═══
+    this.triggerBalancedWill(target, result);
     // ═══ AI对话触发 ═══
     const battleState = this.state; const battleSessionId = this.sessionId;
     if (actor.id === "enemy" && ["advanced","special"].includes(card.skillTier)) setTimeout(() => { if (this.isActiveBattle(battleState, battleSessionId)) uiRenderer.showAiDialogue?.(card.skillTier === "special" ? "playSpecial" : "playAdvanced"); }, 120);
@@ -418,19 +424,24 @@
     const events = [];
     fighter.skipAction = false;
     for (const status of fighter.statuses.slice()) {
+      // 前一个 DOT 的生命阈值被动可能已净化此对象；旧快照不能再次执行它。
+      if (!fighter.statuses.includes(status)) continue;
       if (["燃烧", "诅咒", "中毒"].includes(status.type)) {
         const source = status.sourceOwnerId === "player" ? this.state.player : this.state.enemy;
         const dotHpBefore = fighter.hp;
         const settlement = this.resolveDamage({ source, target: fighter, amount: status.power, element: status.type === "燃烧" ? "火" : "暗", sourceKind: "dot" });
+        if (fighter.hp > 0 && fighter.hp !== dotHpBefore) this.triggerBalancedWill(fighter);
         // 与卡牌/召唤协击一致：持续伤害同样是真实的生命变化路径，必须通知战役层阈值检查。
         // 战役侧的 processCampaignPostStatusTick 仍作为兜底入口，两处判定由被动消费去重。
         notifyCampaignHealthChange(fighter, dotHpBefore, { type: "status", actor: source });
         events.push({ type: status.type, actualDamage: settlement.total, sourceOwnerId: status.sourceOwnerId });
         if (settlement.total) this.log(`${fighter.name}受到${status.type}影响，损失${formatNumber(settlement.total)}生命。`);
       }
-      if (status.type === "禁锢") fighter.skipAction = true;
     }
+    // DOT 也可能清除已经遍历过的禁锢，因此须在递减前按存活状态重算行动限制。
+    // 自然到期的禁锢此刻仍存在：本回合照常跳过，并保留原有的控制抗性。
     const hadBind = fighter.statuses.some(status => status.type === "禁锢");
+    fighter.skipAction = hadBind;
     fighter.statuses = fighter.statuses.map(status => status.persistent ? status : { ...status, turns: status.turns - 1 }).filter(status => (status.persistent || status.turns > 0) && (status.charges === undefined || status.charges > 0));
     if (hadBind && !fighter.statuses.some(status => status.type === "禁锢")) fighter.controlImmuneTurns = 1;
     if (fighter.controlImmuneTurns > 0 && !hadBind) fighter.controlImmuneTurns -= 1;
@@ -491,6 +502,7 @@
       const multiplier = Number.isFinite(multiplierRaw) ? Math.max(1, multiplierRaw) : 1;
       const targetHpBefore = target.hp;
       const settlement = gameEngine.resolveDamage({ source: fighter, target, amount: Math.max(1, Math.round(summon.power * multiplier)), element: fighter.element, sourceKind: "summon" });
+      if (target.hp > 0 && target.hp !== targetHpBefore) gameEngine.triggerBalancedWill?.(target);
       delete summon.nextAssistMultiplier;
       delete summon.reinforcedBy;
       // 协击是真实的生命变化路径，必须与卡牌伤害一样通知战役层，
@@ -604,24 +616,23 @@
     // 结算写回：重新读取最新进度（不使用开战时缓存），在最新状态上合并本局结果，
     // 避免多标签页相互覆盖；若战斗期间其他标签页执行过重置，则拒绝写回旧状态。
     // 存储不可用时仍展示本局结果，但必须明确告知玩家进度未写入，不得静默成功。
+    const reportProgressSaveFailure = () => this.showToast?.("战役进度保存失败，本局结果未写入本地存档。", "error");
     const commitCampaignResult = () => {
-      let latest;
-      try { latest = global.campaignMode.loadProgress(localStorage.getItem(global.campaignMode.STORAGE_KEY), global.campaignData.characters); }
-      catch { latest = global.campaignMode.defaultProgress(global.campaignData.characters); }
+      const latest = global.campaignMode.readProgressForWrite(localStorage, global.campaignData.characters);
       if ((Number(latest.resetGeneration) || 0) !== (Number(state.campaign.progressGeneration) || 0)) {
         this.showToast?.("战役进度已在其他标签页发生变化，本局结果未写入。", "error");
         return;
       }
       const next = won ? global.campaignMode.recordStageWin(latest, state.campaign.characterId, state.campaign.stage) : global.campaignMode.recordStageLoss(latest, state.campaign.characterId);
       next.recentBattles = global.campaignMode.recentBattles(latest.recentBattles, [{ characterId: state.campaign.characterId, stage: state.campaign.stage, difficulty: state.campaign.difficulty, victory: won, score, rounds: state.round, time: new Date().toISOString() }]);
-      next.revision = (Number(latest.revision) || 0) + 1;
-      let progressSaved = true;
-      try { localStorage.setItem(global.campaignMode.STORAGE_KEY, JSON.stringify(next)); } catch { progressSaved = false; }
-      if (!progressSaved) this.showToast?.("战役进度保存失败，本局结果未写入本地存档。", "error");
+      next.revision = global.campaignMode.advanceRevision(latest.revision);
+      localStorage.setItem(global.campaignMode.STORAGE_KEY, JSON.stringify(next));
     };
     // 与"重置进度"共用 campaignMode.commitProgress 的唯一 progress 锁，
     // 保证 reset 与结算 read → merge → write 在锁内严格串行。
-    global.campaignMode.commitProgress(commitCampaignResult);
+    // 同步存储错误、锁同步抛错和异步拒绝统一告知；任何失败都不阻断结果页。
+    try { Promise.resolve(global.campaignMode.commitProgress(commitCampaignResult)).catch(reportProgressSaveFailure); }
+    catch { reportProgressSaveFailure(); }
     this.nav("result");
     audioManager?.play?.(won ? "victory" : "defeat");
     document.getElementById("resultTitle").textContent = won ? `战役胜利 · ${score}级评价` : `战役失败 · ${score}级评价`;

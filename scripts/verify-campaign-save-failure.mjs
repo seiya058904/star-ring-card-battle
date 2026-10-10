@@ -75,6 +75,8 @@ function makeContext(setItemImpl) {
     scoreBattle: () => 3,
     loadProgress: () => ({ characters: { lisaya: { unlockedStage: 1 } }, recentBattles: [] }),
     defaultProgress: () => ({ characters: {}, recentBattles: [] }),
+    readProgressForWrite: () => ({ revision: 0, resetGeneration: 0, characters: { lisaya: { unlockedStage: 1 } }, recentBattles: [] }),
+    advanceRevision: value => (Number(value) || 0) + 1,
     recordStageWin: (progress, characterId) => progress,
     recordStageLoss: progress => progress,
     recentBattles: (existing, incoming) => incoming,

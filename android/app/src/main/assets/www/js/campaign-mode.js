@@ -32,13 +32,18 @@
     return total <= 0 ? 0 : Math.min(1, actual / total);
   }
   function scoreBattle({ victory, hpRatio = 0, damageTaken = 0, maxHp = 1, healing = 0, overheal = 0, rounds = 99, difficulty = "normal", revived = false }) { if (!victory) return "C"; const damageRatio = Math.min(1, Math.max(0, damageTaken / Math.max(1, maxHp))); const bonus = difficulty === "hard" ? .08 : difficulty === "easy" ? -.03 : 0; const score = hpRatio * .35 + (1 - damageRatio) * .25 + healingEfficiency(healing, overheal) * .1 + Math.max(0, 1 - rounds / 30) * .2 + bonus - (revived ? .1 : 0); return score >= .78 ? "S" : score >= .58 ? "A" : score >= .36 ? "B" : "C"; }
+  // 单条战绩记录的有效性判定：归一化与本轮写前校验共用，避免两处规则漂移。
+  // 不满足判定的记录在归一化时会被整条丢弃，因此写入前必须拒绝而不是静默抹掉。
+  function recentBattleRecordValid(item, characterIds) {
+    return Boolean(item) && typeof item === "object" && !Array.isArray(item)
+      && characterIds.has(item.characterId) && Number.isInteger(item.stage) && item.stage >= 1 && item.stage <= 5
+      && typeof item.victory === "boolean" && ["S", "A", "B", "C"].includes(item.score)
+      && Number.isSafeInteger(item.rounds) && item.rounds >= 0;
+  }
   function normalizeRecentBattles(records, characters) {
     if (!Array.isArray(records)) return [];
     const characterIds = new Set(characters.map(character => character.id));
-    return records.filter(item => item && typeof item === "object" && !Array.isArray(item)
-      && characterIds.has(item.characterId) && Number.isInteger(item.stage) && item.stage >= 1 && item.stage <= 5
-      && typeof item.victory === "boolean" && ["S", "A", "B", "C"].includes(item.score)
-      && Number.isSafeInteger(item.rounds) && item.rounds >= 0).slice(0, 20).map(item => {
+    return records.filter(item => recentBattleRecordValid(item, characterIds)).slice(0, 20).map(item => {
       const next = { characterId: item.characterId, stage: item.stage, victory: item.victory, score: item.score, rounds: item.rounds };
       if (["easy", "normal", "hard"].includes(item.difficulty)) next.difficulty = item.difficulty;
       if (typeof item.time === "string" && Number.isFinite(Date.parse(item.time))) next.time = new Date(item.time).toISOString();
@@ -247,22 +252,53 @@
     }
     return write();
   }
-  // Reset shares the result transaction and never treats a failed read as empty.
+  // 显示读取可以容错；写入前必须确认原档可识别，不能把读取失败当成空档覆盖。
+  // 已存在但结构无效的字段（如 [] 角色记录、字符串 recentBattles）一律拒绝写入并原样保留存档，
+  // 不能交给 normalizeProgress 静默重置为第一关或丢弃历史；仅保留"字段缺失按默认"的旧 v1 兼容。
+  function readProgressForWrite(storage, characters) {
+    const raw = storage.getItem(STORAGE_KEY);
+    if (raw === null) return defaultProgress(characters);
+    const source = JSON.parse(raw);
+    if (!source || typeof source !== "object" || Array.isArray(source) || source.version !== 1
+      || !source.characters || typeof source.characters !== "object" || Array.isArray(source.characters)) throw new Error("战役存档无效，请先保留原数据");
+    for (const key of ["revision", "resetGeneration"]) {
+      const value = source[key];
+      if (value === undefined) continue; // 旧 v1 存档没有并发计数字段，兼容归零。
+      const numeric = typeof value === "number" || (typeof value === "string" && value.trim() !== "");
+      if (!numeric || !Number.isSafeInteger(Number(value)) || Number(value) < 0 || Number(value) >= Number.MAX_SAFE_INTEGER) throw new Error("战役版本无效");
+    }
+    // 已存在的角色记录必须是对象：数组或原始值会被归一化悄悄重置为第一关，属于坏档而非缺字段。
+    for (const id of Object.keys(source.characters)) {
+      const entry = source.characters[id];
+      if (!entry || typeof entry !== "object" || Array.isArray(entry)) throw new Error("战役存档无效，请先保留原数据");
+      if (entry.unlockedStage !== undefined && !Number.isFinite(Number(entry.unlockedStage))) throw new Error("战役存档无效，请先保留原数据");
+      if (entry.completed !== undefined && typeof entry.completed !== "boolean" && ![0, 1, "true", "false", "yes", "no"].includes(entry.completed)) throw new Error("战役存档无效，请先保留原数据");
+    }
+    // recentBattles 存在即必须是记录数组：字符串会被归一化成空数组，
+    // 不满足记录契约的项会被整条丢弃——两者都是坏档，写入前必须拒绝并原样保留。
+    if (source.recentBattles !== undefined) {
+      const characterIds = new Set(characters.map(character => character.id));
+      if (!Array.isArray(source.recentBattles) || source.recentBattles.some(item => !recentBattleRecordValid(item, characterIds))) throw new Error("战役存档无效，请先保留原数据");
+    }
+    return normalizeProgress(source, characters);
+  }
+  // revision 是写入计数器（跨标签页并发由 resetGeneration 负责）：饱和在 MAX_SAFE_INTEGER - 1。
+  // 写前校验拒绝 >= MAX_SAFE_INTEGER，因此再加 1 必须在写完即可被下一次校验接受，否则会自我锁死。
+  function advanceRevision(value) {
+    const current = Number(value);
+    const base = Number.isSafeInteger(current) && current >= 0 ? current : 0;
+    return Math.min(base + 1, Number.MAX_SAFE_INTEGER - 1);
+  }
+  // Reset shares the result transaction and the same strict write-time reader.
   function resetProgress(storage, characters) {
     return commitProgress(() => {
-      const raw = storage.getItem(STORAGE_KEY);
-      const source = raw === null ? defaultProgress(characters) : JSON.parse(raw);
-      if (!source || source.version !== 1 || !source.characters || typeof source.characters !== "object") throw new Error("战役存档无效，请先保留原数据");
-      for (const key of ["revision", "resetGeneration"]) {
-        if (source[key] !== undefined && (!Number.isSafeInteger(Number(source[key])) || Number(source[key]) < 0 || Number(source[key]) >= Number.MAX_SAFE_INTEGER)) throw new Error("战役版本无效");
-      }
-      const latest = normalizeProgress(source, characters);
+      const latest = readProgressForWrite(storage, characters);
       const fresh = defaultProgress(characters);
-      fresh.revision = latest.revision + 1;
+      fresh.revision = advanceRevision(latest.revision);
       fresh.resetGeneration = latest.resetGeneration + 1;
       storage.setItem(STORAGE_KEY, JSON.stringify(fresh));
       return fresh;
     });
   }
-  global.campaignMode = { MAX_RING, STORAGE_KEY, flattenDeck, defaultProgress, loadProgress, recordStageWin, recordStageLoss, mulligan, addRingEnergy, resonanceCost, resonanceShield, intentFor, scoreBattle, healingEfficiency, normalizeProgress, authorizeStage, clampStage, passiveAllowed, consumePassive, enemyResonanceChoice, shouldEnterBossPhase, recentBattles, resultActions, effectiveCardCost, expireResonance, isFormalIntent, passiveTriggerState, aiCardValue, aiCardScore, planAiPlay, aiChoosePlay, aiContextFor, intentTypeForCard, createCombatStats, recordCombatEvent, drawCount, commitProgress, resetProgress };
+  global.campaignMode = { MAX_RING, STORAGE_KEY, flattenDeck, defaultProgress, loadProgress, recordStageWin, recordStageLoss, mulligan, addRingEnergy, resonanceCost, resonanceShield, intentFor, scoreBattle, healingEfficiency, normalizeProgress, authorizeStage, clampStage, passiveAllowed, consumePassive, enemyResonanceChoice, shouldEnterBossPhase, recentBattles, resultActions, effectiveCardCost, expireResonance, isFormalIntent, passiveTriggerState, aiCardValue, aiCardScore, planAiPlay, aiChoosePlay, aiContextFor, intentTypeForCard, createCombatStats, recordCombatEvent, drawCount, commitProgress, readProgressForWrite, advanceRevision, resetProgress };
 })(globalThis);

@@ -178,7 +178,8 @@
     if (!row) return;
     const won = state.winner === "player";
     row.innerHTML = mode.resultActions({ victory: won, stage: state.campaign.stage }).map(action => `<button type="button" data-campaign-result="${action}">${action === "next" ? "下一关" : action === "retry" ? "重试本关" : action === "route" ? "返回战役路线" : "返回首页"}</button>`).join("");
-    row.querySelectorAll("[data-campaign-result]").forEach(button => button.onclick = () => { const action = button.dataset.campaignResult; if (action === "home") { ui.nav("home"); return; } if (action === "route") { renderCampaignHome(); return; } selectedStage = action === "next" ? Math.min(5, state.campaign.stage + 1) : state.campaign.stage; startCampaign(); });
+    row.querySelectorAll("[data-campaign-result]").forEach(button => button.onclick = () => { const action = button.dataset.campaignResult; if (action === "home") { ui.nav("home"); return; } if (action === "route") { renderCampaignHome(); return; } // 重试/续关归属于这次结算，路线弹窗里取消的选择不能改写战斗条件。
+      selectedCharacter = state.campaign.characterId; selectedDifficulty = state.campaign.difficulty; selectedStage = action === "next" ? Math.min(5, state.campaign.stage + 1) : state.campaign.stage; startCampaign(); });
   };
   campaignRuntime.configurePresentation({
     renderHud: renderCampaignHud,

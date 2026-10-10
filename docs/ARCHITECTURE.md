@@ -84,23 +84,23 @@ campaign-ui
 
 ### 4.4 回合开始
 
-- 最终实现链：`campaign-ui.js` 的单个 `gameEngine.beginTurn` 战役边界 → `fixed-game-rules.js` 的 `gameEngine.beginTurn`。
+- 最终实现链：`campaign-runtime.js` 的单个 `gameEngine.beginTurn` 战役边界 → `fixed-game-rules.js` 的 `gameEngine.beginTurn`。
 - `fixed-game-rules.js` 负责冻结减能量、抽牌压制、`tickStatuses`、手牌补到 5、日志。
-- `campaign-ui.js` 通过显式函数扩展：
+- `campaign-runtime.js` 通过显式函数扩展：
   - `resetCampaignTurnPassives`
   - `applyCampaignPlayerExtraEnergy`
   - `refreshCampaignEnemyIntent`
 
 ### 4.5 抽牌
 
-- 最终实现链：`campaign-ui.js` 的单个 `gameEngine.draw` 战役边界 → `fixed-game-rules.js` 的 `gameEngine.draw`。
+- 最终实现链：`campaign-runtime.js` 的单个 `gameEngine.draw` 战役边界 → `fixed-game-rules.js` 的 `gameEngine.draw`。
 - `fixed-game-rules.js` 负责牌库/弃牌堆洗回、手牌上限、`exhaustPile` 不回流。
-- `campaign-ui.js` 通过 `playCampaignDrawSound` 在“实际抽到牌”后播放抽牌音效。
+- `campaign-runtime.js` 通过 `playCampaignDrawSound` 在“实际抽到牌”后播放抽牌音效。
 
 ### 4.6 出牌验证与打出
 
 - 最终执行路径：
-  1. `campaign-ui.js` 的单个 `gameEngine.playCard` 战役集成边界。
+  1. `campaign-runtime.js` 的单个 `gameEngine.playCard` 战役集成边界。
   2. 战役边界先查找手牌实例，再调用 `fixed-game-rules.js` 的 `gameEngine.playCard` 权威出牌事务。
   3. 底层成功返回后：
      - `recordCampaignCardPlay`：增加星环格、消费星耀减费、刷新战役 HUD。
@@ -112,7 +112,7 @@ campaign-ui
 ### 4.7 卡牌效果结算
 
 - 最终执行路径：
-  1. `campaign-ui.js` 的单个 `gameEngine.applyCard` 战役集成边界。
+  1. `campaign-runtime.js` 的单个 `gameEngine.applyCard` 战役集成边界。
   2. 战役边界先执行 `campaignPlayerPassiveBefore`（仅玩家卡）。
   3. 调用 `fixed-game-rules.js` 的 `gameEngine.applyCard` 权威解析器。
   4. 解析完成后按固定顺序执行：
@@ -133,9 +133,9 @@ campaign-ui
 ### 4.9 状态应用与状态跳动
 
 - `gameEngine.applyStatus` 最终实现位于 `fixed-game-rules.js`。
-- `gameEngine.tickStatuses` 最终实现链：`campaign-ui.js` 的单个 `gameEngine.tickStatuses` 战役边界 → `fixed-game-rules.js` 的 `gameEngine.tickStatuses`。
+- `gameEngine.tickStatuses` 最终实现链：`campaign-runtime.js` 的单个 `gameEngine.tickStatuses` 战役边界 → `fixed-game-rules.js` 的 `gameEngine.tickStatuses`。
 - `fixed-game-rules.js` 负责 DoT 伤害、禁锢跳过行动、状态回合递减、控制抗性。
-- `campaign-ui.js` 通过显式函数扩展：
+- `campaign-runtime.js` 通过显式函数扩展：
   - `processCampaignStatusTickPassive`：赫卡莫斯被动吸血。
   - `processCampaignPostStatusTick`：战役生命阈值/Boss 阶段。
 
@@ -150,20 +150,20 @@ campaign-ui
 
 ### 4.11 结束回合
 
-- 最终实现链：`campaign-ui.js` 的单个 `gameEngine.endTurn` 战役边界 → `fixed-game-rules.js` 的 `gameEngine.endTurn`。
+- 最终实现链：`campaign-runtime.js` 的单个 `gameEngine.endTurn` 战役边界 → `fixed-game-rules.js` 的 `gameEngine.endTurn`。
 - `fixed-game-rules.js` 负责召唤协击、回合切换、下一回合 `beginTurn`、AI 触发。
-- `campaign-ui.js` 通过显式函数扩展：
+- `campaign-runtime.js` 通过显式函数扩展：
   - `beforeCampaignTurnEnd`：base 前执行共鸣到期、敌方意图清空。
   - `afterCampaignTurnEnd`：base 后执行共鸣冷却重置、HUD 刷新。
 
 ### 4.12 AI 回合
 
-- `aiController.takeTurn` 最终是 `campaign-ui.js` 的单个 AI 编排边界。
+- `aiController.takeTurn` 最终是 `campaign-runtime.js` 的单个 AI 编排边界。
 - 单一边界内部显式分为：
   - `runSandboxAiTurn`：非战役通用异步 AI 循环。
   - `runCampaignAiTurn`：战役 AI 循环（意图、敌方共鸣、行动上限）。
   - `chooseCampaignAiCard`：战役卡牌选择与意图刷新。
-- `aiController.chooseCard` 最终实现链：`campaign-ui.js` 的 `aiController.chooseCard` → `fixed-game-rules.js` 的 `aiController.chooseCard`。
+- `aiController.chooseCard` 最终实现链：`campaign-runtime.js` 的 `aiController.chooseCard` → `fixed-game-rules.js` 的 `aiController.chooseCard`。
 - 战役 AI 使用 `campaignMode.aiCardScore` 与敌方意图；非战役 AI 使用 `fixed-game-rules.js` 的估值。
 - AI 执行卡牌仍然通过 `gameEngine.playCard`，不创建独立的 AI 出牌路径。
 
