@@ -78,6 +78,13 @@ assert.match(packageInfo, new RegExp(`versionCode=${versionCode}(?:\\s|$)`));
 assert.match(packageInfo, new RegExp(`versionName=${versionName.replaceAll(".", "\\.")}(?:\\s|$)`));
 console.log(`Package/version verified: ${packageName} ${versionName} (${versionCode})`);
 
+// The local asset URL must work without any network path on this CI emulator.
+adb("shell", "cmd", "connectivity", "airplane-mode", "enable");
+adb("shell", "svc", "wifi", "disable");
+adb("shell", "svc", "data", "disable");
+assert.equal(adb("shell", "settings", "get", "global", "airplane_mode_on"), "1");
+assert.equal(adb("shell", "settings", "get", "global", "wifi_on"), "0");
+
 start();
 const first = await connectPage();
 try {
@@ -105,11 +112,15 @@ try {
   start();
   const second = await connectPage();
   try {
-    const restored = await eventually(() => second.evaluate(`({ready:document.readyState,raw:localStorage.getItem(campaignMode.STORAGE_KEY)})`).then(value => {
+    const restored = await eventually(() => second.evaluate(`(() => {
+      const raw = localStorage.getItem(campaignMode.STORAGE_KEY);
+      return {ready:document.readyState, raw, loaded:campaignMode.loadProgress(raw,campaignData.characters)};
+    })()`).then(value => {
       assert.equal(value?.raw, save.raw);
+      assert.deepEqual(value.loaded, JSON.parse(save.raw));
       return value;
     }));
     assert.ok(restored.ready);
-    console.log("PASS: real APK install/start, offline WebView and asset, version, campaign localStorage across process restart");
+    console.log("PASS: real APK install/start, offline WebView and asset, version, campaign localStorage and read contract across process restart");
   } finally { second.close(); }
 } finally { first.close(); }
