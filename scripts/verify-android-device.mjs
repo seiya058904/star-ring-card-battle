@@ -4,6 +4,8 @@ import { readFileSync } from "node:fs";
 
 // Runs only against an isolated CI emulator and the APK built from this checkout.
 const apk = "android/app/build/outputs/apk/debug/app-debug.apk";
+const previousApk = process.env.PREVIOUS_APK;
+assert.ok(previousApk, "previous release APK path is required for upgrade verification");
 const packageName = "com.seiya.starcardbattle";
 const activity = `${packageName}/.MainActivity`;
 const expectedUrl = "https://appassets.androidplatform.net/assets/www/index.html";
@@ -28,6 +30,26 @@ function start() {
   adb("shell", "am", "force-stop", packageName);
   const output = adb("shell", "am", "start", "-W", "-n", activity);
   assert.match(output, /Status: ok|Complete/, `Activity did not start: ${output}`);
+}
+function verifyInstalledVersion(expectedName, expectedCode) {
+  assert.match(adb("shell", "pm", "path", packageName), /^package:\S+/);
+  const packageInfo = adb("shell", "dumpsys", "package", packageName);
+  assert.match(packageInfo, new RegExp(`versionCode=${expectedCode}(?:\\s|$)`));
+  assert.match(packageInfo, new RegExp(`versionName=${expectedName.replaceAll(".", "\\.")}(?:\\s|$)`));
+  console.log(`Package/version verified: ${packageName} ${expectedName} (${expectedCode})`);
+}
+async function closeNormally(page) {
+  page.close();
+  adb("shell", "input", "keyevent", "4");
+  // Let Activity.onDestroy/WebView finish after the user's normal Back action.
+  await new Promise(resolve => setTimeout(resolve, 5000));
+}
+async function saveByGame(page) {
+  return page.evaluate(`Promise.resolve(campaignMode.resetProgress(localStorage,campaignData.characters)).then(saved => ({
+    key: campaignMode.STORAGE_KEY,
+    revision: saved.revision,
+    raw: localStorage.getItem(campaignMode.STORAGE_KEY)
+  }))`);
 }
 async function connectPage() {
   const pid = await eventually(() => {
@@ -71,12 +93,8 @@ async function connectPage() {
   return { evaluate, close: () => ws.close() };
 }
 
-console.log(`APK install: ${adb("install", "-r", apk)}`);
-assert.match(adb("shell", "pm", "path", packageName), /^package:\S+/);
-const packageInfo = adb("shell", "dumpsys", "package", packageName);
-assert.match(packageInfo, new RegExp(`versionCode=${versionCode}(?:\\s|$)`));
-assert.match(packageInfo, new RegExp(`versionName=${versionName.replaceAll(".", "\\.")}(?:\\s|$)`));
-console.log(`Package/version verified: ${packageName} ${versionName} (${versionCode})`);
+console.log(`Previous release install: ${adb("install", "-r", previousApk)}`);
+verifyInstalledVersion("1.2.8", 13);
 
 // The local asset URL must work without any network path on this CI emulator.
 adb("shell", "cmd", "connectivity", "airplane-mode", "enable");
@@ -85,6 +103,20 @@ adb("shell", "svc", "data", "disable");
 assert.equal(adb("shell", "settings", "get", "global", "airplane_mode_on"), "1");
 assert.equal(adb("shell", "settings", "get", "global", "wifi_on"), "0");
 
+start();
+const previousPage = await connectPage();
+let oldSave;
+try {
+  oldSave = await saveByGame(previousPage);
+  assert.equal(oldSave.key, "star-ring-campaign-progress-v1");
+  assert.equal(oldSave.revision, 1);
+  assert.ok(oldSave.raw?.includes('"characters"'));
+  console.log("Previous v1.2.8 game save committed through resetProgress");
+  await closeNormally(previousPage);
+} finally { previousPage.close(); }
+
+console.log(`Candidate upgrade install: ${adb("install", "-r", apk)}`);
+verifyInstalledVersion(versionName, versionCode);
 start();
 const first = await connectPage();
 try {
@@ -100,27 +132,31 @@ try {
   }));
   const asset = await first.evaluate(`fetch('assets/backgrounds/home-title-screen.png').then(async r => ({ok:r.ok, bytes:(await r.arrayBuffer()).byteLength}))`);
   assert.ok(asset.ok && asset.bytes > 100, `offline asset unavailable: ${JSON.stringify(asset)}`);
-  const save = await first.evaluate(`(() => {
-    const value = campaignMode.defaultProgress(campaignData.characters);
-    localStorage.setItem(campaignMode.STORAGE_KEY, JSON.stringify(value));
-    return {key:campaignMode.STORAGE_KEY, raw:localStorage.getItem(campaignMode.STORAGE_KEY)};
+  const upgraded = await first.evaluate(`(() => {
+    const raw = localStorage.getItem(campaignMode.STORAGE_KEY);
+    return {raw, loaded:campaignMode.loadProgress(raw,campaignData.characters), strict:campaignMode.readProgressForWrite(localStorage,campaignData.characters)};
   })()`);
-  assert.equal(save.key, "star-ring-campaign-progress-v1");
+  assert.equal(upgraded.raw, oldSave.raw, "v1.2.8 campaign save changed during APK upgrade");
+  assert.deepEqual(upgraded.loaded, JSON.parse(oldSave.raw));
+  assert.deepEqual(upgraded.strict, JSON.parse(oldSave.raw));
+  const save = await saveByGame(first);
+  assert.equal(save.revision, 2);
   assert.ok(save.raw?.includes('"characters"'));
-  console.log(`WebView loaded: ${JSON.stringify(state)}; offline image bytes=${asset.bytes}; isolated campaign save written`);
-  first.close();
+  console.log(`WebView loaded: ${JSON.stringify(state)}; offline image bytes=${asset.bytes}; old campaign save compatible; new save committed`);
+  await closeNormally(first);
   start();
   const second = await connectPage();
   try {
     const restored = await eventually(() => second.evaluate(`(() => {
       const raw = localStorage.getItem(campaignMode.STORAGE_KEY);
-      return {ready:document.readyState, raw, loaded:campaignMode.loadProgress(raw,campaignData.characters)};
+      return {ready:document.readyState, raw, loaded:campaignMode.loadProgress(raw,campaignData.characters), strict:campaignMode.readProgressForWrite(localStorage,campaignData.characters)};
     })()`).then(value => {
       assert.equal(value?.raw, save.raw);
       assert.deepEqual(value.loaded, JSON.parse(save.raw));
+      assert.deepEqual(value.strict, JSON.parse(save.raw));
       return value;
     }));
     assert.ok(restored.ready);
-    console.log("PASS: real APK install/start, offline WebView and asset, version, campaign localStorage and read contract across process restart");
+    console.log("PASS: v1.2.8 to candidate install upgrade, offline WebView and asset, campaign resetProgress/readProgressForWrite across normal-close process restart");
   } finally { second.close(); }
 } finally { first.close(); }
