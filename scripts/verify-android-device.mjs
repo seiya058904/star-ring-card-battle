@@ -13,6 +13,7 @@ const gradle = readFileSync("android/app/build.gradle", "utf8");
 const versionName = gradle.match(/versionName = "([^"]+)"/)?.[1];
 const versionCode = Number(gradle.match(/versionCode = (\d+)/)?.[1]);
 assert.ok(versionName && Number.isSafeInteger(versionCode), "version metadata missing");
+setTimeout(() => { throw new Error("Android device verification exceeded 5 minutes after emulator boot"); }, 300000).unref();
 
 function adb(...args) {
   return execFileSync("adb", args, { encoding: "utf8", timeout: 30000 }).trim();
@@ -68,8 +69,9 @@ async function connectPage() {
   });
   const ws = new WebSocket(target.webSocketDebuggerUrl);
   await new Promise((resolve, reject) => {
-    ws.addEventListener("open", resolve, { once: true });
-    ws.addEventListener("error", reject, { once: true });
+    const timer = setTimeout(() => { ws.close(); reject(new Error("WebView CDP socket did not open")); }, 10000);
+    ws.addEventListener("open", () => { clearTimeout(timer); resolve(); }, { once: true });
+    ws.addEventListener("error", error => { clearTimeout(timer); reject(error); }, { once: true });
   });
   let nextId = 0;
   async function evaluate(expression) {
@@ -107,6 +109,7 @@ start();
 const previousPage = await connectPage();
 let oldSave;
 try {
+  console.log("Previous WebView connected; waiting for campaign runtime");
   await eventually(() => previousPage.evaluate(`({
     home: document.querySelector('#screen-home')?.classList.contains('active'),
     mode: typeof campaignMode === 'object' && typeof campaignMode.resetProgress === 'function',
@@ -120,6 +123,7 @@ try {
   assert.ok(oldSave.raw?.includes('"characters"'));
   console.log("Previous v1.2.8 game save committed through resetProgress");
   await closeNormally(previousPage);
+  console.log("Previous Activity closed normally");
 } finally { previousPage.close(); }
 
 console.log(`Candidate upgrade install: ${adb("install", "-r", apk)}`);
@@ -146,11 +150,13 @@ try {
   assert.equal(upgraded.raw, oldSave.raw, "v1.2.8 campaign save changed during APK upgrade");
   assert.deepEqual(upgraded.loaded, JSON.parse(oldSave.raw));
   assert.deepEqual(upgraded.strict, JSON.parse(oldSave.raw));
+  console.log("Previous campaign save survived in-place APK upgrade and passed strict read");
   const save = await saveByGame(first);
   assert.equal(save.revision, 2);
   assert.ok(save.raw?.includes('"characters"'));
   console.log(`WebView loaded: ${JSON.stringify(state)}; offline image bytes=${asset.bytes}; old campaign save compatible; new save committed`);
   await closeNormally(first);
+  console.log("Candidate Activity closed normally; starting fresh process");
   start();
   const second = await connectPage();
   try {
