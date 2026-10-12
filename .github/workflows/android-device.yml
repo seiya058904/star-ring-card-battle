@@ -1,0 +1,82 @@
+name: Android device release gate
+
+on:
+  pull_request:
+    paths:
+      - "android/**"
+      - "scripts/verify-android-device.mjs"
+      - ".github/workflows/android-device.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  emulator-install-and-launch:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Install Android build components
+        shell: bash
+        run: |
+          set -euo pipefail
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+      - name: Build fixed-signature candidate APK
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_DEBUG_KEYSTORE_BASE64 }}
+          ANDROID_DEBUG_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_DEBUG_KEYSTORE_PASSWORD }}
+          ANDROID_DEBUG_KEY_ALIAS: ${{ secrets.ANDROID_DEBUG_KEY_ALIAS }}
+          ANDROID_DEBUG_KEY_PASSWORD: ${{ secrets.ANDROID_DEBUG_KEY_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$KEYSTORE_B64"
+          printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/android-debug.keystore"
+          chmod +x android/gradlew
+          ANDROID_DEBUG_KEYSTORE="$RUNNER_TEMP/android-debug.keystore" android/gradlew -p android assembleDebug --no-daemon
+      - name: Verify candidate signature
+        env:
+          EXPECTED_SHA256: ${{ vars.ANDROID_DEBUG_CERT_SHA256 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=android/app/build/outputs/apk/debug/app-debug.apk
+          APKSIGNER="$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)"
+          ACTUAL="$("$APKSIGNER" verify --print-certs "$APK" | sed -n 's/.*SHA-256 digest: //p' | tr -d ':' | tr 'A-F' 'a-f')"
+          EXPECTED="$(printf '%s' "$EXPECTED_SHA256" | tr -d ':' | tr 'A-F' 'a-f')"
+          test -n "$EXPECTED" && test "$ACTUAL" = "$EXPECTED"
+          echo "Candidate certificate verified: $ACTUAL"
+      - name: Download official previous APK for upgrade test
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/card-old"
+          gh release download v1.2.8 -R "$GITHUB_REPOSITORY" -p 'star-ring-card-battle-v1.2.8.apk' -D "$RUNNER_TEMP/card-old"
+          echo "f2d783b1367bb82cecd23369d8efb0a4ec51ee41000517da14c8fa8b0169146c  $RUNNER_TEMP/card-old/star-ring-card-battle-v1.2.8.apk" | sha256sum --check
+      - name: Install and test on Android 34 emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          PREVIOUS_APK: ${{ runner.temp }}/card-old/star-ring-card-battle-v1.2.8.apk
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          script: node scripts/verify-android-device.mjs

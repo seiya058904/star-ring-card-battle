@@ -162,9 +162,9 @@ The battle presentation combines pixel-fantasy artwork with engraved card frames
     </td>
     <td width="50%" valign="top">
       <h3>📱 Android APK</h3>
-      <p><sub>OFFLINE WEBVIEW · v1.2.8</sub></p>
-      <p>The Android edition packages the game with a Kotlin/WebView shell and synchronized local assets. The published v1.2.8 APK uses the project's Debug signing workflow, not a separate production-signing system.</p>
-      <p><strong><a href="https://github.com/seiya058904/star-ring-card-battle/releases/tag/v1.2.8">⬇️ View Android Release →</a></strong></p>
+      <p><sub>OFFLINE WEBVIEW · v1.2.9</sub></p>
+      <p>The Android edition packages the game with a Kotlin/WebView shell and synchronized local assets. The published v1.2.9 APK uses the project's Debug signing workflow, not a separate production-signing system.</p>
+      <p><strong><a href="https://github.com/seiya058904/star-ring-card-battle/releases/tag/v1.2.9">⬇️ View Android Release →</a></strong></p>
     </td>
   </tr>
 </table>
@@ -225,7 +225,7 @@ A separate Android build requires **JDK 17** and the configured Android SDK:
 .\android\gradlew.bat -p android assembleDebug --no-daemon
 ```
 
-The Android configuration currently uses `versionName 1.2.8` and `versionCode 13`. Do not change signing, republish historical tags, or substitute a newly generated APK for the existing GitHub Release without an explicit release task.
+The Android configuration currently uses `versionName 1.2.9` and `versionCode 14`. Do not change signing, republish historical tags, or substitute a newly generated APK for the existing GitHub Release without an explicit release task.
 
 See [`AGENTS.md`](AGENTS.md) for source ownership, validation requirements, and maintenance restrictions, and [`DESIGN.md`](DESIGN.md) for the established presentation system.
 
