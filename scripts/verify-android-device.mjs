@@ -87,7 +87,7 @@ async function connectPage() {
       ws.addEventListener("message", onMessage);
       ws.send(JSON.stringify({ id, method: "Runtime.evaluate", params: { expression, returnByValue: true, awaitPromise: true } }));
     });
-    if (result.exceptionDetails) throw new Error(result.exceptionDetails.text);
+    if (result.exceptionDetails) throw new Error(result.exceptionDetails.exception?.description || result.exceptionDetails.text);
     return result.result.value;
   }
   return { evaluate, close: () => ws.close() };
@@ -107,6 +107,13 @@ start();
 const previousPage = await connectPage();
 let oldSave;
 try {
+  await eventually(() => previousPage.evaluate(`({
+    home: document.querySelector('#screen-home')?.classList.contains('active'),
+    mode: typeof campaignMode === 'object' && typeof campaignMode.resetProgress === 'function',
+    data: typeof campaignData === 'object' && Array.isArray(campaignData.characters) && campaignData.characters.length > 0
+  })`).then(value => {
+    assert.ok(value?.home && value?.mode && value?.data, JSON.stringify(value));
+  }));
   oldSave = await saveByGame(previousPage);
   assert.equal(oldSave.key, "star-ring-campaign-progress-v1");
   assert.equal(oldSave.revision, 1);
