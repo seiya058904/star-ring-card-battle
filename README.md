@@ -82,41 +82,41 @@
 <a id="meet-the-champions"></a>
 ## 👑 Meet the Champions
 
-Each campaign hero has a distinct identity, elemental affinity, passive ability, and fixed deck. Their names are preserved from the game's original Chinese setting.
+Each campaign hero has a distinct identity, elemental affinity, passive ability, and fixed deck. The names below are English-letter transliterations for repository visitors. The in-game character names remain unchanged.
 
 <table>
   <tr>
     <td width="50%" valign="top">
-      <h3>✨ 丽莎娅</h3>
+      <h3>✨ Lishaya</h3>
       <p><sub>LIGHT / DARK · RESTORATION</sub></p>
       <p>A human spellcaster who balances opposing elements with healing, cleansing, and defensive recovery.</p>
     </td>
     <td width="50%" valign="top">
-      <h3>⚡ 罗林福</h3>
+      <h3>⚡ Luolinfu</h3>
       <p><sub>THUNDER · SWORDPLAY</sub></p>
       <p>A human warrior built around explosive lightning-infused attacks and direct offensive pressure.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <h3>❄️ 艾露希娅·卡佩恩</h3>
+      <h3>❄️ Eluxiya Kapeien</h3>
       <p><sub>ICE / WIND / EARTH · CONTROL</sub></p>
       <p>An elven archer whose style favors card draw, freezing effects, and ranged control.</p>
     </td>
     <td width="50%" valign="top">
-      <h3>🌪️ 摩罗哥·恩典</h3>
+      <h3>🌪️ Moluoge Endian</h3>
       <p><sub>WIND · RELENTLESS OFFENSE</sub></p>
       <p>An orc warrior whose battle spirit grows more dangerous as health falls.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <h3>🔥 赫卡莫斯·烬</h3>
+      <h3>🔥 Hekamos Jin</h3>
       <p><sub>FIRE / DARK · ATTRITION</sub></p>
       <p>A demonic fighter who leans on damage over time, dark magic, and lifesteal.</p>
     </td>
     <td width="50%" valign="top">
-      <h3>🌌 苏</h3>
+      <h3>🌌 Su</h3>
       <p><sub>DARK / LIGHT / THUNDER · MULTI-ELEMENT</sub></p>
       <p>A powerful multi-element combatant with broad offensive reach and resistance to negative effects.</p>
     </td>
