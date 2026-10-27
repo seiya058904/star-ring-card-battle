@@ -16,7 +16,12 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install playwright==1.55.0
-      - run: python -m playwright install --with-deps chromium
+      - run: |
+          for i in 1 2 3; do
+            timeout 180 python -m playwright install --with-deps chromium && break
+            [ "$i" = 3 ] && exit 1
+            sleep 5
+          done
       - run: |
           python -m http.server 4188 > /tmp/server.log 2>&1 &
           python scripts/verify-campaign-reset-browser.py
