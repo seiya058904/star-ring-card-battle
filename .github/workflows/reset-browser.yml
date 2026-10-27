@@ -17,8 +17,10 @@ jobs:
           python-version: '3.12'
       - run: pip install playwright==1.55.0
       - run: |
+          # Wait for another apt process (a fresh runner often has one) instead of failing on its lock.
+          echo 'DPkg::Lock::Timeout "240";' | sudo tee /etc/apt/apt.conf.d/99-lock-timeout >/dev/null
           for i in 1 2 3; do
-            timeout 180 python -m playwright install --with-deps chromium && break
+            timeout 300 python -m playwright install --with-deps chromium && break
             [ "$i" = 3 ] && exit 1
             sleep 5
           done
