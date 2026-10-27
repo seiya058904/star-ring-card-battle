@@ -15,7 +15,8 @@ permissions:
 
 jobs:
   build-and-release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,7 +39,7 @@ jobs:
 
       # android-actions/setup-android@v3 自 2026-09 下旬起必败：其内部安装的遗留 "tools"
       # 包已被 Google 从 sdkmanager 远端仓库移除（v1.2.6 发布时仍存在，见 run 36212099640）。
-      # GitHub ubuntu-latest runner 已预装 Android SDK 与 cmdline-tools，此处改为直接
+      # GitHub ubuntu-24.04 runner 已预装 Android SDK 与 cmdline-tools，此处改为直接
       # 幂等安装本项目所需组件（compileSdk 34 / buildTools 34.0.0 / apksigner 所在）。
       - name: Set up Android SDK
         shell: bash

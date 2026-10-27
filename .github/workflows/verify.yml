@@ -27,7 +27,8 @@ on:
 jobs:
   web-android-parity:
     name: Web verification + Android asset parity
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
