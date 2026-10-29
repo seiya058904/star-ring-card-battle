@@ -1,6 +1,12 @@
 <h1 align="center">✦ Star Ring · Card Battle</h1>
 
 <p align="center">
+  <a href="https://seiya058904.github.io/star-ring-card-battle/">
+    <img src="docs/media/readme-cover.svg" width="100%" alt="Original gold-and-violet card illustration for Star Ring Card Battle, with six resonance nodes around a sword card." />
+  </a>
+</p>
+
+<p align="center">
   <strong>Choose a champion. Command the elements. Awaken the ring.</strong>
 </p>
 
