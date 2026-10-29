@@ -191,7 +191,7 @@ Open **http://127.0.0.1:8000/**. The Web game uses plain HTML, CSS, and JavaScri
 <a id="for-developers"></a>
 ## ⚙️ For Developers
 
-The root Web files are authoritative. The Android `app/src/main/assets/www/` directory is a **generated offline mirror**, not a separate place to hand-edit game logic.
+The root Web files are authoritative. The Android `android/app/src/main/assets/www/` directory is a **generated offline mirror**, not a separate place to hand-edit game logic.
 
 <details>
 <summary><strong>🛠️ Expand source map, verification &amp; Android build</strong></summary>
