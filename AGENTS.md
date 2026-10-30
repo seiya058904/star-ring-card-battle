@@ -45,3 +45,7 @@ node scripts/verify-android-web-assets.mjs
 - 先检查工作区与相关文件，不覆盖、stash/reset 用户已有修改。遵循相邻 JS/Kotlin 风格，不自动格式化、不引入未授权依赖或无关重构。
 - 日志、截图、Python/browser 缓存和验证输出放仓库外或忽略的 `output/`；保留不明来源的个人笔记、配置和唯一历史材料。不得提交 `local.properties`、签名文件、APK/AAB、构建目录或秘密。
 - 删除只针对确认可再生成且无独立价值的精确路径；不做广泛删除、历史改写或强制覆盖。提交保持单一维护目的，检查最终范围；push/部署/Release/签名等外部操作须有明确授权。
+
+## Android Development
+
+For any Android-related build, debugging, device automation, or testing task, read `docs/ANDROID_WORKFLOW.md` before proceeding. Use the shared Windows toolchain, Mobile MCP, scrcpy and ADB as documented. Prefer physical-device testing for daily work and cloud emulator tests when specifically required. Follow repository-specific instructions and safety requirements.
