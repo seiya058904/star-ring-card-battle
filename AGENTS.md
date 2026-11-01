@@ -7,6 +7,7 @@
 - `assets/` 是图片、音频及素材 manifest 的权威来源，`docs/` 保留架构与美术审计。原始素材、参考图和预览图可能是唯一创作历史，不能仅因不在运行时显示而删除。
 - `android/` 是 Kotlin/Gradle WebView 壳；`android/app/src/main/assets/www/` 是生成的离线镜像，禁止手改或当作重复垃圾删除。先改根网页、`js/`、`assets/`、根图标，再按需运行同步脚本。
 - 保留相对 `assets/...` 路径、固定角色/30 张卡组、数值与职业/种族设定、存储键、种子随机和 Web/Android 一致性。不要顺手重构、调参或修复未授权 Bug。
+- `js/fixed-card-library.js` 是固定角色与卡组来源；退休的随机生成器和旧自定义卡牌存储不得因整理而重新启用或清除。战役包装器与 health-change hook 由 `js/campaign-runtime.js` 安装，`campaign-ui.js` 负责表现并调用安装入口；不要把规则写进错误层。
 - Stage 5 的 `STAGE5_BOSS_TUNING = { hp:.07, damage:.09, defense:.004, heal:.01 }` 按敌方 profile 缩放；无新证据不调整。卡面穿透比例随本次伤害在 `resolveDamage` 内换算，不能重复结算。
 
 ## 运行与验证
@@ -42,7 +43,8 @@ node scripts/verify-android-web-assets.mjs
 
 ## 维护与工作区卫生
 
-- 先检查工作区与相关文件，不覆盖、stash/reset 用户已有修改。遵循相邻 JS/Kotlin 风格，不自动格式化、不引入未授权依赖或无关重构。
+- 先检查工作区与相关文件，不覆盖、stash/reset 用户已有修改。遵循相邻 JS/Kotlin 风格与中文 UI，不自动格式化、不引入未授权依赖或无关重构；禁止用 PowerShell `Set-Content` 整写 HTML。CSS 要核对完整层叠与 `body.battle-mode` 作用域，不能假定早期样式全部失效。
+- 只暂存本任务的明确路径，检查 staged diff；游戏改动与 Android wrapper/Gradle/manifest 改动保持独立提交。
 - 日志、截图、Python/browser 缓存和验证输出放仓库外或忽略的 `output/`；保留不明来源的个人笔记、配置和唯一历史材料。不得提交 `local.properties`、签名文件、APK/AAB、构建目录或秘密。
 - 删除只针对确认可再生成且无独立价值的精确路径；不做广泛删除、历史改写或强制覆盖。提交保持单一维护目的，检查最终范围；push/部署/Release/签名等外部操作须有明确授权。
 
