@@ -1,58 +1,22 @@
 # 星环卡牌战场仓库指南
 
 ## 权威入口与边界
+- 原生 HTML/CSS/JS 无后端游戏（根 `index.html` + `localStorage`，无 `package.json`/构建/formatter）；`js/` 按 `index.html` 末尾 `<script src>` 顺序经 `globalThis` 覆写，改战斗/费用/回合/伤害/异步结算须查完整覆写链（`fixed-game-rules.js`、`campaign-runtime.js`、`campaign-ui.js`）。
+- 保留 `assets/` 原始素材/参考图与 `docs/` 审计、固定角色/30 张卡组（`js/fixed-card-library.js`）、相对 `assets/...` 路径、存储键与种子随机；不重启用退休随机生成器或清除旧自定义存储。`STAGE5_BOSS_TUNING` 无新证据不调；穿透在 `resolveDamage` 内单次换算。
+- **`android/app/src/main/assets/www/` 为生成镜像，严禁手改或当作垃圾删除**：先改根网页/`js/`/`assets/`，再运行同步脚本（镜像 `index.html` 含 Android 专用 viewport，由 parity 脚本校验）。
 
-- 根目录 `index.html` 是无后端 Web 游戏入口，原生 HTML/CSS/JavaScript，存档在 `localStorage`。没有 `package.json`、npm 构建、formatter 或 type-check 命令；不要臆造命令或全文件格式化。
-- `js/` 在主内联脚本后加载，通过 `globalThis` 访问战斗/渲染/存储对象；实际顺序以 `index.html` 末尾 `<script src>` 为准。`fixed-game-rules.js` 覆写规则，`campaign-runtime.js`、`campaign-ui.js` 接入战役；改费用、回合、伤害、状态、异步结算时须检查完整覆写链。
-- `assets/` 是图片、音频及素材 manifest 的权威来源，`docs/` 保留架构与美术审计。原始素材、参考图和预览图可能是唯一创作历史，不能仅因不在运行时显示而删除。
-- `android/` 是 Kotlin/Gradle WebView 壳；`android/app/src/main/assets/www/` 是生成的离线镜像，禁止手改或当作重复垃圾删除。先改根网页、`js/`、`assets/`、根图标，再按需运行同步脚本。
-- 保留相对 `assets/...` 路径、固定角色/30 张卡组、数值与职业/种族设定、存储键、种子随机和 Web/Android 一致性。不要顺手重构、调参或修复未授权 Bug。
-- `js/fixed-card-library.js` 是固定角色与卡组来源；退休的随机生成器和旧自定义卡牌存储不得因整理而重新启用或清除。战役包装器与 health-change hook 由 `js/campaign-runtime.js` 安装，`campaign-ui.js` 负责表现并调用安装入口；不要把规则写进错误层。
-- Stage 5 的 `STAGE5_BOSS_TUNING = { hp:.07, damage:.09, defense:.004, heal:.01 }` 按敌方 profile 缩放；无新证据不调整。卡面穿透比例随本次伤害在 `resolveDamage` 内换算，不能重复结算。
-
-## 运行与验证
-
-命令从仓库根目录执行；Node 验证零依赖，真实浏览器检查需要已安装 Chromium 的 Python Playwright。先将 `$evidence` 设置为已创建的仓库外证据目录的绝对路径。
-
+## 运行、验证与 Android 发布
 ```powershell
 python -m http.server 8000
-# 另一个终端运行：
-node scripts/verify-all.mjs
-node scripts/verify-android-web-assets.mjs
+node scripts/verify-all.mjs && node scripts/verify-android-web-assets.mjs
 python scripts/verify-battle-input-layout-browser.py --url http://127.0.0.1:8000/ --out "$evidence"
-```
-
-- `verify-all.mjs` 聚合战斗、战役、渲染/CSS 所有权、存档、平衡护栏与 Android parity；针对小改动可选择其中相关 `scripts/verify-*.mjs`。对修改的 JS 另运行 `node --check <文件>`。
-- UI/战斗/异步改动须做真实浏览器交互与控制台检查；上述浏览器回归覆盖模态输入、陈旧共鸣回调、七张手牌命中与窄/短屏布局。战役重置浏览器命令与证据约定见 `.github/workflows/reset-browser.yml`。
-- Web 无编译过程；Android 资源改动在同步后验证 parity，涉及壳层或 APK 交付再构建/安装并验证真实 WebView。文档整理无需重复昂贵 APK/模拟器测试。
-- 完成前运行 `git diff --check`，检查 diff/status 和关键入口/资源引用；准确报告未运行或失败的验证，不修改测试预期来掩盖问题。
-
-## Android 与发布
-
-```powershell
-node scripts/sync-android-web-assets.mjs
-node scripts/verify-android-web-assets.mjs
+# 同步并构建 Debug APK（JDK 17，SDK 34，依赖变更需授权）：
+node scripts/sync-android-web-assets.mjs && node scripts/verify-android-web-assets.mjs
 .\android\gradlew.bat -p android assembleDebug --no-daemon
 ```
+- 改 JS 另跑 `node --check <文件>`；UI/战斗/异步须做真实浏览器检查（战役重置见 `.github/workflows/reset-browser.yml`）；证据放仓库外或忽略的 `output/`。
+- 官方分发固定采用 Debug APK 签名（`android/app/build/outputs/apk/debug/app-debug.apk`），**严禁更换签名、另建 Release 签名或提交 APK/密钥/`local.properties`**；重建既有 Release 必 checkout 对应 tag。
+- Android 设备调试见 `docs/ANDROID_WORKFLOW.md`（或加载全局 `android-device-workflow` skill）。
 
-- 同步脚本会写镜像；只在权威资源变更需要同步时运行。镜像 `index.html` 含 Android 专用 viewport，不要求其与根 HTML 逐字相同；由 parity 脚本判断。
-- 使用 JDK 17、仓库 Gradle Wrapper；SDK/插件版本以 `android/app/build.gradle`、`android/build.gradle`、`android/settings.gradle`、`android/gradle/wrapper/gradle-wrapper.properties` 为准。现有构建使用 SDK 34，依赖变更需明确授权。
-- APK 输出为 `android/app/build/outputs/apk/debug/app-debug.apk`。官方 Android 分发采用固定签名的 Debug APK；不能擅自更换签名、另建 Release 签名体系或提交 APK/密钥。安装测试时从配置读取 application id，验证启动、离线资源和返回行为；真实环境凭据不得读取或暴露。
-- `.github/workflows/verify.yml` 运行语法与聚合验证；`reset-browser.yml` 对相关 PR 执行浏览器重置回归；`release.yml` 仅在版本 tag 或明确手动请求时构建 APK、校验版本及签名并发布。重建既有 Release 必须 checkout 对应 tag，不能用当前 main 覆盖历史交付。
-- GitHub Pages 从 `main` 根目录发布。版本名/代码与 Release 关系以 `android/app/build.gradle` 和 README 为准；不在这里记录一次性发布状态。
-
-## 维护与工作区卫生
-
-- 先检查工作区与相关文件，不覆盖、stash/reset 用户已有修改。遵循相邻 JS/Kotlin 风格与中文 UI，不自动格式化、不引入未授权依赖或无关重构；禁止用 PowerShell `Set-Content` 整写 HTML。CSS 要核对完整层叠与 `body.battle-mode` 作用域，不能假定早期样式全部失效。
-- 只暂存本任务的明确路径，检查 staged diff；游戏改动与 Android wrapper/Gradle/manifest 改动保持独立提交。
-- 日志、截图、Python/browser 缓存和验证输出放仓库外或忽略的 `output/`；保留不明来源的个人笔记、配置和唯一历史材料。不得提交 `local.properties`、签名文件、APK/AAB、构建目录或秘密。
-- 删除只针对确认可再生成且无独立价值的精确路径；不做广泛删除、历史改写或强制覆盖。提交保持单一维护目的，检查最终范围；push/部署/Release/签名等外部操作须有明确授权。
-
-## Android Development
-
-For any Android-related build, debugging, device automation, or testing task, read `docs/ANDROID_WORKFLOW.md` before proceeding. Use the shared Windows toolchain, Mobile MCP, scrcpy and ADB as documented. Prefer physical-device testing for daily work and cloud emulator tests when specifically required. Follow repository-specific instructions and safety requirements.
-
-## Browser tool selection
-
-- Prefer Ego Browser for exploratory navigation, visual review and interactive checks when available. Use Playwright for repeatable regression, CI, isolation, request interception or other automation requiring its APIs; combine tools when useful. If Ego is unavailable, use a suitable existing browser tool.
-- Keep this repository's required browser commands, versions, profiles and safety boundaries; an exploratory check does not replace required automated tests. Do not alter real user data or production state for testing. Report the tools, coverage and any untested paths.
+## 维护边界
+- 禁 PowerShell `Set-Content` 整写 HTML；改 CSS 核对 `body.battle-mode` 层叠；游戏改动与 Android wrapper/Gradle 改动分开提交；不修改测试预期掩盖问题；推送/部署/Release/签名须获明确授权。
