@@ -10,7 +10,7 @@
 python -m http.server 8000
 node scripts/verify-all.mjs && node scripts/verify-android-web-assets.mjs
 python scripts/verify-battle-input-layout-browser.py --url http://127.0.0.1:8000/ --out "$evidence"
-# 同步并构建 Debug APK（JDK 17，SDK 34，依赖变更需授权）：
+# 同步并构建 Debug APK（JDK 17，SDK 34）：
 node scripts/sync-android-web-assets.mjs && node scripts/verify-android-web-assets.mjs
 .\android\gradlew.bat -p android assembleDebug --no-daemon
 ```
@@ -19,4 +19,4 @@ node scripts/sync-android-web-assets.mjs && node scripts/verify-android-web-asse
 - Android 设备调试见 `docs/ANDROID_WORKFLOW.md`（或加载全局 `android-device-workflow` skill）。
 
 ## 维护边界
-- 禁 PowerShell `Set-Content` 整写 HTML；改 CSS 核对 `body.battle-mode` 层叠；游戏改动与 Android wrapper/Gradle 改动分开提交；不修改测试预期掩盖问题；推送/部署/Release/签名须获明确授权。
+- 禁 PowerShell `Set-Content` 整写 HTML；改 CSS 核对 `body.battle-mode` 层叠；游戏改动与 Android wrapper/Gradle 改动分开提交；不修改测试预期掩盖问题；签名须获明确授权。
