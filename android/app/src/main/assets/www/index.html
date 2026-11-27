@@ -30,7 +30,7 @@
     * { box-sizing: border-box; }
     html, body { min-height: 100%; }
     html { height: 100%; overflow-x: hidden; }
-    button, .card, .menu-actions button, .pixel-btn { touch-action: manipulation; }
+    button, .card, .pixel-btn { touch-action: manipulation; }
     body {
       margin: 0;
       color: var(--ink);
@@ -236,19 +236,6 @@
       position: relative;
       z-index: 1;
       max-width: 760px;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 12px;
-      padding: 7px 10px;
-      border: 1px solid rgba(102, 60, 21, .22);
-      border-radius: 999px;
-      background: rgba(255,255,255,.4);
-      font-weight: 700;
-      color: #7b321c;
     }
 
     .hero-title {
@@ -593,13 +580,6 @@
       pointer-events: none;
     }
 
-    .side-column {
-      display: grid;
-      grid-template-rows: auto minmax(0, 1fr);
-      gap: 12px;
-      min-width: 0;
-    }
-
     .opponent-hand {
       position: relative;
       padding: 12px;
@@ -894,12 +874,6 @@
       border: 1px solid rgba(0,0,0,.65);
       background: rgba(0,0,0,.52);
       box-shadow: 0 0 0 1px rgba(255, 218, 125, .18);
-    }
-
-    .unit-hp-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #3db958, #d1b646, #ba3429);
-      transition: width .3s ease;
     }
 
     .unit-hp span {
@@ -1224,14 +1198,6 @@
       80% { transform: translate3d(3px,0,0); }
     }
 
-    .end-turn-panel {
-      display: grid;
-      align-content: center;
-      justify-items: center;
-      gap: 10px;
-      color: #e8c281;
-    }
-
     #endTurnBtn {
       min-width: 220px;
       padding: 16px 22px;
@@ -1295,155 +1261,6 @@
     body:not(.battle-mode) .card {
       border-color: rgba(231, 172, 78, .38);
     }
-
-    .game-menu {
-      position: relative;
-      isolation: isolate;
-      min-height: calc(100vh - 120px);
-      display: grid;
-      grid-template-columns: minmax(360px, .72fr) minmax(420px, 1fr);
-      gap: 18px;
-      align-items: stretch;
-      padding: clamp(12px, 2vw, 28px);
-      border: 1px solid rgba(231, 172, 78, .22);
-      background:
-        linear-gradient(90deg, rgba(0,0,0,.48), rgba(0,0,0,.18)),
-        url("assets/backgrounds/bg_plains_ruins.png") center / cover no-repeat;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03), inset 0 0 90px rgba(0,0,0,.5), 0 24px 70px rgba(0,0,0,.42);
-      overflow: hidden;
-    }
-
-    .game-menu::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      background:
-        repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 4px),
-        radial-gradient(circle at 70% 28%, rgba(239, 190, 87, .14), transparent 22rem);
-      mix-blend-mode: screen;
-    }
-
-    .menu-panel,
-    .menu-showcase {
-      position: relative;
-      z-index: 1;
-      border: 1px solid rgba(231, 172, 78, .3);
-      background: linear-gradient(180deg, rgba(25, 17, 10, .72), rgba(9, 7, 5, .82));
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.035);
-      padding: clamp(18px, 3vw, 34px);
-    }
-
-    .game-title {
-      font-family: Georgia, "Microsoft YaHei", serif;
-      font-size: clamp(40px, 6vw, 76px);
-      line-height: .95;
-      color: #ffdc8a;
-      text-shadow: 0 0 22px rgba(237, 173, 62, .28), 3px 3px 0 #120a05;
-      margin-bottom: 12px;
-    }
-
-    .menu-tags {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin: 18px 0 28px;
-    }
-
-    .menu-actions {
-      display: grid;
-      gap: 12px;
-      max-width: 360px;
-    }
-
-    .menu-actions button {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 18px;
-      font-size: 19px;
-      font-weight: 900;
-    }
-
-    .menu-actions button::after { content: "◆"; color: #f0c46a; }
-
-    .showcase-cards {
-      position: relative;
-      min-height: 360px;
-      display: grid;
-      place-items: center;
-    }
-
-    .showcase-card-back {
-      position: absolute;
-      width: 168px;
-      filter: drop-shadow(0 18px 26px rgba(0,0,0,.45));
-      image-rendering: pixelated;
-      animation: menuFloat 3.4s ease-in-out infinite;
-    }
-    .showcase-card-back.base { left: 16%; top: 16%; transform: rotate(-10deg); }
-    .showcase-card-back.skill { right: 18%; top: 21%; transform: rotate(9deg); animation-delay: -1.1s; }
-    .showcase-unit {
-      position: relative;
-      z-index: 2;
-      max-width: 330px;
-      max-height: 270px;
-      image-rendering: pixelated;
-      filter: drop-shadow(0 22px 18px rgba(0,0,0,.42));
-      animation: menuFloat 4s ease-in-out infinite;
-    }
-
-    @keyframes menuFloat {
-      0%, 100% { translate: 0 0; }
-      50% { translate: 0 -8px; }
-    }
-
-    .menu-deck-slots {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 10px;
-      margin-top: 18px;
-    }
-
-    .menu-slot {
-      min-height: 98px;
-      border: 1px solid rgba(231, 172, 78, .24);
-      background: rgba(0,0,0,.34);
-      padding: 10px;
-      color: #ffe1a0;
-    }
-    body.home-mode .game-menu {
-      width: 100vw;
-      height: 100vh;
-      min-height: 100vh;
-      max-height: 100vh;
-      border: 0;
-      padding: clamp(18px, 3vw, 46px);
-      grid-template-columns: minmax(320px, 0.62fr) minmax(420px, 1fr);
-      overflow: hidden;
-      background-position: center;
-    }
-
-    body.home-mode .menu-panel,
-    body.home-mode .menu-showcase {
-      min-height: 0;
-      overflow: hidden;
-      align-self: stretch;
-    }
-
-    body.home-mode .showcase-cards {
-      min-height: min(44vh, 390px);
-    }
-
-    body.home-mode .game-title {
-      font-size: clamp(46px, 7vw, 86px);
-    }
-
-    body.home-mode .menu-deck-slots {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
 
     .asset-grid {
       display: grid;
@@ -1528,10 +1345,6 @@
     body[data-dim="light"] { --home-dim: .40; --battle-vignette: .38; }
     body[data-dim="standard"] { --home-dim: .54; --battle-vignette: .52; }
     body[data-dim="deep"] { --home-dim: .68; --battle-vignette: .66; }
-    body[data-anim="low"] .showcase-card-back,
-    body[data-anim="low"] .showcase-unit,
-    body[data-anim="low"] .floating-icon,
-    body[data-anim="low"] .arc-ring { animation: none !important; }
 
     .battlefield::before {
       content: "" !important;
@@ -1547,92 +1360,6 @@
     }
     .battlefield::after,
     .arena-skyline { display: none !important; }
-
-    .main-title-menu::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      background:
-        radial-gradient(circle at 68% 33%, rgba(236, 181, 75, .18), transparent 20rem),
-        linear-gradient(90deg, rgba(0,0,0,var(--home-dim)), rgba(0,0,0,.22) 42%, rgba(0,0,0,var(--home-dim)));
-    }
-
-    .title-command-panel {
-      display: grid;
-      align-content: center;
-      gap: 0;
-      max-width: 560px;
-    }
-
-    .title-subline {
-      color: #f2c978;
-      text-shadow: 0 2px 0 rgba(0,0,0,.65);
-      margin-top: 8px;
-      font-weight: 800;
-    }
-
-    .title-footnote {
-      margin-top: 16px;
-      color: rgba(255, 226, 160, .68);
-      font-size: 12px;
-      line-height: 1.6;
-    }
-
-    .main-actions { max-width: 420px; }
-    .main-menu-btn {
-      min-height: 76px;
-      display: grid !important;
-      grid-template-columns: 1fr auto;
-      align-items: center;
-      text-align: left;
-      gap: 8px;
-    }
-    .main-menu-btn span { font-size: 22px; color: #ffe6a4; }
-    .main-menu-btn small {
-      display: block;
-      grid-column: 1 / -1;
-      color: rgba(255, 231, 173, .72);
-      font-size: 12px;
-      margin-top: -8px;
-    }
-    .main-menu-btn:hover { transform: translateX(6px); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 4px 0 #241307, 0 0 28px rgba(240, 186, 81, .22); }
-
-    .title-showcase { display: grid; grid-template-rows: minmax(0, 1fr) auto; }
-    .refined-showcase { min-height: min(56vh, 520px); }
-    .arc-ring {
-      position: absolute;
-      width: 390px;
-      height: 390px;
-      border-radius: 50%;
-      border: 1px solid rgba(240, 196, 106, .22);
-      box-shadow: 0 0 34px rgba(240, 196, 106, .08), inset 0 0 32px rgba(240, 196, 106, .06);
-      animation: slowSpin 24s linear infinite;
-    }
-    .ring-b { width: 288px; height: 288px; animation-direction: reverse; opacity: .75; }
-    @keyframes slowSpin { to { rotate: 360deg; } }
-    .floating-icon {
-      position: absolute;
-      width: 36px;
-      height: 36px;
-      object-fit: contain;
-      image-rendering: pixelated;
-      filter: drop-shadow(0 0 12px rgba(240,196,106,.25));
-      opacity: .82;
-      animation: menuFloat 4.4s ease-in-out infinite;
-    }
-    .icon-1 { left: 26%; bottom: 21%; animation-delay: -.6s; }
-    .icon-2 { left: 50%; top: 15%; animation-delay: -1.4s; }
-    .icon-3 { right: 16%; bottom: 31%; animation-delay: -2.2s; }
-    .icon-4 { left: 50%; bottom: 9%; width: 30px; height: 30px; opacity: .62; }
-    .showcase-caption {
-      border: 1px solid rgba(231, 172, 78, .22);
-      background: rgba(0,0,0,.28);
-      padding: 14px;
-      color: #ffe1a0;
-    }
-    .showcase-caption span { display: block; margin-top: 4px; color: rgba(255,226,160,.64); font-size: 12px; }
 
     .game-modal.hidden { display: none; }
     .game-modal {
@@ -1747,7 +1474,6 @@
     @keyframes toastOut { to { opacity: 0; transform: translateY(8px); } }
     button.selected, .modal-choice.selected { outline: 1px solid rgba(255,218,122,.7); }
     button:disabled { position: relative; }
-    .disabled-note { color: rgba(255,226,160,.58); font-size: 12px; margin-top: 6px; }
 
 
 
@@ -1984,7 +1710,7 @@
     .mechanic-note { color: rgba(255, 235, 176, .78); font-size: 11px; margin-top: 2px; }
 
     @media (max-width: 980px) {
-      .hero, .section-grid, .game-menu {
+      .hero, .section-grid {
         grid-template-columns: 1fr;
       }
       .hero { min-height: auto; }
@@ -2002,9 +1728,6 @@
       .battle-stage {
         grid-template-columns: 1fr;
         grid-template-rows: auto minmax(430px, 1fr) minmax(140px, auto);
-      }
-      .side-column {
-        grid-template-columns: 1fr;
       }
       .hand-dock {
         grid-template-columns: 1fr;

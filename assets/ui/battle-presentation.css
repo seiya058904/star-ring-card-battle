@@ -1129,18 +1129,12 @@
       border-bottom: 1px solid rgba(229,170,70,.28) !important;
     }
 
-    body.battle-mode .preview-cost-icon,
     body.battle-mode .preview-card-title .atlas-status-icon {
       display: inline-block !important;
       width: 38px !important;
       height: 42px !important;
       background: var(--cost-sprite-img, var(--cost-sprite)) center / contain no-repeat !important;
       vertical-align: middle !important;
-    }
-
-    body.battle-mode .preview-cost-zero {
-      color: #ffe8a9 !important;
-      font-size: 15px !important;
     }
 
     body.battle-mode .preview-art-row {
@@ -1424,54 +1418,6 @@
         inset 0 0 54px rgba(255,240,168,.32) !important;
     }
 
-    body.battle-mode .target-impact {
-      position: absolute !important;
-      left: var(--fx-x, 50%) !important;
-      top: var(--fx-y, 50%) !important;
-      width: 160px !important;
-      height: 160px !important;
-      z-index: 32 !important;
-      transform: translate(-50%, -50%) scale(.4) !important;
-      border-radius: 50% !important;
-      pointer-events: none !important;
-      background:
-        radial-gradient(circle, rgba(255,255,255,.86) 0 8%, var(--fx-color, #ffe18a) 9% 24%, transparent 25% 100%),
-        conic-gradient(from 0deg, transparent, var(--fx-color, #ffe18a), transparent 42%, rgba(255,255,255,.62), transparent) !important;
-      box-shadow: 0 0 34px var(--fx-color, #ffe18a) !important;
-      animation: targetImpactBurst 760ms ease-out forwards !important;
-    }
-
-    body.battle-mode .target-impact.friendly-heal {
-      background: radial-gradient(circle, rgba(206,255,194,.94) 0 10%, rgba(92,255,139,.58) 11% 28%, transparent 29% 100%) !important;
-      box-shadow: 0 0 32px rgba(92,255,139,.7) !important;
-    }
-
-    body.battle-mode .target-impact.friendly-shield {
-      background: radial-gradient(circle, transparent 0 38%, rgba(116,215,255,.78) 39% 44%, transparent 45% 100%) !important;
-      box-shadow: 0 0 34px rgba(116,215,255,.72), inset 0 0 24px rgba(116,215,255,.38) !important;
-    }
-
-    body.battle-mode .target-impact.hostile-status,
-    body.battle-mode .target-impact.friendly-buff,
-    body.battle-mode .target-impact.friendly-summon {
-      background: radial-gradient(circle, rgba(191,145,255,.74) 0 14%, rgba(92,180,255,.28) 15% 42%, transparent 43% 100%) !important;
-      box-shadow: 0 0 28px rgba(171,111,255,.66) !important;
-    }
-
-    body.battle-mode .target-impact.advanced {
-      width: 230px !important;
-      height: 230px !important;
-      animation-duration: 800ms !important;
-      box-shadow: 0 0 28px var(--fx-color, #ffe18a), 0 0 56px rgba(255,200,80,.28) !important;
-    }
-
-    body.battle-mode .target-impact.ultimate {
-      width: 360px !important;
-      height: 360px !important;
-      animation-duration: 1100ms !important;
-      box-shadow: 0 0 50px #fff0a8, 0 0 90px var(--fx-color, #ffe18a), 0 0 130px rgba(255,200,60,.35) !important;
-    }
-
     @keyframes castVortexGather {
       0% { transform: translate(-50%, -50%) rotate(0deg) scale(.78); opacity: .35; }
       45% { opacity: 1; }
@@ -1494,13 +1440,6 @@
 
     @keyframes ultimateRaysSpin {
       to { transform: translate(-50%, -50%) rotate(360deg); }
-    }
-
-    @keyframes targetImpactBurst {
-      0% { opacity: 0; transform: translate(-50%, -50%) scale(.36) rotate(0deg); }
-      18% { opacity: 1; }
-      70% { opacity: .78; transform: translate(-50%, -50%) scale(1) rotate(32deg); }
-      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.24) rotate(52deg); }
     }
 
     body.battle-mode .played-card-stage::before,
@@ -4015,8 +3954,6 @@
     transform: scale(.97);
   }
   .home-mobile-btn-campaign { border-color: rgba(255,214,111,.85) !important; background: linear-gradient(180deg, #b4782f, #5c3215) !important; }
-  .campaign-home-button { position:absolute; left:50%; bottom:7%; transform:translateX(-50%); z-index:4; min-width:220px; font-weight:800; }
-  .campaign-home-button:focus-visible { outline:3px solid #fff0a5; outline-offset:4px; }
   .campaign-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; }
   .campaign-card,.campaign-stage { border:1px solid rgba(240,196,106,.3); background:rgba(0,0,0,.3); color:#ffe8ad; padding:12px; text-align:left; cursor:pointer; }
   .campaign-card.selected,.campaign-stage.selected { border-color:#ffd56d; box-shadow:0 0 18px rgba(255,199,79,.25); }
@@ -4026,7 +3963,7 @@
   .campaign-ring i { width:12px; height:12px; border:1px solid #9d7135; background:#291b0e; }
   .campaign-ring i.on { background:#ffd56d; box-shadow:0 0 8px #f0ae3c; }
   .campaign-intent { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  @media (max-width:700px) { .campaign-home-button { bottom:4%; min-width:190px; } .campaign-hud { top:4px; font-size:11px; } .campaign-ring i { width:10px; height:10px; } }
+  @media (max-width:700px) { .campaign-hud { top:4px; font-size:11px; } .campaign-ring i { width:10px; height:10px; } }
   .home-mobile-icon {
     font-size: 22px;
     width: 30px;
@@ -4278,9 +4215,6 @@ body #screen-result.active { position: fixed; inset: 0; display: flex !important
 #screen-result .stat-tile b { color: #e6d2a6; font-size: 21px; font-variant-numeric: tabular-nums; }
 #screen-result .stat-tile span { color: #c4c1b5; font-size: 11px; }
 @media (max-width: 700px) {
-.cast-title-strip { top: 62%; padding: 8px 18px; }
-.cast-title-strip strong { font-size: 16px; }
-.cast-cameo { top: 58%; height: 37%; width: 50%; }
 .campaign-modal .modal-body { padding: 14px !important; }
 .campaign-modal .campaign-grid { grid-template-columns: minmax(0, 1fr); }
 .campaign-modal .modal-body > .campaign-grid:first-of-type { grid-template-columns: minmax(0, 1fr); }
